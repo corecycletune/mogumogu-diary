@@ -79,7 +79,13 @@ async function flushCloudPending(){
     }
     cloudStatus(errors?'同期できない記録があります。接続設定とネットワークを確認してください。':'Firebaseとの書き込み処理を確認しました。',errors?'要確認':'接続済み');
     updateSavedViews();
-  }finally{cloudSyncing=false;}
+  }finally{
+    cloudSyncing=false;
+    // A new meal may have been saved while the previous batch was uploading.
+    if(!errors && (pendingList('writes').length||pendingList('deletes').length)){
+      Promise.resolve().then(function(){void flushCloudPending();});
+    }
+  }
 }
 async function cloudPair(action,code){
   el('cloudCreate').disabled=true;el('cloudJoin').disabled=true;
