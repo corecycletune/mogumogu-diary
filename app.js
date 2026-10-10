@@ -13,6 +13,7 @@ var timerKey='mogumogu:timer:'+profile;
 var bonusKey='mogumogu:login:'+profile;
 var timer=readJSON(timerKey,null);
 var timerTimer;
+var timerMealWasEdited=false;
 
 var cloudContext=null;
 var cloudUnsubscribe=null;
@@ -183,6 +184,7 @@ function renderTimer(){
 }
 function saveTimer(){if(timer)writeJSON(timerKey,timer);else localStorage.removeItem(timerKey);renderTimer();}
 function startTimer(){
+  if(!timer&&!timerMealWasEdited){el('timerMeal').value=guessMeal();setSnackMode();}
   if(!timer&&el('timerMeal').value==='snack'){note('おやつは時間を計測せず記録してください');return;}
   if(!timer){timer={accumulatedMs:0,runningSince:Date.now(),running:true,firstStartedAt:new Date().toISOString(),mealType:el('timerMeal').value};}
   else if(!timer.running){timer.running=true;timer.runningSince=Date.now();}
@@ -320,7 +322,12 @@ async function init(){
   el('timerMeal').value=guessMeal();
   el('manualMeal').value=guessMeal();
   el('manualDate').value=todayDate;el('manualDate').max=todayDate;
-  el('timerMeal').addEventListener('change',setSnackMode);
+  el('timerMeal').addEventListener('change',function(){timerMealWasEdited=true;setSnackMode();});
+  document.addEventListener('visibilitychange',function(){
+    if(!document.hidden&&!timer&&!timerMealWasEdited){
+      el('timerMeal').value=guessMeal();setSnackMode();
+    }
+  });
   el('manualMeal').addEventListener('change',setSnackMode);
   el('snackNow').addEventListener('click',function(){void recordSnack(localDate(new Date()));});
   el('viewFullHistory').addEventListener('click',function(){changePanel('history');});
