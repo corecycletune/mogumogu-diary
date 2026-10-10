@@ -41,7 +41,16 @@ function context(familyId, profile) {
     deleteMeal: id => deleteDoc(mealRef(familyId, id)),
     watch: (onItems, onError) => onSnapshot(
       collection(db, "families", familyId, "meals"),
-      snapshot => onItems(snapshot.docs.map(item => item.data())),
+      {includeMetadataChanges: true},
+      snapshot => onItems(
+        snapshot.docs.map(item => item.data()),
+        {
+          fromCache: snapshot.metadata.fromCache,
+          confirmedIds: snapshot.docs
+            .filter(item => !item.metadata.hasPendingWrites)
+            .map(item => item.id)
+        }
+      ),
       onError
     )
   };
