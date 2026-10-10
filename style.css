@@ -3,3 +3,10 @@
 .cloud-code{display:flex;gap:9px;align-items:center;justify-content:space-between;background:#f7f6f2;border-radius:12px;padding:9px;margin:10px 0;flex-wrap:wrap}
 .cloud-code code{font-size:12px;overflow-wrap:anywhere;max-width:100%;user-select:all}
 .cloud-code .btn{min-height:39px;padding:8px 13px}
+
+[hidden]{display:none !important}
+.recent-header{display:flex;align-items:center;justify-content:space-between;margin:19px 0 3px;gap:8px}
+.recent-header h3{font-size:15px;margin:0}
+.recent-list .history-item{padding:13px 2px}
+.history-item.latest-saved{background:#f0f8e9;border-radius:12px;padding-left:9px;padding-right:9px}
+.history-item .meta{max-width:240px;overflow-wrap:anywhere}
