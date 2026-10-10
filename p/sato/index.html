@@ -58,6 +58,28 @@
     </div>
   </section>
   <section data-panel="history" hidden>
+  <div class="card" id="cloudCard">
+    <h2 class="section-title">☁ 家族と同期 <span id="cloudBadge" class="badge">未接続</span></h2>
+    <p class="small" id="cloudStatus">Firebase接続前です。今の記録は端末内だけに保存されています。</p>
+    <div id="cloudSetup">
+      <div id="cloudCreateRow" class="cloud-section">
+        <button id="cloudCreate" type="button" class="btn primary" style="width:100%">新しい家族グループを作る</button>
+        <p class="small">じゅんちゃんの端末から最初の1回だけ行います。</p>
+      </div>
+      <div class="cloud-section">
+        <label class="label" for="cloudCode">家族コードで参加する</label>
+        <input id="cloudCode" class="field" type="text" placeholder="家族コードを貼り付け" maxlength="24" autocomplete="off" autocapitalize="off" spellcheck="false">
+        <button id="cloudJoin" type="button" class="btn secondary" style="width:100%;margin-top:9px">家族に参加して同期</button>
+      </div>
+    </div>
+    <div id="cloudConnected" hidden>
+      <p class="small">ほかの家族を追加するときは、このコードを本人にだけ伝えてください。</p>
+      <div class="cloud-code"><code id="cloudFamilyCode"></code><button type="button" class="btn secondary" id="cloudCopy">コピー</button></div>
+      <p class="warning">家族コードを知っている人はグループに参加できます。SNSや公開リポジトリには載せないでください。</p>
+      <p class="small">食事記録が端末間で同期されます。ガチャとコインのクラウド同期は今後の更新で対応します。</p>
+      <button id="cloudRetry" type="button" class="btn secondary" style="width:100%">同期を再試行</button>
+    </div>
+  </div>
     <div class="card"><h2 class="section-title">食事のきろく</h2><div id="historyList"></div></div>
     <div class="card">
       <h2 class="section-title">バックアップ</h2>
