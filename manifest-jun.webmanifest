@@ -1,0 +1,19 @@
+{
+  "name": "もぐもぐ日記 - じゅんちゃん",
+  "short_name": "もぐもぐ じゅんちゃん",
+  "description": "食事時間を記録する日記",
+  "start_url": "./p/jun/",
+  "id": "./p/jun/",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fff8ee",
+  "theme_color": "#fff8ee",
+  "icons": [
+    {
+      "src": "./icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

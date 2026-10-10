@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ja"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#fff8ee"><meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="もぐもぐ・さとばぁば">
+<meta name="description" content="毎日の食事時間をたのしく記録する">
+<link rel="manifest" href="../../manifest-sato.webmanifest">
+<link rel="icon" type="image/svg+xml" href="../../icons/icon.svg"><link rel="stylesheet" href="../../style.css">
+<title>もぐもぐ日記 | さとばぁば</title></head>
+<body data-profile="sato">
+<main class="shell">
+  <header class="topbar">
+    <div><span class="greeting">🍵 さとばぁばのごはん記録</span><h1>もぐもぐ日記</h1></div>
+    <a href="../../">← 使う人を選ぶ</a>
+  </header>
+  <nav class="tabs" aria-label="メニュー">
+    <button class="tab" data-target="timer" aria-selected="true">⏱ ごはん</button>
+    <button class="tab" data-target="calendar" aria-selected="false">⭐ カード</button>
+    <button class="tab" data-target="history" aria-selected="false">📖 きろく</button>
+    <button class="tab" data-target="bonus" aria-selected="false">🎁 ごほうび</button>
+  </nav>
+  <section data-panel="timer">
+    <div class="card">
+      <h2 class="section-title">いまから計測 <span id="timerStatus" class="badge">待機中</span></h2>
+      <label class="label" for="timerMeal">どのごはん？</label>
+      <select class="field" id="timerMeal"><option value="breakfast">朝ごはん</option><option value="lunch">昼ごはん</option><option value="dinner">夜ごはん</option><option value="snack">おやつ</option></select>
+      <div class="clock" id="clock">00:00</div>
+      <div class="clock-hint">食べる速さを競わず、いつもどおりに食べよう。</div>
+      <div class="button-row">
+        <button id="timerStart" class="btn primary">▶ スタート</button>
+        <button id="timerPause" class="btn secondary" disabled>一時停止</button>
+        <button id="timerStop" class="btn danger" disabled>終了して保存</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2 class="section-title">✏️ あとから記録</h2>
+      <p class="small">学校でメモした時間も、帰宅後にすぐ入力できます。</p>
+      <form id="manualForm">
+        <div class="input-row"><div><label class="label" for="manualDate">日にち</label><input id="manualDate" class="field" type="date" required></div>
+        <div><label class="label" for="manualMeal">どのごはん？</label><select class="field" id="manualMeal"><option value="breakfast">朝</option><option value="lunch" selected>昼</option><option value="dinner">夜</option><option value="snack">おやつ</option></select></div></div>
+        <label class="label" for="manualMinutes">かかった時間（分）</label>
+        <input id="manualMinutes" class="field" type="number" min="1" max="240" step="1" placeholder="例：20" required inputmode="numeric">
+        <p class="small">正確でなくても大丈夫。わかる範囲で記録しよう。</p>
+        <button type="submit" class="btn primary" style="width:100%">記録する ＋</button>
+      </form>
+    </div>
+    <div class="card">
+      <h2 class="section-title">今日の記録</h2>
+      <div class="metrics"><div class="metric"><strong id="todayCount">0</strong><span>食事を記録</span></div><div class="metric"><strong id="todayMinutes">0</strong><span>合計 分</span></div><div class="metric"><strong id="streak">0</strong><span>連続記録 日</span></div></div>
+    </div>
+  </section>
+  <section data-panel="calendar" hidden>
+    <div class="card">
+      <h2 class="section-title">スタンプカード</h2>
+      <div class="calendar-header"><button class="btn secondary" id="prevMonth" aria-label="前の月">‹</button><strong id="monthLabel"></strong><button class="btn secondary" id="nextMonth" aria-label="次の月">›</button></div>
+      <div class="calendar" id="calendarGrid"></div>
+      <p class="small">1日に1回以上記録するとスタンプがつくよ。</p>
+    </div>
+  </section>
+  <section data-panel="history" hidden>
+    <div class="card"><h2 class="section-title">食事のきろく</h2><div id="historyList"></div></div>
+    <div class="card">
+      <h2 class="section-title">バックアップ</h2>
+      <p class="small">クラウド同期はまだ未設定です。定期的に保存すると安心です。</p>
+      <div class="backup-actions">
+        <button id="exportBtn" class="btn secondary">記録を書き出す</button>
+        <label class="btn secondary upload-label" for="importFile">記録を復元する</label>
+        <input id="importFile" type="file" accept=".json,application/json">
+      </div>
+    </div>
+  </section>
+  <section data-panel="bonus" hidden>
+    <div class="card">
+      <h2 class="section-title">ごほうび</h2>
+      <div class="metrics"><div class="metric"><strong id="coins">0</strong><span>コイン</span></div><div class="metric"><strong id="markedDays">0</strong><span>記録した日</span></div><div class="metric"><strong id="bonusDays">0</strong><span>ログインした日</span></div></div>
+      <p class="small">1日1回のログイン：10コイン。1日に記録した最初の食事：20コイン、2〜3食目：各10コイン。</p>
+    </div>
+    <div class="card"><h2 class="section-title">🎰 ガチャと図鑑</h2>
+      <p>UR・SR・R・Nの4種類を準備中！</p>
+      <p class="small">ガチャ、食材・料理のキャラクター、家具・装飾のカテゴリは次の開発段階で追加します。今はコインだけ貯まります。</p>
+    </div>
+    <div class="card"><h2 class="section-title">🤝 みんなで協力</h2>
+      <p class="small">3人の記録を合算する協力ミッションはFirebase接続後に利用できます。</p></div>
+  </section>
+  <p class="warning" id="offlineNotice">試作版：データはこの端末だけに保存されます。まだ3人の端末間で同期されません。</p>
+  <p class="footer subtle">記録を楽しく続けよう。食事時間の長さで良し悪しを決めないよ。</p>
+</main><div class="toast" id="feedback" role="status" hidden></div>
+<script src="../../app.js" defer></script></body></html>
