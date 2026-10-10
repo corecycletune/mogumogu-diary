@@ -22,14 +22,18 @@
   <section data-panel="timer">
     <div class="card">
       <h2 class="section-title">いまから計測 <span id="timerStatus" class="badge">待機中</span></h2>
-      <label class="label" for="timerMeal">どのごはん？</label>
-      <select class="field" id="timerMeal"><option value="breakfast">朝ごはん</option><option value="lunch">昼ごはん</option><option value="dinner">夜ごはん</option><option value="snack">おやつ</option></select>
+      <label class="label" for="timerMeal">ごはんの種類</label>
+      <select class="field" id="timerMeal"><option value="breakfast">朝ごはん</option><option value="lunch">昼ごはん</option><option value="dinner">夜ごはん</option><option value="snack">おやつ（時間は測らない）</option></select>
+      <p class="small">今の時間から自動で選びます。違っていたら変更できます。</p>
+      <div id="snackQuick" hidden><button id="snackNow" class="btn primary" type="button" style="width:100%">🍪 おやつを記録する</button><p class="small">おやつは食べたことだけ記録します。</p></div>
+      <div id="timerControls">
       <div class="clock" id="clock">00:00</div>
       <div class="clock-hint">食べる速さを競わず、いつもどおりに食べよう。</div>
       <div class="button-row">
         <button id="timerStart" class="btn primary">▶ スタート</button>
         <button id="timerPause" class="btn secondary" disabled>一時停止</button>
         <button id="timerStop" class="btn danger" disabled>終了して保存</button>
+      </div>
       </div>
     </div>
     <div class="card">
@@ -38,15 +42,19 @@
       <form id="manualForm">
         <div class="input-row"><div><label class="label" for="manualDate">日にち</label><input id="manualDate" class="field" type="date" required></div>
         <div><label class="label" for="manualMeal">どのごはん？</label><select class="field" id="manualMeal"><option value="breakfast">朝</option><option value="lunch" selected>昼</option><option value="dinner">夜</option><option value="snack">おやつ</option></select></div></div>
-        <label class="label" for="manualMinutes">かかった時間（分）</label>
+        <div id="manualDurationWrap"><label class="label" for="manualMinutes">かかった時間（分）</label>
         <input id="manualMinutes" class="field" type="number" min="1" max="240" step="1" placeholder="例：20" required inputmode="numeric">
-        <p class="small">正確でなくても大丈夫。わかる範囲で記録しよう。</p>
-        <button type="submit" class="btn primary" style="width:100%">記録する ＋</button>
+        <p class="small">正確でなくても大丈夫。わかる範囲で記録しよう。</p></div>
+        <p id="manualSnackHint" class="small" hidden>おやつは時間を入力せず、食べたことだけを記録できます。</p>
+        <button id="manualSubmit" type="submit" class="btn primary" style="width:100%">記録する ＋</button>
       </form>
     </div>
     <div class="card">
       <h2 class="section-title">今日の記録</h2>
-      <div class="metrics"><div class="metric"><strong id="todayCount">0</strong><span>食事を記録</span></div><div class="metric"><strong id="todayMinutes">0</strong><span>合計 分</span></div><div class="metric"><strong id="streak">0</strong><span>連続記録 日</span></div></div>
+      <div class="metrics"><div class="metric"><strong id="todayCount">0</strong><span>今日の食事</span></div><div class="metric"><strong id="todayMinutes">0</strong><span>合計 分</span></div><div class="metric"><strong id="streak">0</strong><span>連続記録 日</span></div></div>
+      <div class="recent-header"><h3>最近の記録</h3><button id="viewFullHistory" class="link-button" type="button">すべて見る →</button></div>
+      <div id="recentList" class="recent-list" aria-live="polite"></div>
+      <p class="small">おやつは食事時間の集計・連続記録には含めません。</p>
     </div>
   </section>
   <section data-panel="calendar" hidden>
@@ -80,10 +88,10 @@
       <button id="cloudRetry" type="button" class="btn secondary" style="width:100%">同期を再試行</button>
     </div>
   </div>
-    <div class="card"><h2 class="section-title">食事のきろく</h2><div id="historyList"></div></div>
+    <div class="card"><h2 class="section-title">食事のきろく</h2><p class="small">保存先も確認できます。「端末に保存」はまだクラウド未確認、「同期済み」はFirebaseへの反映を確認した記録です。</p><div id="historyList"></div></div>
     <div class="card">
       <h2 class="section-title">バックアップ</h2>
-      <p class="small">クラウド同期はまだ未設定です。定期的に保存すると安心です。</p>
+      <p class="small">端末内の記録をバックアップできます。クラウドに接続していても、定期的な書き出しをおすすめします。</p>
       <div class="backup-actions">
         <button id="exportBtn" class="btn secondary">記録を書き出す</button>
         <label class="btn secondary upload-label" for="importFile">記録を復元する</label>
@@ -104,7 +112,7 @@
     <div class="card"><h2 class="section-title">🤝 みんなで協力</h2>
       <p id="coopStatus" class="small">家族で同期すると、3人の記録がここに集まります。</p><p class="small">協力達成時の特別報酬は今後のアップデートで追加します。</p></div>
   </section>
-  <p class="warning" id="offlineNotice">試作版：データはこの端末だけに保存されます。まだ3人の端末間で同期されません。</p>
+  <p class="warning" id="offlineNotice">食事記録はまず端末に保存します。Firebaseとの同期状況は、最近の記録・履歴に表示します。</p>
   <p class="footer subtle">記録を楽しく続けよう。食事時間の長さで良し悪しを決めないよ。</p>
 </main><div class="toast" id="feedback" role="status" hidden></div>
 <script src="../../app.js" defer></script></body></html>
