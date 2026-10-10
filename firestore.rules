@@ -28,8 +28,9 @@ service cloud.firestore {
       request.resource.data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$') &&
       request.resource.data.mealType in ['breakfast', 'lunch', 'dinner', 'snack'] &&
       request.resource.data.durationSec is int &&
-      request.resource.data.durationSec > 0 &&
+      request.resource.data.durationSec >= 0 &&
       request.resource.data.durationSec <= 86400 &&
+      (request.resource.data.mealType == 'snack' || request.resource.data.durationSec > 0) &&
       request.resource.data.source in ['timer', 'manual'] &&
       (request.resource.data.startAt == null || request.resource.data.startAt is string) &&
       (request.resource.data.endAt == null || request.resource.data.endAt is string) &&
