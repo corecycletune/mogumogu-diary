@@ -18,6 +18,8 @@ var cloudContext=null;
 var cloudUnsubscribe=null;
 var cloudSyncing=false;
 var latestFamilyMeals=[];
+var cloudConfirmedIds=new Set();
+var lastSavedId=null;
 function pendingKey(type){return 'mogumogu:cloud:'+type+':'+profile;}
 function pendingList(type){
   var ids=readJSON(pendingKey(type),[]);
@@ -34,6 +36,15 @@ function cloudStatus(message,badge){
   el('cloudStatus').textContent=message;
   el('cloudBadge').textContent=badge||'確認中';
 }
+function syncLabel(item){
+  if(pendingList('writes').includes(item.id))return '端末に保存・同期待ち';
+  if(cloudConfirmedIds.has(item.id))return 'Firebase同期済み';
+  return cloudContext?'端末に保存・確認中':'端末に保存（未連携）';
+}
+function updateSavedViews(){
+  renderRecent();
+  renderHistory();
+}
 function renderCoop(records){
   var out=el('coopStatus');
   if(!out)return;
@@ -42,7 +53,7 @@ function renderCoop(records){
   var monday=new Date(now.getFullYear(),now.getMonth(),now.getDate()-offset);
   var start=localDate(monday),end=localDate(now),seen=new Set();
   records.forEach(function(r){
-    if(r&&['ichika','jun','sato'].indexOf(r.profile)!==-1&&r.date>=start&&r.date<=end){
+    if(r&&r.mealType!=='snack'&&['ichika','jun','sato'].indexOf(r.profile)!==-1&&r.date>=start&&r.date<=end){
       seen.add(r.profile+':'+r.date);
     }
   });
@@ -54,7 +65,7 @@ async function flushCloudPending(){
   var errors=0;
   try{
     for(var id of pendingList('deletes')){
-      try{await cloudContext.deleteMeal(id);clearPending('deletes',id);}
+      try{await cloudContext.deleteMeal(id);clearPending('deletes',id);cloudConfirmedIds.delete(id);}
       catch(e){errors++;break;}
     }
     if(!errors){
@@ -62,11 +73,12 @@ async function flushCloudPending(){
       for(var writeId of pendingList('writes')){
         var item=meals.find(function(r){return r.id===writeId;});
         if(!item){clearPending('writes',writeId);continue;}
-        try{await cloudContext.saveMeal(item);clearPending('writes',writeId);}
+        try{await cloudContext.saveMeal(item);clearPending('writes',writeId);cloudConfirmedIds.add(writeId);}
         catch(e){errors++;break;}
       }
     }
-    cloudStatus(errors?'同期できない記録があります。接続設定とネットワークを確認してください。':'クラウドと接続済みです。食事記録は自動同期します。',errors?'要確認':'同期中');
+    cloudStatus(errors?'同期できない記録があります。接続設定とネットワークを確認してください。':'Firebaseとの書き込み処理を確認しました。',errors?'要確認':'接続済み');
+    updateSavedViews();
   }finally{cloudSyncing=false;}
 }
 async function cloudPair(action,code){
@@ -79,6 +91,8 @@ async function cloudPair(action,code){
     if(!ctx){cloudStatus('まだ家族グループに参加していません。','未接続');return;}
     if(cloudUnsubscribe)cloudUnsubscribe();
     cloudContext=ctx;
+    cloudConfirmedIds=new Set();
+    updateSavedViews();
     el('cloudSetup').hidden=true;
     el('cloudConnected').hidden=false;
     el('cloudFamilyCode').textContent=ctx.familyId;
@@ -91,8 +105,11 @@ async function cloudPair(action,code){
       localStorage.setItem(marker,'yes');
     }
     await flushCloudPending();
-    cloudUnsubscribe=ctx.watch(async function(records){
+    cloudUnsubscribe=ctx.watch(async function(records,metadata){
       latestFamilyMeals=records;
+      if(metadata&&!metadata.fromCache){
+        cloudConfirmedIds=new Set(metadata.confirmedIds);
+      }
       var own=records.filter(function(x){return x.profile===profile&&validateRecord(x);});
       try{
         var local=await listAll(),dirty=pendingList('writes'),deleted=pendingList('deletes');
@@ -107,7 +124,7 @@ async function cloudPair(action,code){
           cloudStatus('接続済み：この家族グループの食事記録を同期しています。','接続済み');
         }
       }catch(e){cloudStatus('一部の記録を端末に反映できませんでした。','要確認');}
-    },function(err){cloudStatus('Firebaseから読み取れません。Firestoreルールを確認してください。','要確認');});
+    },function(err){cloudStatus('Firebaseから読み取れません。Firestoreルールを確認してください。','要確認');updateSavedViews();});
     renderCoop(latestFamilyMeals);
   }catch(error){
     var message=String(error&&error.code||error&&error.message||error);
@@ -135,11 +152,22 @@ async function listAll(){var db=await openDb();return new Promise(function(resol
 async function putMeal(v){var db=await openDb();return new Promise(function(resolve,reject){var tx=db.transaction('meals','readwrite');tx.objectStore('meals').put(v);tx.oncomplete=resolve;tx.onerror=function(){reject(tx.error);};});}
 async function deleteMeal(id){var db=await openDb();return new Promise(function(resolve,reject){var tx=db.transaction('meals','readwrite');tx.objectStore('meals').delete(id);tx.oncomplete=resolve;tx.onerror=function(){reject(tx.error);};});}
 function randomId(){return window.crypto&&crypto.randomUUID?crypto.randomUUID():String(Date.now())+'-'+Math.random().toString(36).slice(2);}
-function guessMeal(){var h=new Date().getHours();return h<10?'breakfast':h<15?'lunch':h<21?'dinner':'snack';}
+function guessMeal(){var h=new Date().getHours();return h>=5&&h<11?'breakfast':h>=11&&h<16?'lunch':'dinner';}
+function setSnackMode(){
+  var snack=el('timerMeal').value==='snack';
+  el('snackQuick').hidden=!snack;
+  el('timerControls').hidden=snack;
+  var manualSnack=el('manualMeal').value==='snack';
+  el('manualDurationWrap').hidden=manualSnack;
+  el('manualSnackHint').hidden=!manualSnack;
+  el('manualMinutes').required=!manualSnack;
+  el('manualSubmit').textContent=manualSnack?'おやつを記録する ＋':'記録する ＋';
+}
 function currentMs(){return timer?timer.accumulatedMs+(timer.running?Math.max(0,Date.now()-timer.runningSince):0):0;}
 function fmtTime(sec){sec=Math.max(0,Math.floor(sec));var m=Math.floor(sec/60),s=sec%60;return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');}
 function renderTimer(){
   el('clock').textContent=fmtTime(currentMs()/1000);
+  setSnackMode();
   el('timerStart').disabled=!!(timer&&timer.running);
   el('timerStart').textContent=timer?'▶ 再開':'▶ スタート';
   el('timerPause').disabled=!(timer&&timer.running);
@@ -149,6 +177,7 @@ function renderTimer(){
 }
 function saveTimer(){if(timer)writeJSON(timerKey,timer);else localStorage.removeItem(timerKey);renderTimer();}
 function startTimer(){
+  if(!timer&&el('timerMeal').value==='snack'){note('おやつは時間を計測せず記録してください');return;}
   if(!timer){timer={accumulatedMs:0,runningSince:Date.now(),running:true,firstStartedAt:new Date().toISOString(),mealType:el('timerMeal').value};}
   else if(!timer.running){timer.running=true;timer.runningSince=Date.now();}
   saveTimer();
@@ -159,9 +188,26 @@ async function stopTimer(){
   var secs=Math.round(currentMs()/1000);
   if(secs<1){note('1秒以上計測してください');return;}
   var item={id:randomId(),profile:profile,mealType:timer.mealType,date:localDate(new Date(timer.firstStartedAt)),durationSec:secs,source:'timer',startAt:timer.firstStartedAt,endAt:new Date().toISOString(),createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
-  try{await putMeal(item);addPending('writes',item.id);timer=null;saveTimer();await refresh();void flushCloudPending();note('食事を記録しました！');}catch(e){note('保存に失敗しました。もう一度試してください。');}
+  try{await storeEntry(item);timer=null;saveTimer();}catch(e){note('保存に失敗しました。もう一度試してください。');}
 }
-function dailyDates(){return new Set(allMeals.map(function(r){return r.date;}));}
+async function storeEntry(entry){
+  await putMeal(entry);
+  addPending('writes',entry.id);
+  lastSavedId=entry.id;
+  await refresh();
+  note('端末に保存しました。同期状況は最近の記録で確認できます。');
+  el('recentList').scrollIntoView({behavior:'smooth',block:'center'});
+  void flushCloudPending();
+}
+async function recordSnack(date){
+  if(date>localDate(new Date())||!/^\d{4}-\d{2}-\d{2}$/.test(date)){note('日付を確認してください');return;}
+  var t=new Date().toISOString();
+  try{
+    await storeEntry({id:randomId(),profile:profile,mealType:'snack',date:date,durationSec:0,source:'manual',startAt:null,endAt:null,createdAt:t,updatedAt:t});
+  }catch(e){note('おやつを保存できませんでした');}
+}
+function mealOnly(){return allMeals.filter(function(r){return r.mealType!=='snack';});}
+function dailyDates(){return new Set(mealOnly().map(function(r){return r.date;}));}
 function numStreak(dates){
   var d=new Date(),today=localDate(d);
   if(!dates.has(today)){d.setDate(d.getDate()-1);}
@@ -171,7 +217,7 @@ function numStreak(dates){
 }
 function renderMetrics(){
   var day=localDate(new Date());
-  var todayMeals=allMeals.filter(function(r){return r.date===day;});
+  var todayMeals=mealOnly().filter(function(r){return r.date===day;});
   el('todayCount').textContent=String(todayMeals.length);
   el('todayMinutes').textContent=String(Math.round(todayMeals.reduce(function(sum,r){return sum+r.durationSec;},0)/60));
   var dates=dailyDates();el('streak').textContent=String(numStreak(dates));
@@ -180,7 +226,7 @@ function renderMetrics(){
   if(!Array.isArray(logins))logins=[];
   el('bonusDays').textContent=String(logins.length);
   var grouped={};
-  allMeals.forEach(function(m){grouped[m.date]=(grouped[m.date]||0)+1;});
+  mealOnly().forEach(function(m){grouped[m.date]=(grouped[m.date]||0)+1;});
   var coins=logins.length*10+Object.keys(grouped).reduce(function(s,k){return s+(grouped[k]>=1?20:0)+(grouped[k]>=2?10:0)+(grouped[k]>=3?10:0);},0);
   el('coins').textContent=String(coins);
 }
@@ -199,25 +245,45 @@ function renderCalendar(){
   el('calendarGrid').innerHTML=html;
   el('nextMonth').disabled=(y>=new Date().getFullYear()&&m>=new Date().getMonth());
 }
+function historySort(a,b){return b.createdAt.localeCompare(a.createdAt);}
+function addRecordRow(target,r,canDelete){
+  var item=document.createElement('div');item.className='history-item';
+  if(r.id===lastSavedId)item.classList.add('latest-saved');
+  var left=document.createElement('div'),title=document.createElement('div');
+  title.className='date';title.textContent=r.date+'　'+mealLabels[r.mealType];left.appendChild(title);
+  var meta=document.createElement('div');meta.className='meta';meta.textContent=(r.source==='timer'?'タイマー':r.mealType==='snack'?'おやつ':'あとから入力')+'　／　'+syncLabel(r);left.appendChild(meta);
+  var right=document.createElement('div');right.className='right';
+  var val=document.createElement('strong');val.textContent=r.mealType==='snack'&&r.durationSec===0?'時間なし':fmtTime(r.durationSec);right.appendChild(val);
+  if(canDelete){
+    var del=document.createElement('button');del.className='link-button';del.textContent='削除';del.type='button';
+    del.addEventListener('click',async function(){
+      if(!confirm('この記録を削除しますか？'))return;
+      try{
+        await deleteMeal(r.id);clearPending('writes',r.id);addPending('deletes',r.id);
+        cloudConfirmedIds.delete(r.id);await refresh();void flushCloudPending();note('端末から削除しました');
+      }catch(e){note('削除できませんでした');}
+    });
+    right.appendChild(document.createElement('br'));right.appendChild(del);
+  }
+  item.appendChild(left);item.appendChild(right);target.appendChild(item);
+}
+function renderRecent(){
+  var target=el('recentList');target.textContent='';
+  var records=allMeals.slice().sort(historySort).slice(0,3);
+  if(!records.length){var p=document.createElement('p');p.className='empty';p.textContent='まだ記録がありません。最初の食事を記録しよう！';target.appendChild(p);return;}
+  records.forEach(function(r){addRecordRow(target,r,false);});
+}
 function renderHistory(){
-  var sorted=allMeals.slice().sort(function(a,b){return b.date.localeCompare(a.date)||b.createdAt.localeCompare(a.createdAt);});
+  var sorted=allMeals.slice().sort(historySort);
   var target=el('historyList');target.textContent='';
   if(!sorted.length){var p=document.createElement('p');p.className='empty';p.textContent='まだ記録がありません。最初の食事を記録しよう！';target.appendChild(p);return;}
-  sorted.forEach(function(r){
-    var item=document.createElement('div');item.className='history-item';
-    var left=document.createElement('div');var title=document.createElement('div');title.className='date';title.textContent=r.date+'　'+mealLabels[r.mealType];left.appendChild(title);
-    var meta=document.createElement('div');meta.className='meta';meta.textContent=r.source==='timer'?'タイマー':'あとから入力';left.appendChild(meta);
-    var right=document.createElement('div');right.className='right';var val=document.createElement('strong');val.textContent=fmtTime(r.durationSec);right.appendChild(val);
-    var del=document.createElement('button');del.className='link-button';del.textContent='削除';del.type='button';
-    del.addEventListener('click',async function(){if(!confirm('この食事記録を削除しますか？'))return;try{await deleteMeal(r.id);clearPending('writes',r.id);addPending('deletes',r.id);await refresh();void flushCloudPending();note('削除しました');}catch(e){note('削除できませんでした');}});
-    right.appendChild(document.createElement('br'));right.appendChild(del);item.appendChild(left);item.appendChild(right);target.appendChild(item);
-  });
+  sorted.forEach(function(r){addRecordRow(target,r,true);});
 }
-async function refresh(){allMeals=await listAll();renderMetrics();renderCalendar();renderHistory();}
+async function refresh(){allMeals=await listAll();renderMetrics();renderCalendar();renderRecent();renderHistory();}
 function validateRecord(r){
   return r&&typeof r.id==='string'&&r.id.length<150&&r.profile===profile&&
   /^\d{4}-\d{2}-\d{2}$/.test(r.date)&&Object.prototype.hasOwnProperty.call(mealLabels,r.mealType)&&
-  Number.isFinite(r.durationSec)&&r.durationSec>0&&r.durationSec<=86400&&
+  Number.isFinite(r.durationSec)&&r.durationSec>=0&&r.durationSec<=86400&&(r.mealType==='snack'||r.durationSec>0)&&
   typeof r.createdAt==='string'&&typeof r.updatedAt==='string';
 }
 async function importData(file){
@@ -246,7 +312,13 @@ function changePanel(name){
 }
 async function init(){
   el('timerMeal').value=guessMeal();
+  el('manualMeal').value=guessMeal();
   el('manualDate').value=todayDate;el('manualDate').max=todayDate;
+  el('timerMeal').addEventListener('change',setSnackMode);
+  el('manualMeal').addEventListener('change',setSnackMode);
+  el('snackNow').addEventListener('click',function(){void recordSnack(localDate(new Date()));});
+  el('viewFullHistory').addEventListener('click',function(){changePanel('history');});
+  setSnackMode();
   document.querySelectorAll('[data-target]').forEach(function(btn){btn.addEventListener('click',function(){changePanel(btn.dataset.target);});});
   el('cloudCreateRow').hidden=profile!=='jun';
   el('cloudCreate').addEventListener('click',function(){if(confirm('新しい家族グループを作りますか？（最初の1回だけ）'))void cloudPair('create');});
@@ -258,10 +330,15 @@ async function init(){
   el('timerPause').addEventListener('click',pauseTimer);
   el('timerStop').addEventListener('click',stopTimer);
   el('manualForm').addEventListener('submit',async function(e){
-    e.preventDefault();var day=el('manualDate').value,kind=el('manualMeal').value,min=Number(el('manualMinutes').value);
+    e.preventDefault();var day=el('manualDate').value,kind=el('manualMeal').value;
+    if(kind==='snack'){await recordSnack(day);return;}
+    var min=Number(el('manualMinutes').value);
     if(!/^\d{4}-\d{2}-\d{2}$/.test(day)||day>localDate(new Date())||!mealLabels[kind]||!Number.isInteger(min)||min<1||min>240){note('日にちと時間を確認してください');return;}
     var t=new Date().toISOString();
-    try{var entry={id:randomId(),profile:profile,mealType:kind,date:day,durationSec:min*60,source:'manual',startAt:null,endAt:null,createdAt:t,updatedAt:t};await putMeal(entry);addPending('writes',entry.id);el('manualMinutes').value='';await refresh();void flushCloudPending();note('食事を記録しました！');}catch(err){note('保存できませんでした');}
+    try{
+      var entry={id:randomId(),profile:profile,mealType:kind,date:day,durationSec:min*60,source:'manual',startAt:null,endAt:null,createdAt:t,updatedAt:t};
+      await storeEntry(entry);el('manualMinutes').value='';
+    }catch(err){note('保存できませんでした');}
   });
   el('prevMonth').addEventListener('click',function(){month.setMonth(month.getMonth()-1);renderCalendar();});
   el('nextMonth').addEventListener('click',function(){month.setMonth(month.getMonth()+1);renderCalendar();});
