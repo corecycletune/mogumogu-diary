@@ -8,7 +8,7 @@ export const RARITY_ODDS = Object.freeze([
 ]);
 export const RARITY_LABELS={N:'N',R:'R',SR:'SR',SSR:'SSR',UR:'UR'};
 const rows=[
-  // N: daily foods. Format: id | name | rarity | emoji | theme | figure | relation | description | style | bg override
+  // N: daily foods. Format: id | name | rarity | emoji | theme | figure | relation | description | style
   ['rice_n','おこめちゃん','N','🍚','ごはん','','','ふっくら炊けた、まいにちの主役。','food'],
   ['carrot_n','にんじん探検隊','N','🥕','野菜','','','畑の小さな冒険家。','food'],
   ['tofu_n','おとうふ忍者','N','⬜','大豆','','','ふわっと静かな忍者。','food'],
@@ -76,12 +76,11 @@ const rows=[
   ['secret_rinpa_ur','宗達の千年黄金おこめ','UR','✨','ごはん','俵屋宗達','inspired','絵巻物に宿るような、不思議なおこめの守り神。※創作','food','legend'],
   ['secret_celestial_ur','星環のニュートンりんご','UR','🍎','りんご','アイザック・ニュートン','symbolic','りんごの逸話から広がる宇宙の奇跡。※創作','mixed','cosmos']
 ];
-const patterns={N:['soft-dots','soft-check','soft-stripes','soft-cloud'],R:['candy','fruit','cafe','picnic'],SR:['holo','wagara','music','paint'],SSR:['crown','palace','gallery','scroll'],UR:['aurora','space','gold','treasure']};
-export const CATALOG=Object.freeze(rows.map(([id,name,rarity,emoji,food,figure,relation,lore,style,background])=>{
-  const list=patterns[rarity];
-  const hash=Array.from(id).reduce((a,c)=>a+c.charCodeAt(0),0);
-  return Object.freeze({id,name,rarity,emoji,food,figure:figure||null,relation:relation||null,lore,style,background:background||list[hash%list.length]});
-}));
+// Backgrounds are determined only by rarity via RARITY_BACKGROUNDS.
+// Legacy per-card SVG/CSS pattern metadata is intentionally not used.
+export const CATALOG=Object.freeze(rows.map(([id,name,rarity,emoji,food,figure,relation,lore,style])=>
+  Object.freeze({id,name,rarity,emoji,food,figure:figure||null,relation:relation||null,lore,style})
+));
 export const BY_ID=Object.fromEntries(CATALOG.map(x=>[x.id,x]));
 export function levelForCopies(copies){
   return copies>=11?5:copies>=7?4:copies>=4?3:copies>=2?2:copies>=1?1:0;
