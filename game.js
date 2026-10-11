@@ -102,6 +102,7 @@ function paintCard(char,entry,unknown){
   outer.className='collection-card rarity-'+char.rarity.toLowerCase();
   const art=document.createElement('div');
   art.className='card-art rarity-'+char.rarity.toLowerCase()+' pattern-'+char.background;
+  if(entry)art.className+=' evolved-level-'+levelForCopies(entry.copies);
   const glow=document.createElement('span');glow.className='card-shine';art.appendChild(glow);
   const figure=document.createElement('span');figure.className='character-glyph';
   figure.textContent=unknown?'？':char.emoji;art.appendChild(figure);
