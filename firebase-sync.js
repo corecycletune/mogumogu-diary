@@ -2,7 +2,7 @@
 // This app deliberately never includes service-account credentials.
 import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js";
-import { getFirestore, collection, doc, setDoc, getDoc, deleteDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js";
+import { getFirestore, collection, doc, setDoc, getDoc, deleteDoc, onSnapshot, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js";
 
 const config = {
   apiKey: "AIzaSyA6yTBzzI8WrVrkX1ubJ1HsptS1S1ieelA",
@@ -33,12 +33,26 @@ async function user() {
 const familyRef = familyId => doc(db, "families", familyId);
 const memberRef = (familyId, uid) => doc(db, "families", familyId, "members", uid);
 const mealRef = (familyId, id) => doc(db, "families", familyId, "meals", id);
+const gameRef = (familyId, profile) => doc(db, "families", familyId, "games", profile);
 function context(familyId, profile) {
   return {
     familyId,
     profile,
     saveMeal: entry => setDoc(mealRef(familyId, entry.id), entry),
     deleteMeal: id => deleteDoc(mealRef(familyId, id)),
+    watchGame: (onValue,onError) => onSnapshot(gameRef(familyId, profile), {includeMetadataChanges:true},
+      snapshot => onValue(snapshot.exists()?snapshot.data():null,{
+        fromCache:snapshot.metadata.fromCache,
+        hasPendingWrites:snapshot.metadata.hasPendingWrites
+      }),onError),
+    updateGame: callback => runTransaction(db,async transaction=>{
+      const ref=gameRef(familyId,profile);
+      const snap=await transaction.get(ref);
+      const next=callback(snap.exists()?snap.data():null);
+      if(next===null)return null;
+      transaction.set(ref,next);
+      return next;
+    }),
     watch: (onItems, onError) => onSnapshot(
       collection(db, "families", familyId, "meals"),
       {includeMetadataChanges: true},
