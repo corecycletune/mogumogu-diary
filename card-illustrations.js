@@ -126,9 +126,36 @@ function generic(card){
     '<path d="M176 297 L164 323 L177 339 L191 320Z" fill="#f8e5bb"/>';
   else if(card.style==='mixed')outfit='<path d="M106 296 Q175 310 249 299 L258 327 Q180 350 102 329Z" fill="#be7285" stroke="#a45675" stroke-width="5"/>'+
     '<path d="M155 310 L180 336 L201 311" fill="#f5e7bd" stroke="#aa6780" stroke-width="3"/>';
-  const accessory=card.figure?'<path d="M100 137 Q177 104 250 139 L253 151 Q177 134 101 151Z" fill="#594d79" stroke="#e0bd80" stroke-width="5"/>'+
-    '<path d="M102 148 Q178 155 258 146" fill="none" stroke="#e8c67c" stroke-width="5"/>':'';
-  return '<g>'+shadow+limbs+body+outfit+accessory+face+glimmer+'</g>';
+  const seed=Array.from(card.id).reduce((a,c)=>a+c.charCodeAt(0),0);
+  const accessories=[
+    '<path d="M118 118 Q177 88 234 119 L228 135 Q171 115 123 136Z" fill="#e7c27b" stroke="#986f45" stroke-width="5"/><path d="M171 112 L177 87 L193 107" fill="#fff9d8"/>',
+    '<path d="M136 125 Q181 82 226 124 L239 145 Q180 123 126 145Z" fill="#635083" stroke="#a992d5" stroke-width="6"/><circle cx="185" cy="107" r="9" fill="#ffe8a9"/>',
+    '<path d="M105 302 Q175 327 259 301" stroke="#f4e4c4" stroke-width="16" fill="none"/><path d="M155 314 L168 350 L185 315" fill="#df776a" stroke="#af544f" stroke-width="4"/>',
+    '<path d="M272 309 Q305 271 317 226" stroke="#9a735b" stroke-width="8" stroke-linecap="round"/><path d="M319 227l18-35 4 40" fill="#d7bf78" stroke="#a18141" stroke-width="4"/>',
+    '<path d="M177 106 l11-25 10 25 23 5-19 16 4 22-20-13-20 13 7-24-20-14Z" fill="#fce7a0" stroke="#c99d4d" stroke-width="5"/>',
+    '<path d="M112 314 Q178 326 247 313" stroke="#e4acdb" stroke-width="16" stroke-linecap="round" fill="none"/><circle cx="179" cy="326" r="14" fill="#fff2ca" stroke="#d58aa6" stroke-width="5"/>'
+  ];
+  const accessory=card.figure
+    ?'<path d="M100 137 Q177 104 250 139 L253 151 Q177 134 101 151Z" fill="#594d79" stroke="#e0bd80" stroke-width="5"/>'+
+     '<path d="M102 148 Q178 155 258 146" fill="none" stroke="#e8c67c" stroke-width="5"/>'
+    :accessories[seed%accessories.length];
+  let signature='';
+  if(/pumpkin|かぼちゃ|草間/.test(card.id+' '+card.name)){
+    signature='<g fill="#fff6d9" opacity=".8"><circle cx="125" cy="181" r="9"/><circle cx="213" cy="190" r="12"/><circle cx="167" cy="282" r="10"/><circle cx="238" cy="286" r="7"/></g>';
+  }else if(/sun|太陽|ひまわり/.test(card.id+' '+card.name)){
+    signature='<g stroke="#ffe190" stroke-width="9" stroke-linecap="round"><path d="M181 48v24 M132 63l12 21 M230 63l-13 22 M100 101l22 13 M264 103l-21 14"/></g>';
+  }else if(/milk|ミルク|honey|はちみつ/.test(card.id+' '+card.name)){
+    signature='<path d="M115 163 Q175 145 233 165" stroke="#fff3cb" stroke-width="12" fill="none" stroke-linecap="round"/>';
+  }else if(/tomato|トマト|strawberry|いちご/.test(card.id+' '+card.name)){
+    signature='<path d="M163 138 L177 108 L189 137 L215 128 L193 150 L180 160 L166 147 L142 149Z" fill="#6db96e" stroke="#4a8a50" stroke-width="4"/>';
+  }else if(/pudding|プリン/.test(card.id+' '+card.name)){
+    signature='<path d="M102 166 Q182 185 255 163 L248 185 Q174 201 109 188Z" fill="#b66b43" stroke="#7d4e33" stroke-width="4"/>';
+  }else{
+    const freckles=seed%2===0;
+    signature=freckles?'<g fill="#fff5df" opacity=".75"><circle cx="129" cy="172" r="6"/><circle cx="221" cy="177" r="8"/><circle cx="176" cy="141" r="5"/></g>':
+       '<path d="M118 168 Q175 154 232 168" stroke="#fff8d1" stroke-width="7" opacity=".6" fill="none"/>';
+  }
+  return '<g>'+shadow+limbs+body+outfit+signature+accessory+face+glimmer+'</g>';
 }
 export function illustratedCardSvg(card){
   let character;
