@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 525" preserveAspectRatio="none">
+<defs><linearGradient id="foil"><stop stop-color="#fffceb"/><stop offset=".14" stop-color="#ffcf5a"/><stop offset=".3" stop-color="#abfff1"/><stop offset=".5" stop-color="#fff4c1"/><stop offset=".7" stop-color="#e5b8ff"/><stop offset=".85" stop-color="#ffd871"/><stop offset="1" stop-color="#fff9ee"/></linearGradient></defs>
+<rect x="4" y="4" width="412" height="517" rx="22" fill="none" stroke="#50386d" stroke-width="8"/>
+<rect x="9" y="9" width="402" height="507" rx="19" fill="none" stroke="url(#foil)" stroke-width="12"/>
+<rect x="24" y="24" width="372" height="478" rx="10" fill="none" stroke="#fff5bf" stroke-width="3"/>
+<rect x="31" y="31" width="358" height="464" rx="8" fill="none" stroke="#d2b5fb" stroke-width="1.5"/>
+<path d="M30 128V42h94 M390 128V42h-94 M30 395v88h94 M390 395v88h-94" fill="none" stroke="#f9d988" stroke-width="11" stroke-linecap="round"/>
+</svg>
