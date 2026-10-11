@@ -61,7 +61,7 @@ import {BY_ID} from './game-catalog.js';
       grain.setAttribute('aria-hidden','true');
     }
     layer(stage,'under','composite-layer card-frame-under','img',visual.lowerFrame,'');
-    layer(stage,'character','composite-layer card-portrait','img',visual.character,data.name);
+    if(visual.character)layer(stage,'character','composite-layer card-portrait','img',visual.character,data.name);
     layer(stage,'over','composite-layer card-frame-over','img',visual.upperFrame,'');
     if(visual.foil!=='none')layer(stage,'glint','composite-layer composite-glint','div');
     const badge=elem('span','card-rarity',data.rarity);
@@ -69,6 +69,7 @@ import {BY_ID} from './game-catalog.js';
     const cap=elem('figcaption','layer-lab-caption');
     cap.appendChild(elem('strong','',data.name));
     cap.appendChild(elem('small','',descriptions[id]||'背景面のホロのみ'));
+    if(!visual.character)cap.appendChild(elem('small','', 'キャラクター画像：未制作'));
     figure.append(stage,cap);
     stageList.push({stage,foil});
     return figure;
@@ -76,7 +77,7 @@ import {BY_ID} from './game-catalog.js';
 
   const intro=elem('div','layer-lab-intro');
   intro.appendChild(elem('h3','', '🧩 N → UR：レア度5段階・実装比較'));
-  intro.appendChild(elem('p','small','今回は直前の3枚と異なる5枚を実際のWebアプリで合成しています。Nは控えめ、Rはちょっと特別、SRから反射、SSRは強い背景ホロ、URは開発用の隠し比較枠です。完成カードの画像生成は行っていません。'));
+  intro.appendChild(elem('p','small','フレーム・背景・ホロの比較画面です。簡易SVGキャラクター素材は削除済みのため、キャラが未制作のカードは空欄にしています。SSR/URも完成アートへの差し替え前です。'));
   mount.appendChild(intro);
   const panel=elem('div','layer-lab-controls');
   for(const item of layerOrder){
@@ -117,7 +118,7 @@ import {BY_ID} from './game-catalog.js';
   const grid=elem('div','layer-lab-grid');
   examples.forEach(id=>{const sample=card(id);if(sample)grid.appendChild(sample);});
   mount.appendChild(grid);
-  mount.appendChild(elem('p','small','※ 5枚とも背景・キャラ・下SVG枠・上SVG枠・ホロが分離されています。SSR・URは将来、完成イラストを1枚のフルアート画像に置き換える構成も可能です。URは通常の図鑑で未所持時には見えません。開発用比較は本番の抽選や所持記録に影響しません。'));
+  mount.appendChild(elem('p','small','※ キャラクター画像が未制作のカードは空欄です。背景・前後SVGフレーム・ホロは残しています。画像素材は今後追加するまで表示されません。URは通常の図鑑で未所持時には見えません。開発用比較は本番の抽選や所持記録に影響しません。'));
   intensify();
   const reflect=()=>{mount.hidden=!toggle.checked;};
   toggle.addEventListener('change',reflect);
