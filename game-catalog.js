@@ -60,7 +60,7 @@ const rows=[
   ['vermeer_milk_sr','フェルメールのミルク','SR','🥛','ミルク','ヨハネス・フェルメール','artwork','牛乳を注ぐ女性の絵がヒント。※創作キャラ','mixed'],
   ['da_vinci_pasta_sr','ダ・ヴィンチのパスタ','SR','🍝','パスタ','レオナルド・ダ・ヴィンチ','inspired','万能な発想を表した歯車パスタ。※好物ではなく創作','mixed'],
   // SSR: special art and Ichika omurice.
-  ['omu_ichika_ssr','いちかのオムライス','SSR','👑','オムライス','','favorite_local','オムライスが大好きな気持ちから生まれた、特別な王冠キャラ。','mixed','ichika'],
+  ['omu_ichika_ssr','きらめきオムライス姫','SSR','👑','オムライス','','inspired','たまご色のドレスをまとい、笑顔を届けるハートの女王。','mixed','ichika'],
   ['omu_royal_ssr','ロイヤルオムライス','SSR','🍳','オムライス','','','ふわふわの王宮からやってきた特別な騎士。','person','royal'],
   ['hokusai_wave_ssr','北斎・大波の和菓子','SSR','🌊','和菓子','葛飾北斎','artwork','力強い波の作品をテーマにした創作和菓子。','mixed','wave'],
   ['jakuchu_veggie_ssr','若冲の彩菜鳳凰','SSR','🥬','野菜','伊藤若冲','artwork','精緻な動植物画から着想した野菜の鳳凰。','mixed','atelier'],
