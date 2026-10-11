@@ -1,5 +1,5 @@
 import {CATALOG,BY_ID,levelForCopies,drawCharacter} from './game-catalog.js';
-import {CARD_LAYER_MANIFEST} from './card-layer-manifest.js';
+import {CARD_LAYER_MANIFEST,RARITY_BACKGROUNDS} from './card-layer-manifest.js';
 (function(){
 'use strict';
 const profile=document.body.dataset.profile;
@@ -155,7 +155,7 @@ function paintCard(char,entry,unknown){
     under.className='composite-layer holo-substrate';
     under.setAttribute('aria-hidden','true');
     art.appendChild(under);
-    addLayer('card-background-image',layers.background,true);
+    addLayer('card-background-image',layers.background||RARITY_BACKGROUNDS[char.rarity],true);
     const foilBase=document.createElement('div');
     foilBase.className='composite-layer composite-foil';
     foilBase.setAttribute('aria-hidden','true');
@@ -169,8 +169,9 @@ function paintCard(char,entry,unknown){
     art.appendChild(glint);
     }
   }else{
-    // No approved character asset yet: keep the card background and metadata,
-    // but leave its character area empty until proper artwork is supplied.
+    // Keep the approved rarity background even when this character has no art yet.
+    // No SVG or emoji character is generated as a fallback.
+    addLayer('generic-rarity-background',RARITY_BACKGROUNDS[char.rarity],true);
     const glow=document.createElement('span');glow.className='card-shine';
     glow.setAttribute('aria-hidden','true');
     art.appendChild(glow);
