@@ -126,7 +126,7 @@ function paintCard(char,entry,unknown){
   const outer=document.createElement('div');
   outer.className='collection-card rarity-'+char.rarity.toLowerCase();
   const art=document.createElement('div');
-  art.className='card-art rarity-'+char.rarity.toLowerCase()+' pattern-'+char.background;
+  art.className='card-art rarity-'+char.rarity.toLowerCase();
   if(entry)art.className+=' evolved-level-'+levelForCopies(entry.copies);
   const layers=CARD_LAYER_MANIFEST[char.id];
   function addLayer(cssClass,src,isDecorative){
