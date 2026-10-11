@@ -19,7 +19,13 @@ var cloudContext=null;
 var cloudUnsubscribe=null;
 var cloudSyncing=false;
 var latestFamilyMeals=[];
+var lastCloudMealsConfirmed=false;
 var cloudConfirmedIds=new Set();
+window.MogumoguGameBridge={
+  getContext:function(){return cloudContext;},
+  getCloudMeals:function(){return latestFamilyMeals.filter(function(x){return x&&x.profile===profile;});},
+  confirmedMeals:function(){return lastCloudMealsConfirmed;}
+};
 var lastSavedId=null;
 function pendingKey(type){return 'mogumogu:cloud:'+type+':'+profile;}
 function pendingList(type){
@@ -98,7 +104,9 @@ async function cloudPair(action,code){
     if(!ctx){cloudStatus('まだ家族グループに参加していません。','未接続');return;}
     if(cloudUnsubscribe)cloudUnsubscribe();
     cloudContext=ctx;
+    lastCloudMealsConfirmed=false;
     cloudConfirmedIds=new Set();
+    window.dispatchEvent(new CustomEvent('mogumogu:connected',{detail:{context:ctx}}));
     updateSavedViews();
     el('cloudSetup').hidden=true;
     el('cloudConnected').hidden=false;
@@ -114,6 +122,7 @@ async function cloudPair(action,code){
     await flushCloudPending();
     cloudUnsubscribe=ctx.watch(async function(records,metadata){
       latestFamilyMeals=records;
+      lastCloudMealsConfirmed=!!metadata&&!metadata.fromCache;
       if(metadata&&!metadata.fromCache){
         cloudConfirmedIds=new Set(metadata.confirmedIds);
       }
@@ -127,6 +136,7 @@ async function cloudPair(action,code){
         }
         await refresh();
         renderCoop(records);
+        if(lastCloudMealsConfirmed)window.dispatchEvent(new Event('mogumogu:meals'));
         if(!pendingList('writes').length&&!pendingList('deletes').length){
           cloudStatus('接続済み：この家族グループの食事記録を同期しています。','接続済み');
         }
@@ -236,7 +246,7 @@ function renderMetrics(){
   var grouped={};
   mealOnly().forEach(function(m){grouped[m.date]=(grouped[m.date]||0)+1;});
   var coins=logins.length*10+Object.keys(grouped).reduce(function(s,k){return s+(grouped[k]>=1?20:0)+(grouped[k]>=2?10:0)+(grouped[k]>=3?10:0);},0);
-  el('coins').textContent=String(coins);
+  if(!window.mogumoguGameManaged)el('coins').textContent=String(coins);
 }
 function renderCalendar(){
   var y=month.getFullYear(),m=month.getMonth();
@@ -312,7 +322,7 @@ function awardLogin(){
   var dates=readJSON(bonusKey,[]);
   if(!Array.isArray(dates))dates=[];
   var today=localDate(new Date());
-  if(dates.indexOf(today)===-1){dates.push(today);writeJSON(bonusKey,dates);note('今日のログインボーナス +10コイン！');}
+  if(dates.indexOf(today)===-1){dates.push(today);writeJSON(bonusKey,dates);}
 }
 function changePanel(name){
   document.querySelectorAll('[data-panel]').forEach(function(n){n.hidden=n.dataset.panel!==name;});
