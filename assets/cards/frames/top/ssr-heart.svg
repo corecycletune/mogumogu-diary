@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 450" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="gold" x2="1" y2="1"><stop stop-color="#db9b40"/><stop offset=".4" stop-color="#fff3bc"/><stop offset="1" stop-color="#9f603b"/></linearGradient>
+<radialGradient id="ruby"><stop stop-color="#ffcad9"/><stop offset=".65" stop-color="#ee5d8b"/><stop offset="1" stop-color="#a73562"/></radialGradient></defs>
+<g stroke="url(#gold)" stroke-width="7" fill="none" stroke-linecap="round">
+<path d="M21 90Q55 20 130 25Q105 39 112 68Q129 81 136 49"/>
+<path d="M339 90Q305 20 230 25Q256 39 248 68Q232 81 224 49"/>
+<path d="M21 366Q46 421 113 425Q92 413 104 394"/>
+<path d="M339 366Q314 421 247 425Q267 414 257 394"/></g>
+<g fill="url(#ruby)" stroke="#ffe7b6" stroke-width="5">
+<path d="M171 27C151 7 129 29 144 49L180 80L216 49C231 27 207 7 189 27L180 36Z"/>
+<path d="M24 116C8 105 0 125 9 137L32 155L53 137C62 121 45 105 33 116L29 124Z"/>
+<path d="M310 116C295 105 286 125 296 137L320 155L341 137C350 121 332 105 322 116L318 123Z"/>
+</g>
+<g fill="#fff2d4" stroke="#dcad67" stroke-width="2"><circle cx="37" cy="382" r="10"/><circle cx="323" cy="382" r="10"/><circle cx="54" cy="68" r="6"/><circle cx="306" cy="68" r="6"/></g>
+<g stroke="#fff9d8" stroke-width="3" stroke-linecap="round"><path d="M86 87v20m-10-10h20M275 84v20m-10-10h20M68 345v14m-7-7h14M297 343v14m-7-7h14"/></g></svg>
