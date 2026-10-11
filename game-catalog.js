@@ -72,9 +72,9 @@ const rows=[
   ['vangogh_bread_ssr','ゴッホのひまわりパン','SSR','🌻','パン','フィンセント・ファン・ゴッホ','artwork','ひまわりの絵が着想源のパン職人。','mixed','sun'],
   ['klimt_honey_ssr','クリムトの金色はちみつ','SSR','🍯','はちみつ','グスタフ・クリムト','inspired','金色のきらめきをイメージした創作はちみつ。','food','royal'],
   // UR: HIDDEN; never list before owning.
-  ['secret_omurice_ur','？？？たまごの大いなる奇跡','UR','🌈','オムライス','','secret','すべてが光る、伝説のオムライス。','mixed','legend'],
-  ['secret_rinpa_ur','？？？千年の金色おこめ','UR','✨','ごはん','俵屋宗達','inspired','絵巻物に宿るような、不思議なおこめの守り神。※創作','food','legend'],
-  ['secret_celestial_ur','？？？星降るりんご','UR','🍎','りんご','アイザック・ニュートン','symbolic','りんごの逸話から広がる宇宙の奇跡。※創作','mixed','cosmos']
+  ['secret_omurice_ur','天穹オムライス・ミラクル','UR','🌈','オムライス','','secret','すべてが光る、伝説のオムライス。','mixed','legend'],
+  ['secret_rinpa_ur','宗達の千年黄金おこめ','UR','✨','ごはん','俵屋宗達','inspired','絵巻物に宿るような、不思議なおこめの守り神。※創作','food','legend'],
+  ['secret_celestial_ur','星環のニュートンりんご','UR','🍎','りんご','アイザック・ニュートン','symbolic','りんごの逸話から広がる宇宙の奇跡。※創作','mixed','cosmos']
 ];
 const patterns={N:['soft-dots','soft-check','soft-stripes','soft-cloud'],R:['candy','fruit','cafe','picnic'],SR:['holo','wagara','music','paint'],SSR:['crown','palace','gallery','scroll'],UR:['aurora','space','gold','treasure']};
 export const CATALOG=Object.freeze(rows.map(([id,name,rarity,emoji,food,figure,relation,lore,style,background])=>{
