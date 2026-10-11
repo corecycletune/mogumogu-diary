@@ -104,3 +104,13 @@
 .card-art.evolved-level-5{box-shadow:inset 0 0 0 3px #fffdd1,0 0 20px #dca64fbd}
 .card-art.evolved-level-5 .character-glyph{filter:drop-shadow(0 1px 9px #fff9) drop-shadow(0 10px 8px #8e67355c);transform:rotate(-4deg) scale(1.08)}
 .card-art.evolved-level-5 .card-rarity::after{content:' ✦'}
+
+/* Jun-only isolated gacha test panel; never writes demo data to Firebase. */
+.dev-panel{margin:20px 0 12px;padding:14px 16px;border:1px dashed #d4a44d;border-radius:16px;background:#fffaf0}
+.dev-panel summary{font-weight:800;cursor:pointer;color:#765420}
+.dev-switch{display:flex;align-items:center;gap:11px;cursor:pointer;font-size:14px;font-weight:800;margin-top:16px}
+.dev-switch input{width:23px;height:23px;accent-color:#427956;flex:none}
+.dev-panel .field{margin-bottom:8px}
+.dev-panel .small{margin:11px 0}
+.dev-panel .btn{margin:5px 0 1px;min-height:42px;font-size:13px}
+.game-test-warning{background:#fff0cd;border:1px solid #f1d69b;border-radius:10px;padding:10px;font-weight:800;color:#75501b;font-size:13px}
