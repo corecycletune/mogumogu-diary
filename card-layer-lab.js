@@ -1,0 +1,115 @@
+// On-page five-layer card construction lab, using only existing artwork.
+// Accessible only at /p/jun/?dev=1 and never touches Firebase, gacha or collection state.
+import {CARD_LAYER_MANIFEST} from './card-layer-manifest.js';
+import {BY_ID} from './game-catalog.js';
+(function(){
+  const profile=document.body.dataset.profile;
+  if(profile!=='jun'||!/(?:^|[?&])dev=1(?:&|$)/.test(location.search))return;
+  const mount=document.getElementById('layerLab');
+  const toggle=document.getElementById('devModeToggle');
+  if(!mount||!toggle)return;
+
+  const examples=['omu_ketchup_r','omu_ichika_ssr','hokusai_wave_ssr'];
+  const layerOrder=[
+    {key:'substrate',text:'① ホロ下地'},
+    {key:'background',text:'② 背景'},
+    {key:'foil',text:'② 背景上のホロ'},
+    {key:'under',text:'③ 下フレームSVG'},
+    {key:'character',text:'④ 透過キャラ画像'},
+    {key:'over',text:'⑤ 上フレームSVG'},
+    {key:'glint',text:'反射の光'}
+  ];
+  const stageList=[];
+  function elem(tag,className,text){
+    const element=document.createElement(tag);
+    if(className)element.className=className;
+    if(text!==undefined)element.textContent=text;
+    return element;
+  }
+  function layer(stage,key,cssClass,tag,src,alt){
+    const node=elem(tag,cssClass);
+    node.dataset.layer=key;
+    if(tag==='img'){
+      node.src=src;
+      node.alt=alt||'';
+      node.loading='lazy';
+      node.decoding='async';
+      node.draggable=false;
+    }else node.setAttribute('aria-hidden','true');
+    stage.appendChild(node);
+    return node;
+  }
+  function card(id){
+    const data=BY_ID[id],visual=CARD_LAYER_MANIFEST[id];
+    if(!data||!visual)return null;
+    const figure=elem('figure','layer-lab-card');
+    const stage=elem('div','card-art layered-card rarity-'+data.rarity.toLowerCase()+' visual-'+visual.layout+' foil-'+visual.foil);
+    stage.setAttribute('role','img');
+    stage.setAttribute('aria-label',data.name+'をレイヤー合成した試作カード');
+    layer(stage,'substrate','composite-layer holo-substrate','div');
+    if(visual.background)layer(stage,'background','composite-layer card-background-image','img',visual.background,'');
+    const foil=layer(stage,'foil','composite-layer composite-foil','div');
+    if(visual.foil!=='none'){
+      const grain=layer(stage,'foil','composite-layer layer-lab-grain','div');
+      grain.setAttribute('aria-hidden','true');
+    }
+    layer(stage,'under','composite-layer card-frame-under','img',visual.lowerFrame,'');
+    layer(stage,'character','composite-layer card-portrait','img',visual.character,data.name);
+    layer(stage,'over','composite-layer card-frame-over','img',visual.upperFrame,'');
+    if(visual.foil!=='none')layer(stage,'glint','composite-layer composite-glint','div');
+    const badge=elem('span','card-rarity',data.rarity);
+    stage.appendChild(badge);
+    const cap=elem('figcaption','layer-lab-caption');
+    cap.appendChild(elem('strong','',data.name));
+    cap.appendChild(elem('small','',visual.foil==='none'?'ホロなし':'背景面のホロのみ'));
+    figure.append(stage,cap);
+    stageList.push({stage,foil});
+    return figure;
+  }
+
+  const intro=elem('div','layer-lab-intro');
+  intro.appendChild(elem('h3','', '🧩 5レイヤー・カード試作'));
+  intro.appendChild(elem('p','small','既存の透過キャラ素材3体を使った、Webアプリ内の実物の合成テストです。完成カード画像は使用していません。新しいキャラクターの作画はまだ行っていません。'));
+  mount.appendChild(intro);
+  const panel=elem('div','layer-lab-controls');
+  for(const item of layerOrder){
+    const label=elem('label','layer-lab-toggle');
+    const checkbox=document.createElement('input');
+    checkbox.type='checkbox';
+    checkbox.checked=true;
+    checkbox.dataset.testLayer=item.key;
+    checkbox.addEventListener('change',()=>{
+      stageList.forEach(({stage})=>{
+        stage.classList.toggle('lab-hide-'+item.key,!checkbox.checked);
+      });
+    });
+    label.append(checkbox,document.createTextNode(' '+item.text));
+    panel.appendChild(label);
+  }
+  const sliderLabel=elem('label','layer-lab-foil-intensity','ホロ強度 ');
+  const slider=elem('input','');
+  slider.type='range';slider.min='0';slider.max='100';slider.value='70';
+  slider.setAttribute('aria-label','ホログラムの強さ');
+  const sliderValue=elem('strong','',slider.value+'%');
+  const intensify=()=>{
+    sliderValue.textContent=slider.value+'%';
+    stageList.forEach(({stage,foil})=>{
+      if(stage.classList.contains('foil-none'))return;
+      const max=stage.classList.contains('foil-pink')||stage.classList.contains('foil-blue')? .78:.6;
+      foil.style.opacity=String(max*Number(slider.value)/100);
+      stage.style.setProperty('--lab-grain-opacity',String(Number(slider.value)/100*.8));
+    });
+  };
+  slider.addEventListener('input',intensify);
+  sliderLabel.append(slider,sliderValue);
+  panel.appendChild(sliderLabel);
+  mount.appendChild(panel);
+  const grid=elem('div','layer-lab-grid');
+  examples.forEach(id=>{const sample=card(id);if(sample)grid.appendChild(sample);});
+  mount.appendChild(grid);
+  mount.appendChild(elem('p','small','※ キャラ素材を使い回す設計の検証です。量産前にフレーム・背景の豪華さやホロの強度を比較できます。通常の図鑑やガチャの動作・記録には影響しません。'));
+  intensify();
+  const reflect=()=>{mount.hidden=!toggle.checked;};
+  toggle.addEventListener('change',reflect);
+  reflect();
+})();
