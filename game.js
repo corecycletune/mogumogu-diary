@@ -1,5 +1,6 @@
 import {CATALOG,BY_ID,levelForCopies,drawCharacter} from './game-catalog.js';
 import {illustratedCardSvg} from './card-illustrations.js';
+import {CARD_LAYER_MANIFEST} from './card-layer-manifest.js';
 (function(){
 'use strict';
 const profile=document.body.dataset.profile;
@@ -128,14 +129,47 @@ function paintCard(char,entry,unknown){
   const art=document.createElement('div');
   art.className='card-art rarity-'+char.rarity.toLowerCase()+' pattern-'+char.background;
   if(entry)art.className+=' evolved-level-'+levelForCopies(entry.copies);
-  const glow=document.createElement('span');glow.className='card-shine';art.appendChild(glow);
-  const illustration=document.createElement('img');
-  illustration.className='character-illustration';
-  illustration.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(illustratedCardSvg(char));
-  illustration.alt=char.name+'のキャラクターイラスト';
-  illustration.loading='lazy';
-  illustration.decoding='async';
-  art.appendChild(illustration);
+  const layers=CARD_LAYER_MANIFEST[char.id];
+  const fallbackImage='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(illustratedCardSvg(char));
+  function addLayer(cssClass,src,isDecorative){
+    if(!src)return null;
+    const img=document.createElement('img');
+    img.className='composite-layer '+cssClass;
+    img.src=src;
+    img.alt=isDecorative?'':char.name+'のキャラクターイラスト';
+    img.loading='lazy';
+    img.decoding='async';
+    img.draggable=false;
+    if(!isDecorative)img.addEventListener('error',function(){
+      // Keep a visible card when images are not cached or the network fails.
+      if(img.src!==fallbackImage)img.src=fallbackImage;
+    },{once:true});
+    art.appendChild(img);
+    return img;
+  }
+  if(layers){
+    art.className+=' layered-card visual-'+layers.layout+' foil-'+layers.foil;
+    const under=document.createElement('div');
+    under.className='composite-layer holo-substrate';
+    under.setAttribute('aria-hidden','true');
+    art.appendChild(under);
+    addLayer('card-background-image',layers.background,true);
+    const foilBase=document.createElement('div');
+    foilBase.className='composite-layer composite-foil';
+    foilBase.setAttribute('aria-hidden','true');
+    art.appendChild(foilBase);
+    addLayer('card-frame-under',layers.lowerFrame,true);
+    addLayer('card-portrait',layers.character,false);
+    addLayer('card-frame-over',layers.upperFrame,true);
+    const glint=document.createElement('div');
+    glint.className='composite-layer composite-glint';
+    glint.setAttribute('aria-hidden','true');
+    art.appendChild(glint);
+  }else{
+    // Older SVG illustrations remain temporary for non-reference characters.
+    const glow=document.createElement('span');glow.className='card-shine';art.appendChild(glow);
+    addLayer('character-illustration',fallbackImage,false);
+  }
   const rarity=document.createElement('span');rarity.className='card-rarity';rarity.textContent=char.rarity;art.appendChild(rarity);
   const name=document.createElement('strong');name.className='card-name';name.textContent=unknown?'未発見':char.name;
   const meta=document.createElement('div');meta.className='card-subtitle';
