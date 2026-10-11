@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 525" preserveAspectRatio="none">
+
+<defs>
+  <linearGradient id="rRim" x1="0" y1="0" x2="1" y2="1">
+    <stop stop-color="#315a45"/><stop offset=".48" stop-color="#71997b"/><stop offset="1" stop-color="#426b58"/>
+  </linearGradient>
+</defs>
+<!-- R: mature botanical binding; colored rim, not metallic foil. -->
+<rect x="6" y="6" width="408" height="513" rx="21" fill="none" stroke="url(#rRim)" stroke-width="9"/>
+<rect x="14" y="14" width="392" height="497" rx="14" fill="none" stroke="#e6e2bf" stroke-width="3.5"/>
+<rect x="22" y="22" width="376" height="481" rx="8" fill="none" stroke="#719b76" stroke-width="2" opacity=".88"/>
+<g stroke="#c4caa2" stroke-width="1.6" fill="none" opacity=".75">
+ <path d="M117 19h186 M117 506h186 M18 118v289 M402 118v289"/>
+</g>
+<g fill="#dfe3b5" opacity=".7"><circle cx="210" cy="18" r="3"/><circle cx="210" cy="507" r="3"/></g>
+</svg>

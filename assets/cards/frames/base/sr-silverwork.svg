@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 525" preserveAspectRatio="none">
+
+<defs>
+  <linearGradient id="srMetal" x1="0" y1="0" x2=".94" y2="1">
+   <stop stop-color="#edf4f8"/><stop offset=".18" stop-color="#94a8bd"/>
+   <stop offset=".41" stop-color="#e2ecf4"/><stop offset=".64" stop-color="#8da6c5"/>
+   <stop offset=".82" stop-color="#eef2f4"/><stop offset="1" stop-color="#758ba9"/>
+  </linearGradient>
+</defs>
+<!-- SR: carefully machined silver border, restrained pearlescent highlight. -->
+<rect x="5" y="5" width="410" height="515" rx="22" fill="none" stroke="#233c5b" stroke-width="10"/>
+<rect x="11" y="11" width="398" height="503" rx="17" fill="none" stroke="url(#srMetal)" stroke-width="6"/>
+<rect x="21" y="21" width="378" height="483" rx="9" fill="none" stroke="#d9e1ee" stroke-width="2.4"/>
+<rect x="29" y="29" width="362" height="467" rx="5" fill="none" stroke="#7896b7" stroke-width="1.2" opacity=".8"/>
+<g fill="none" stroke="#d0dced" stroke-width="1.3" opacity=".75">
+ <path d="M39 111v303 M381 111v303"/>
+ <path d="M126 20h168 M126 505h168"/>
+</g>
+<g fill="#e9f1f5"><circle cx="19" cy="260" r="2.1"/><circle cx="401" cy="260" r="2.1"/></g>
+</svg>

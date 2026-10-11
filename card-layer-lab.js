@@ -79,6 +79,65 @@ import {BY_ID} from './game-catalog.js';
   intro.appendChild(elem('h3','', '🧩 N → UR：レア度5段階・実装比較'));
   intro.appendChild(elem('p','small','N～URの背景はすべて画像形式（PNG）で、背景SVGは使用していません。枠はSVGのまま、未制作キャラは空欄です。レア度別の背景の違いとホロを確認してください。'));
   mount.appendChild(intro);
+
+  // Prototype frames only. Not used for real cards until design approval.
+  const framePreview=elem('section','frame-prototype-section');
+  framePreview.appendChild(elem('h3','', '🖼 新フレーム3案｜背景との実物合成'));
+  framePreview.appendChild(elem('p','small','N：角飾り／R：植物／SR：銀細工。上下2枚の新しいSVGを実際のPNG背景と合成しています。キャラは未挿入で、すべて試作・未承認です。RとSRは下の選択欄で7色を切り替えられます。'));
+  const frameGrid=elem('div','frame-prototype-grid');
+  const root='../../assets/cards/';
+  const prototypes=[
+    {rarity:'N',label:'N｜手帳の角飾り',frame:'n-corner',foil:'none',layout:'basic-n',description:'薄い紙と細い角線。ホログラムなし。',options:RARITY_VARIANT_BACKGROUNDS.N},
+    {rarity:'R',label:'R｜植物の彫飾',frame:'r-botanical',foil:'none',layout:'mango',description:'葉の曲線と落ち着いた彩色。金箔なし。',options:RARITY_VARIANT_BACKGROUNDS.R},
+    {rarity:'SR',label:'SR｜銀細工と小粒宝飾',frame:'sr-silverwork',foil:'pearl',layout:'scholar',description:'銀の細い彫刻と弱いパール反射。',options:RARITY_VARIANT_BACKGROUNDS.SR}
+  ];
+  for(const info of prototypes){
+    const figure=elem('figure','frame-prototype-item');
+    const stage=elem('div','card-art layered-card frame-proof-card rarity-'+info.rarity.toLowerCase()+' visual-'+info.layout+' foil-'+info.foil);
+    stage.setAttribute('role','img');
+    stage.setAttribute('aria-label',info.label+' 試作フレームと背景画像の組み合わせ');
+    layer(stage,'substrate','composite-layer holo-substrate','div');
+    const background=layer(stage,'background','composite-layer card-background-image','img',info.options[0],'');
+    const foil=layer(stage,'foil','composite-layer composite-foil','div');
+    layer(stage,'under','composite-layer card-frame-under','img',root+'frames/base/'+info.frame+'.svg','');
+    // No SVG or emoji characters; missing art remains empty.
+    layer(stage,'over','composite-layer card-frame-over','img',root+'frames/top/'+info.frame+'.svg','');
+    if(info.foil!=='none')layer(stage,'glint','composite-layer composite-glint','div');
+    stage.appendChild(elem('span','card-rarity',info.rarity));
+    const caption=elem('figcaption','frame-prototype-caption');
+    caption.appendChild(elem('strong','',info.label));
+    caption.appendChild(elem('small','',info.description));
+    if(info.options.length>1){
+      const selectLabel=elem('label','frame-prototype-select');
+      selectLabel.appendChild(document.createTextNode('背景色：'));
+      const select=elem('select','field');
+      select.setAttribute('aria-label',info.rarity+'試作フレーム用背景色');
+      info.options.forEach((_,i)=>{
+        const opt=document.createElement('option');
+        opt.value=String(i);
+        opt.textContent=(i+1)+' / '+info.options.length;
+        select.appendChild(opt);
+      });
+      select.addEventListener('change',()=>{background.src=info.options[Number(select.value)];});
+      selectLabel.appendChild(select);
+      caption.appendChild(selectLabel);
+    }
+    figure.append(stage,caption);
+    frameGrid.appendChild(figure);
+    stageList.push({stage,foil});
+  }
+  const comparison=card('vangogh_bread_ssr');
+  if(comparison){
+    comparison.classList.add('frame-prototype-reference');
+    const comparisonCaption=comparison.querySelector('.layer-lab-caption');
+    if(comparisonCaption){
+      comparisonCaption.insertBefore(elem('small','', 'SSR比較基準（従来の試作フレーム）'),comparisonCaption.firstChild);
+    }
+    frameGrid.appendChild(comparison);
+  }
+  framePreview.appendChild(frameGrid);
+  framePreview.appendChild(elem('p','small','※ このコーナーは開発専用です。実際の図鑑・ガチャ・所持データには変更を加えません。新フレーム3案は品質承認後に通常カードへ採用します。'));
+  mount.appendChild(framePreview);
   // Background-only comparison: preserves the existing SR illustration and
   // exposes all seven colorways without any placeholder characters.
   const variants=elem('div','background-variant-gallery');

@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 525" preserveAspectRatio="none">
+
+<!-- Upper layer: leafwork can sit in front of a character near the corners. -->
+<g><g fill="none" stroke="#416f52" stroke-linejoin="round" stroke-linecap="round">
+ <path d="M16 110Q30 70 65 52Q83 40 94 17" stroke-width="4"/>
+ <path d="M16 80Q41 73 46 48" stroke-width="2.1"/>
+ <path d="M48 66Q72 76 80 99" stroke-width="2"/>
+ <path d="M64 40Q64 26 78 20" stroke-width="1.6"/>
+ </g>
+ <g stroke="#40684a" stroke-width="1.1">
+ <path d="M27 82q-24-15-20-35q27 5 20 35z" fill="#94b785"/>
+ <path d="M35 72q-6-30 17-39q13 27-17 39z" fill="#b5c99b"/>
+ <path d="M57 57q13-24 35-18q-6 25-35 18z" fill="#79a87d"/>
+ <path d="M70 79q25-4 29 20q-29 9-29-20z" fill="#a9c091"/>
+ <path d="M77 33q5-19 19-17q1 20-19 17z" fill="#d1dbb0"/>
+ </g>
+ <g transform="translate(53 47)">
+ <path d="M0-9Q4-3 10 0Q4 3 0 9Q-4 3-10 0Q-4-3 0-9Z" fill="#f4e8c9" stroke="#6e8d61" stroke-width="1.4"/>
+ <circle r="3" fill="#d4b67e"/>
+ </g></g>
+<g transform="translate(420 0) scale(-1 1)"><g fill="none" stroke="#416f52" stroke-linejoin="round" stroke-linecap="round">
+ <path d="M16 110Q30 70 65 52Q83 40 94 17" stroke-width="4"/>
+ <path d="M16 80Q41 73 46 48" stroke-width="2.1"/>
+ <path d="M48 66Q72 76 80 99" stroke-width="2"/>
+ <path d="M64 40Q64 26 78 20" stroke-width="1.6"/>
+ </g>
+ <g stroke="#40684a" stroke-width="1.1">
+ <path d="M27 82q-24-15-20-35q27 5 20 35z" fill="#94b785"/>
+ <path d="M35 72q-6-30 17-39q13 27-17 39z" fill="#b5c99b"/>
+ <path d="M57 57q13-24 35-18q-6 25-35 18z" fill="#79a87d"/>
+ <path d="M70 79q25-4 29 20q-29 9-29-20z" fill="#a9c091"/>
+ <path d="M77 33q5-19 19-17q1 20-19 17z" fill="#d1dbb0"/>
+ </g>
+ <g transform="translate(53 47)">
+ <path d="M0-9Q4-3 10 0Q4 3 0 9Q-4 3-10 0Q-4-3 0-9Z" fill="#f4e8c9" stroke="#6e8d61" stroke-width="1.4"/>
+ <circle r="3" fill="#d4b67e"/>
+ </g></g>
+<g transform="translate(0 525) scale(1 -1)"><g fill="none" stroke="#416f52" stroke-linejoin="round" stroke-linecap="round">
+ <path d="M16 110Q30 70 65 52Q83 40 94 17" stroke-width="4"/>
+ <path d="M16 80Q41 73 46 48" stroke-width="2.1"/>
+ <path d="M48 66Q72 76 80 99" stroke-width="2"/>
+ <path d="M64 40Q64 26 78 20" stroke-width="1.6"/>
+ </g>
+ <g stroke="#40684a" stroke-width="1.1">
+ <path d="M27 82q-24-15-20-35q27 5 20 35z" fill="#94b785"/>
+ <path d="M35 72q-6-30 17-39q13 27-17 39z" fill="#b5c99b"/>
+ <path d="M57 57q13-24 35-18q-6 25-35 18z" fill="#79a87d"/>
+ <path d="M70 79q25-4 29 20q-29 9-29-20z" fill="#a9c091"/>
+ <path d="M77 33q5-19 19-17q1 20-19 17z" fill="#d1dbb0"/>
+ </g>
+ <g transform="translate(53 47)">
+ <path d="M0-9Q4-3 10 0Q4 3 0 9Q-4 3-10 0Q-4-3 0-9Z" fill="#f4e8c9" stroke="#6e8d61" stroke-width="1.4"/>
+ <circle r="3" fill="#d4b67e"/>
+ </g></g>
+<g transform="translate(420 525) scale(-1 -1)"><g fill="none" stroke="#416f52" stroke-linejoin="round" stroke-linecap="round">
+ <path d="M16 110Q30 70 65 52Q83 40 94 17" stroke-width="4"/>
+ <path d="M16 80Q41 73 46 48" stroke-width="2.1"/>
+ <path d="M48 66Q72 76 80 99" stroke-width="2"/>
+ <path d="M64 40Q64 26 78 20" stroke-width="1.6"/>
+ </g>
+ <g stroke="#40684a" stroke-width="1.1">
+ <path d="M27 82q-24-15-20-35q27 5 20 35z" fill="#94b785"/>
+ <path d="M35 72q-6-30 17-39q13 27-17 39z" fill="#b5c99b"/>
+ <path d="M57 57q13-24 35-18q-6 25-35 18z" fill="#79a87d"/>
+ <path d="M70 79q25-4 29 20q-29 9-29-20z" fill="#a9c091"/>
+ <path d="M77 33q5-19 19-17q1 20-19 17z" fill="#d1dbb0"/>
+ </g>
+ <g transform="translate(53 47)">
+ <path d="M0-9Q4-3 10 0Q4 3 0 9Q-4 3-10 0Q-4-3 0-9Z" fill="#f4e8c9" stroke="#6e8d61" stroke-width="1.4"/>
+ <circle r="3" fill="#d4b67e"/>
+ </g></g>
+<g fill="none" stroke="#719879" stroke-width="2">
+<path d="M137 22q23 13 46 0 M237 22q23 13 46 0"/>
+<path d="M137 503q23-13 46 0 M237 503q23-13 46 0"/>
+</g>
+<g fill="#a6b98c">
+<path d="M206 22l4-7 4 7-4 7z M206 503l4-7 4 7-4 7z"/>
+</g>
+</svg>

@@ -229,3 +229,18 @@
 3. N / R / SR / SSRを横並びにし、SR＋最も目立つ背景＋最も目立つフレーム＋演出でもSSR以下に収まることを確認。
 4. PCとiPhoneサイズで、キャラ透過画像、重なり、UI可読性、ホロの強さを検証。
 5. **ユーザー承認までは完成・量産済みとしない。** 今回確定したのは設計方針と初期制作目標であり、SVG新規作成やカード実装変更は別工程。
+
+
+### 10.7 代表フレームの実装状態（2026-10-12：試作・品質未承認）
+
+初期代表3テーマに、上下2枚ずつ計6点のSVG素材を追加。透明フレームであり、背景・文字・キャラクターは含まない。既存14件のフレームは維持する。
+
+| レア度 | テーマID | 下フレーム | 上フレーム | 状態 |
+|---|---|---|---|---|
+| N | `n-corner` | `assets/cards/frames/base/n-corner.svg` | `assets/cards/frames/top/n-corner.svg` | 試作・未承認 |
+| R | `r-botanical` | `assets/cards/frames/base/r-botanical.svg` | `assets/cards/frames/top/r-botanical.svg` | 試作・未承認 |
+| SR | `sr-silverwork` | `assets/cards/frames/base/sr-silverwork.svg` | `assets/cards/frames/top/sr-silverwork.svg` | 試作・未承認 |
+
+- `/p/jun/?dev=1` の「ごほうび」→「動作確認モード」で、背景＋下SVG＋上SVGを実際に合成した表示を確認する。R/SRは7色を手動選択でき、既存SSR試作と同時比較できる。
+- **本番ガチャと図鑑には未適用。** `CARD_LAYER_MANIFEST` の既存参照、ゲームデータ、所持データに変更を加えない。
+- 実機・画面での視覚品質を承認するまでは、量産フレーム完成としない。
