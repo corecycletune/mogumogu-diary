@@ -3,8 +3,8 @@
 const root='../../assets/cards/';
 export const RARITY_VARIANT_BACKGROUNDS=Object.freeze({
   N:Object.freeze([root+'backgrounds/bg_n.png']),
-  R:Object.freeze([root+'backgrounds/bg_r_1.png,root+'backgrounds/bg_r_2.png,root+'backgrounds/bg_r_3.png,root+'backgrounds/bg_r_4.png,root+'backgrounds/bg_r_5.png,root+'backgrounds/bg_r_6.png,root+'backgrounds/bg_r_7.png]),
-  SR:Object.freeze([root+'backgrounds/bg_sr_1.png,root+'backgrounds/bg_sr_2.png,root+'backgrounds/bg_sr_3.png,root+'backgrounds/bg_sr_4.png,root+'backgrounds/bg_sr_5.png,root+'backgrounds/bg_sr_6.png,root+'backgrounds/bg_sr_7.png]),
+  R:Object.freeze([root+'backgrounds/bg_r_1.png',root+'backgrounds/bg_r_2.png',root+'backgrounds/bg_r_3.png',root+'backgrounds/bg_r_4.png',root+'backgrounds/bg_r_5.png',root+'backgrounds/bg_r_6.png',root+'backgrounds/bg_r_7.png']),
+  SR:Object.freeze([root+'backgrounds/bg_sr_1.png',root+'backgrounds/bg_sr_2.png',root+'backgrounds/bg_sr_3.png',root+'backgrounds/bg_sr_4.png',root+'backgrounds/bg_sr_5.png',root+'backgrounds/bg_sr_6.png',root+'backgrounds/bg_sr_7.png']),
   SSR:Object.freeze([root+'backgrounds/bg_ssr_holo.png']),
   UR:Object.freeze([root+'backgrounds/bg_ur.png'])
 });
@@ -77,7 +77,7 @@ export const CARD_LAYER_MANIFEST=Object.freeze({
   }),
   omu_ketchup_r:Object.freeze({
     character:root+'characters/omu_ketchup_r.webp',
-    background:pickBackgroundForCard('mango_r','R'), // R uses a soft reusable CSS wash, not an elaborate illustrated scene.
+    background:pickBackgroundForCard('omu_ketchup_r','R'), // Colorway fixed by character ID.
     lowerFrame:root+'frames/base/r-simple.svg',
     upperFrame:root+'frames/top/r-simple.svg',
     foil:'none',
