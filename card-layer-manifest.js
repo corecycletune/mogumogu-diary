@@ -3,7 +3,7 @@
 const root='../../assets/cards/';
 export const CARD_LAYER_MANIFEST=Object.freeze({
   rice_n:Object.freeze({
-    character:root+'characters/rice_daily_n.svg',
+    character:null,
     background:null,
     lowerFrame:root+'frames/base/n-paper.svg',
     upperFrame:root+'frames/top/n-paper.svg',
@@ -11,7 +11,7 @@ export const CARD_LAYER_MANIFEST=Object.freeze({
     layout:'basic-n'
   }),
   secret_rinpa_ur:Object.freeze({
-    character:root+'characters/rinpa_golden_rice_ur.svg',
+    character:null,
     background:root+'backgrounds/ur-rinpa-prismatic.svg',
     lowerFrame:root+'frames/base/ur-gold.svg',
     upperFrame:root+'frames/top/ur-gold.svg',
@@ -35,7 +35,7 @@ export const CARD_LAYER_MANIFEST=Object.freeze({
     layout:'wave'
   }),
   mango_r:Object.freeze({
-    character:root+'characters/mango_prince_r.svg',
+    character:null,
     background:null,
     lowerFrame:root+'frames/base/r-simple.svg',
     upperFrame:root+'frames/top/r-simple.svg',
@@ -43,7 +43,7 @@ export const CARD_LAYER_MANIFEST=Object.freeze({
     layout:'mango'
   }),
   newton_apple_sr:Object.freeze({
-    character:root+'characters/newton_apple_sr.svg',
+    character:null,
     background:null,
     lowerFrame:root+'frames/base/sr-scholar.svg',
     upperFrame:root+'frames/top/sr-scholar.svg',
@@ -51,7 +51,7 @@ export const CARD_LAYER_MANIFEST=Object.freeze({
     layout:'scholar'
   }),
   vangogh_bread_ssr:Object.freeze({
-    character:root+'characters/vangogh_sunflower_bread_ssr.svg',
+    character:null,
     background:root+'backgrounds/ssr-sunflower-foil-field.svg',
     lowerFrame:root+'frames/base/ssr-sunflower.svg',
     upperFrame:root+'frames/top/ssr-sunflower.svg',
@@ -67,5 +67,4 @@ export const CARD_LAYER_MANIFEST=Object.freeze({
     layout:'adventurer'
   })
 });
-// The remaining cards use the original SVG character illustrator as a fallback
-// until their individual illustration assets are completed.
+// Cards without an approved character image intentionally render with an empty character layer.
