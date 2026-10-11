@@ -1,4 +1,5 @@
 import {CATALOG,BY_ID,levelForCopies,drawCharacter} from './game-catalog.js';
+import {illustratedCardSvg} from './card-illustrations.js';
 (function(){
 'use strict';
 const profile=document.body.dataset.profile;
@@ -128,8 +129,13 @@ function paintCard(char,entry,unknown){
   art.className='card-art rarity-'+char.rarity.toLowerCase()+' pattern-'+char.background;
   if(entry)art.className+=' evolved-level-'+levelForCopies(entry.copies);
   const glow=document.createElement('span');glow.className='card-shine';art.appendChild(glow);
-  const figure=document.createElement('span');figure.className='character-glyph';
-  figure.textContent=unknown?'？':char.emoji;art.appendChild(figure);
+  const illustration=document.createElement('img');
+  illustration.className='character-illustration';
+  illustration.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(illustratedCardSvg(char));
+  illustration.alt=char.name+'のキャラクターイラスト';
+  illustration.loading='lazy';
+  illustration.decoding='async';
+  art.appendChild(illustration);
   const rarity=document.createElement('span');rarity.className='card-rarity';rarity.textContent=char.rarity;art.appendChild(rarity);
   const name=document.createElement('strong');name.className='card-name';name.textContent=unknown?'未発見':char.name;
   const meta=document.createElement('div');meta.className='card-subtitle';
