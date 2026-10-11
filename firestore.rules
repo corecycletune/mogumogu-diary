@@ -60,6 +60,44 @@ service cloud.firestore {
         allow list, update, delete: if false;
       }
 
+      match /games/{gameProfile} {
+        // This is a family prototype: restrict ownership and document shape,
+        // but client-driven RNG and balances are not anti-cheat protected.
+        // Production anti-tamper requires a trusted backend function.
+        allow get: if isMember(fid) && gameProfile == myProfile(fid);
+        allow list, delete: if false;
+        allow create, update: if isMember(fid) &&
+          gameProfile == myProfile(fid) &&
+          request.resource.data.keys().hasAll([
+            'profile','version','coins','tickets','drawCount',
+            'lastFreeDay','lastLoginDay','loginDays','inventory','history',
+            'mealRewardDays','streakRewardKeys','updatedAt'
+          ]) &&
+          request.resource.data.keys().hasOnly([
+            'profile','version','coins','tickets','drawCount',
+            'lastFreeDay','lastLoginDay','loginDays','inventory','history',
+            'mealRewardDays','streakRewardKeys','updatedAt'
+          ]) &&
+          request.resource.data.profile == gameProfile &&
+          request.resource.data.version == 1 &&
+          request.resource.data.coins is int &&
+          request.resource.data.coins >= 0 &&
+          request.resource.data.tickets is int &&
+          request.resource.data.tickets >= 0 &&
+          request.resource.data.drawCount is int &&
+          request.resource.data.drawCount >= 0 &&
+          request.resource.data.lastFreeDay is string &&
+          request.resource.data.lastLoginDay is string &&
+          request.resource.data.loginDays is int &&
+          request.resource.data.loginDays >= 0 &&
+          request.resource.data.inventory is map &&
+          request.resource.data.history is list &&
+          request.resource.data.history.size() <= 30 &&
+          request.resource.data.mealRewardDays is map &&
+          request.resource.data.streakRewardKeys is list &&
+          request.resource.data.updatedAt is string;
+      }
+
       match /meals/{mealId} {
         // Family members may read all entries for cooperative missions.
         allow get, list: if isMember(fid);
