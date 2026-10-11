@@ -14,7 +14,7 @@ export const RARITY_BACKGROUNDS=Object.freeze(Object.fromEntries(
 // Stable across devices and sessions; no random background changes for owned cards.
 export function pickBackgroundForCard(cardId,rarity){
   const options=RARITY_VARIANT_BACKGROUNDS[rarity]||RARITY_VARIANT_BACKGROUNDS.N;
-  let hash=2166136261;
+  let hash=13;
   for(const c of String(cardId||rarity)){hash^=c.charCodeAt(0);hash=Math.imul(hash,16777619)>>>0;}
   return options[hash%options.length];
 }
