@@ -9,7 +9,7 @@ import {BY_ID} from './game-catalog.js';
   const toggle=document.getElementById('devModeToggle');
   if(!mount||!toggle)return;
 
-  const examples=['omu_ketchup_r','omu_ichika_ssr','hokusai_wave_ssr'];
+  const examples=['rice_n','mango_r','newton_apple_sr','vangogh_bread_ssr','secret_rinpa_ur'];
   const layerOrder=[
     {key:'substrate',text:'① ホロ下地'},
     {key:'background',text:'② 背景'},
@@ -20,6 +20,13 @@ import {BY_ID} from './game-catalog.js';
     {key:'glint',text:'反射の光'}
   ];
   const stageList=[];
+  const descriptions={
+    rice_n:'N｜紙のような淡い単色・細い枠・ホロなし',
+    mango_r:'R｜Nより明るい彩色・緑の装飾枠・ホロなし',
+    newton_apple_sr:'SR｜青銀のフレーム・弱いパール反射',
+    vangogh_bread_ssr:'SSR｜豪華な金枠・高密度の虹色ホログラム',
+    secret_rinpa_ur:'UR｜開発画面限定・専用の金虹箔・伝説級の背景'
+  };
   function elem(tag,className,text){
     const element=document.createElement(tag);
     if(className)element.className=className;
@@ -61,15 +68,15 @@ import {BY_ID} from './game-catalog.js';
     stage.appendChild(badge);
     const cap=elem('figcaption','layer-lab-caption');
     cap.appendChild(elem('strong','',data.name));
-    cap.appendChild(elem('small','',visual.foil==='none'?'ホロなし':'背景面のホロのみ'));
+    cap.appendChild(elem('small','',descriptions[id]||'背景面のホロのみ'));
     figure.append(stage,cap);
     stageList.push({stage,foil});
     return figure;
   }
 
   const intro=elem('div','layer-lab-intro');
-  intro.appendChild(elem('h3','', '🧩 5レイヤー・カード試作'));
-  intro.appendChild(elem('p','small','既存の透過キャラ素材3体を使った、Webアプリ内の実物の合成テストです。完成カード画像は使用していません。新しいキャラクターの作画はまだ行っていません。'));
+  intro.appendChild(elem('h3','', '🧩 N → UR：レア度5段階・実装比較'));
+  intro.appendChild(elem('p','small','今回は直前の3枚と異なる5枚を実際のWebアプリで合成しています。Nは控えめ、Rはちょっと特別、SRから反射、SSRは強い背景ホロ、URは開発用の隠し比較枠です。完成カードの画像生成は行っていません。'));
   mount.appendChild(intro);
   const panel=elem('div','layer-lab-controls');
   for(const item of layerOrder){
@@ -88,16 +95,19 @@ import {BY_ID} from './game-catalog.js';
   }
   const sliderLabel=elem('label','layer-lab-foil-intensity','ホロ強度 ');
   const slider=elem('input','');
-  slider.type='range';slider.min='0';slider.max='100';slider.value='70';
+  slider.type='range';slider.min='0';slider.max='100';slider.value='92';
   slider.setAttribute('aria-label','ホログラムの強さ');
   const sliderValue=elem('strong','',slider.value+'%');
   const intensify=()=>{
     sliderValue.textContent=slider.value+'%';
     stageList.forEach(({stage,foil})=>{
       if(stage.classList.contains('foil-none'))return;
-      const max=stage.classList.contains('foil-pink')||stage.classList.contains('foil-blue')? .78:.6;
+      const max=stage.classList.contains('foil-legendary')?1:
+        stage.classList.contains('foil-sunflower')?.98:
+        stage.classList.contains('foil-pearl')?.30:.75;
       foil.style.opacity=String(max*Number(slider.value)/100);
-      stage.style.setProperty('--lab-grain-opacity',String(Number(slider.value)/100*.8));
+      stage.style.setProperty('--lab-grain-opacity',String(Number(slider.value)/100*(stage.classList.contains('foil-legendary')?1:.92)));
+      stage.style.setProperty('--lab-glint-opacity',String(Number(slider.value)/100*(stage.classList.contains('foil-legendary')?.78:.48)));
     });
   };
   slider.addEventListener('input',intensify);
@@ -107,7 +117,7 @@ import {BY_ID} from './game-catalog.js';
   const grid=elem('div','layer-lab-grid');
   examples.forEach(id=>{const sample=card(id);if(sample)grid.appendChild(sample);});
   mount.appendChild(grid);
-  mount.appendChild(elem('p','small','※ キャラ素材を使い回す設計の検証です。量産前にフレーム・背景の豪華さやホロの強度を比較できます。通常の図鑑やガチャの動作・記録には影響しません。'));
+  mount.appendChild(elem('p','small','※ 5枚とも背景・キャラ・下SVG枠・上SVG枠・ホロが分離されています。SSR・URは将来、完成イラストを1枚のフルアート画像に置き換える構成も可能です。URは通常の図鑑で未所持時には見えません。開発用比較は本番の抽選や所持記録に影響しません。'));
   intensify();
   const reflect=()=>{mount.hidden=!toggle.checked;};
   toggle.addEventListener('change',reflect);
