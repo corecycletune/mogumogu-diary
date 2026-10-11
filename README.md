@@ -98,7 +98,7 @@ Webアプリの設定は `firebase-sync.js` に登録済みです。
 
 - **簡易SVGキャラクター画像5ファイルをGitHubから削除**し、自動生成プログラム `card-illustrations.js` も削除しました。画像が存在しないキャラクターは、背景・フレーム・ホロ・名前のみ表示します。勝手に簡易SVGで代替しません。
 - **残したキャラ画像**：`assets/cards/characters/omu_ichika_ssr.webp`、`hokusai_wave_ssr.webp`、`omu_ketchup_r.webp`。
-- **保持したもの**：`assets/cards/frames/` のSVG全件、図鑑・ガチャ・レベル・所持データ、ゲームのルール、ホロ用CSS。**背景SVGは廃止し、レア度別のWebP画像に置き換えます。**
+- **保持したもの**：`assets/cards/frames/` のSVG全件、図鑑・ガチャ・レベル・所持データ、ゲームのルール、ホロ用CSS。**背景SVG4件は削除済み。レア度別のPNG画像5件へ置き換えました。**
 - `card-layer-manifest.js` の対象5キャラは `character:null` として描画しません。図鑑のカード名・レア度・枠は維持します。
 - PWAキャッシュは `mogumogu-static-v14` に更新して旧簡易SVGの参照を外しました。公開後はブラウザの更新により反映されます。
 - **完成品質の基準は[SSOT](./docs/GAME_DESIGN_SSOT.md)を参照**。旧試作資料は削除し、承認済みの決定事項だけをSSOTに統合しています。簡易SVGキャラの再制作・自動復活はしません。
@@ -106,6 +106,18 @@ Webアプリの設定は `firebase-sync.js` に登録済みです。
 
 ### 正式背景素材のルール
 
-- N/R/SR/SSR/URの5段階背景は**ラスタ画像（WebP/PNG）のみ**。背景SVGを使用しません。
+- N/R/SR/SSR/URの5段階背景は**ラスタ画像（現行PNG、将来WebPも可）のみ**。背景SVGを使用しません。
 - 背景画像にキャラクター・フレーム・文字を描き込まず、独立した部品として管理します。
 - **唯一の仕様書**：[GAME_DESIGN_SSOT.md](./docs/GAME_DESIGN_SSOT.md)。旧GAME_DESIGN.mdおよび旧履歴資料は削除対象です。
+
+### 5段階のラスタ背景（2026-10-11）
+
+| レア度 | 背景画像 | 傾向 |
+|---|---|---|
+| N | `assets/cards/backgrounds/bg_n.png` | 淡い暖色・控えめな室内光 |
+| R | `assets/cards/backgrounds/bg_r.png` | 明るい緑・花・日光 |
+| SR | `assets/cards/backgrounds/bg_sr.png` | 青銀・天文の光・弱い反射 |
+| SSR | `assets/cards/backgrounds/bg_ssr.png` | 金色・花・強いキラ感 |
+| UR | `assets/cards/backgrounds/bg_ur.png` | 紫青・星・虹色光沢 |
+
+**キャラクターや枠・文字を焼き込まない背景だけのPNGファイル**です。共通の`RARITY_BACKGROUNDS`に従い、62種類すべてのカードと開発用比較画面で再利用します。背景SVGや旧CSSパターン選択は削除済みです。フレームSVGは維持しています。
