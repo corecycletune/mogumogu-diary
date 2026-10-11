@@ -268,3 +268,101 @@
 @media(prefers-reduced-motion:reduce){
   .collection-card:hover .layered-card .composite-glint{animation:none}
 }
+
+/* Card art expansion v2 – real layered R/SR/SSR and foil on unillustrated background.
+   Rendering order: substrate 0, scenery 1, holographic print 2,
+   rear SVG 3, cut-out character 4, front SVG 5, specular flash 6, label 7.
+   The foil never covers the character illustration or its foreground frame. */
+.layered-card.visual-mango .holo-substrate{
+  background:
+    radial-gradient(ellipse at 35% 12%,#fff9 0%,transparent 55%),
+    repeating-linear-gradient(0deg,transparent 0 37px,#fff5 37px 39px),
+    repeating-linear-gradient(90deg,transparent 0 44px,#fff5 44px 46px),
+    linear-gradient(160deg,#fff1c4 0%,#e8ebce 45%,#badbbf 100%);
+}
+.layered-card.visual-scholar .holo-substrate{
+  background:
+    radial-gradient(ellipse at 24% 18%,#fff9 0%,transparent 53%),
+    repeating-linear-gradient(140deg,#fff9 0 2px,transparent 2px 48px),
+    linear-gradient(155deg,#f4eadc 0%,#e8eced 44%,#d2dff0 100%);
+}
+.layered-card.visual-sunflower .holo-substrate{
+  background:linear-gradient(155deg,#f2e6b8,#f1d6a7 53%,#e9bd83);
+}
+/* Mango is deliberately non-foil. */
+.layered-card.visual-mango .card-portrait{
+  top:9%;left:4%;width:92%;height:83%;
+  filter:drop-shadow(0 6px 6px #77694735);
+}
+/* A restrained, pearlescent sheen for SR, not the SSR micro-hologram. */
+.layered-card.foil-pearl .composite-foil{
+  opacity:.20;
+  background:
+    linear-gradient(128deg,transparent 9%,#fff9 29%,#d1dcff73 38%,transparent 57%,#fff5 75%,transparent 94%),
+    radial-gradient(circle at 21% 31%,#fff9 0 1px,transparent 2px) 0 0/53px 51px;
+}
+.layered-card.foil-pearl .composite-glint{opacity:.065}
+.layered-card.visual-scholar .card-portrait{
+  top:8%;left:1%;width:98%;height:85%;
+  filter:drop-shadow(0 7px 6px #4d547244);
+}
+/* The highly reflective SSR base is ONLY on the blank substrate, never over food art.
+   Different-size printed halftone glints + a dispersed rainbow prismatic foil. */
+.layered-card.foil-sunflower .composite-foil{
+  opacity:.65;
+  background:
+    radial-gradient(circle at 13% 17%,#fffef1e8 0 2px,transparent 3px),
+    radial-gradient(circle at 69% 63%,#fff6e0dc 0 1.8px,transparent 3px),
+    radial-gradient(circle at 47% 38%,#f8e7ffe0 0 1.5px,transparent 3px),
+    radial-gradient(circle at 81% 24%,#d9fbffec 0 2px,transparent 4px),
+    repeating-conic-gradient(from 12deg at 50% 50%,transparent 0 28deg,#fff8 29deg 31deg,transparent 33deg 60deg),
+    linear-gradient(111deg,#f9efae35,#d4f3ff69 24%,#f8ddff54 42%,#fffaaf7a 61%,#a6f4d05e 80%,#fff6d642);
+  background-size:91px 117px,57px 69px,79px 87px,121px 111px,43px 43px,100% 100%;
+  background-position:0 0,11px 17px,25px 11px,31px 29px,0 0,0 0;
+  mix-blend-mode:screen;
+}
+.layered-card.foil-sunflower .composite-glint{opacity:.20}
+.layered-card.visual-sunflower .card-portrait{
+  top:7%;left:1%;width:98%;height:85%;
+  filter:drop-shadow(0 9px 10px #76503266);
+}
+/* Upgrade the two existing SSR backgrounds, keeping the figures untouched. */
+.layered-card.foil-pink .composite-foil,
+.layered-card.foil-blue .composite-foil{opacity:.44}
+.layered-card.foil-pink .composite-foil{
+  background:
+    radial-gradient(circle at 18% 21%,#fffdfcdd 0 1.5px,transparent 2.7px) 0 0/47px 57px,
+    radial-gradient(circle at 70% 54%,#ffe7fbdd 0 2px,transparent 3px) 13px 7px/81px 69px,
+    repeating-conic-gradient(from 7deg,transparent 0 23deg,#fff6 24deg 26deg,transparent 28deg 60deg) 0 0/49px 49px,
+    linear-gradient(125deg,#ffe5cb26,#d3f3ff64 27%,#ffdcf870 47%,#fff7be6b 66%,#ddc5ff48);
+}
+.layered-card.foil-blue .composite-foil{
+  background:
+    radial-gradient(circle at 16% 23%,#e5f8ffdf 0 2px,transparent 3px) 0 0/65px 59px,
+    radial-gradient(circle at 73% 47%,#fffce1cc 0 1px,transparent 3px) 24px 11px/83px 79px,
+    repeating-conic-gradient(from 12deg,transparent 0 25deg,#e1faff88 26deg 28deg,transparent 30deg 60deg) 0 0/41px 41px,
+    linear-gradient(113deg,#a6fbfa43,#d9d5ff73 32%,#d9f6ff62 53%,#fff7c66b 76%,#a7caff41);
+}
+.layered-card.foil-sunflower .composite-glint,
+.layered-card.foil-pearl .composite-glint,
+.layered-card.foil-pink .composite-glint,
+.layered-card.foil-blue .composite-glint{
+  background:linear-gradient(108deg,transparent 27%,#fff8 43%,#dffbffe8 48%,#fff8 51%,transparent 68%);
+}
+.collection-card:hover .layered-card.foil-sunflower .composite-glint,
+.collection-card:hover .layered-card.foil-pearl .composite-glint{
+  animation:mogumogu-foil-swipe 1.8s ease-out both;
+}
+/* Micro glitter shifts gently on the SSR background even on touchscreens. */
+.layered-card.foil-sunflower .composite-foil{
+  animation:mogumogu-prism 8s linear infinite alternate;
+}
+@keyframes mogumogu-prism{
+  0%{filter:hue-rotate(0deg) brightness(.97)}
+  100%{filter:hue-rotate(17deg) brightness(1.16)}
+}
+@media(prefers-reduced-motion:reduce){
+  .layered-card.foil-sunflower .composite-foil{animation:none}
+  .collection-card:hover .layered-card.foil-sunflower .composite-glint,
+  .collection-card:hover .layered-card.foil-pearl .composite-glint{animation:none}
+}
