@@ -10,7 +10,8 @@ const fresh=()=>({profile,version:1,coins:0,tickets:0,drawCount:0,lastFreeDay:''
 const clone=state=>state?JSON.parse(JSON.stringify(state)):fresh();
 let ctx=null,unsubscribe=null,state=fresh(),ready=false,busy=false,lastMealSignature='',statusError='',latestDraw=null,connectionSeq=0;
 let testDrawCount=0,testInventory={};
-const devAvailable=profile==='jun'&&!!el('devModeToggle');
+const devAvailable=profile==='jun'&&!!el('devModeToggle')&&new URLSearchParams(window.location.search).get('dev')==='1';
+if(devAvailable)el('devPanel').hidden=false;
 function isTesting(){return devAvailable&&el('devModeToggle').checked;}
 function testSummary(){
   if(!devAvailable)return;
