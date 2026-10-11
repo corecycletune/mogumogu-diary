@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 540" aria-hidden="true">
+<defs>
+<radialGradient id="apple" cx="27%" cy="18%" r="92%"><stop stop-color="#ffbb99"/><stop offset=".42" stop-color="#f56d67"/><stop offset=".75" stop-color="#dc394d"/><stop offset="1" stop-color="#9f243d"/></radialGradient>
+<linearGradient id="coat" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#4b789c"/><stop offset="1" stop-color="#203d6b"/></linearGradient>
+<linearGradient id="paper" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fffce8"/><stop offset="1" stop-color="#e2d4ae"/></linearGradient>
+</defs>
+<ellipse cx="206" cy="491" rx="128" ry="18" opacity=".15" fill="#273d62"/>
+<path d="M154 439l-24 40-24 10m148-50 31 38 26 9" stroke="#50485d" stroke-width="21" stroke-linecap="round" fill="none"/>
+<ellipse cx="101" cy="489" rx="28" ry="13" fill="#39445a"/><ellipse cx="317" cy="489" rx="28" ry="13" fill="#39445a"/>
+<path d="M103 323q-36 12-54-25m248 20q36 10 51-24" stroke="#db786b" stroke-width="19" stroke-linecap="round" fill="none"/>
+<path d="M110 319q-28 62-16 133l103 27 125-26q9-83-19-133z" fill="url(#coat)" stroke="#263a68" stroke-width="9"/>
+<path d="M168 316l38 67 35-67-6 134-60 1z" fill="url(#paper)" stroke="#bdb29c" stroke-width="6"/>
+<circle cx="210" cy="397" r="8" fill="#d6b96a"/><circle cx="209" cy="434" r="8" fill="#d6b96a"/>
+<!-- Powdered wig with three curls on either side -->
+<path d="M100 181C48 160 75 111 114 121c-27-43 20-74 50-50 17-38 83-40 97 1 37-19 76 13 49 48 41 17 43 62 0 73l-10 124-31 2-17-111-95-6-25 116-37-11z" fill="#eae4d9" stroke="#b7b1ae" stroke-width="9"/>
+<g fill="#faf5eb" stroke="#c6c4bc" stroke-width="5"><circle cx="93" cy="195" r="24"/><circle cx="92" cy="237" r="27"/><circle cx="94" cy="280" r="26"/><circle cx="322" cy="198" r="24"/><circle cx="322" cy="242" r="27"/><circle cx="314" cy="283" r="25"/></g>
+<path d="M194 132c-58-25-102 12-107 63-38 53-16 132 53 156 51 19 114 17 156-20 47-43 31-107 14-131 1-46-46-83-116-68z" fill="url(#apple)" stroke="#aa3047" stroke-width="9"/>
+<path d="M211 137q-1-39 18-56" fill="none" stroke="#725345" stroke-width="14" stroke-linecap="round"/>
+<path d="M218 108q26-34 60-22-8 38-58 35" fill="#72aa69" stroke="#3b7e51" stroke-width="6"/>
+<path d="M105 197q24-40 73-40" fill="none" stroke="#ffd7ba" stroke-width="14" stroke-linecap="round" opacity=".75"/>
+<ellipse cx="161" cy="245" rx="12" ry="17" fill="#39344f"/><ellipse cx="260" cy="245" rx="12" ry="17" fill="#39344f"/>
+<circle cx="157" cy="240" r="5" fill="#fff"/><circle cx="256" cy="240" r="5" fill="#fff"/>
+<ellipse cx="132" cy="280" rx="20" ry="9" fill="#ffaca7" opacity=".55"/><ellipse cx="292" cy="280" rx="20" ry="9" fill="#ffaca7" opacity=".55"/>
+<path d="M191 290q17 16 36 0" fill="none" stroke="#783848" stroke-width="7" stroke-linecap="round"/>
+<!-- Parchment of discoveries + quill, distinct from frame -->
+<path d="M57 315l78 12-6 111-78-7z" fill="url(#paper)" stroke="#a98d70" stroke-width="6"/>
+<path d="M72 345l46 8M68 368l43 7M65 389l43 8" stroke="#a2a3a0" stroke-width="4" stroke-linecap="round"/>
+<path d="M337 325l26-151" stroke="#80604c" stroke-width="8" stroke-linecap="round"/>
+<path d="M361 184q-19-55 14-82 30 66-14 100" fill="#e6f3fb" stroke="#7f9eb4" stroke-width="5"/>
+<g fill="#e9eef7"><circle cx="87" cy="137" r="4"/><circle cx="317" cy="134" r="5"/><circle cx="364" cy="303" r="4"/></g>
+</svg>
