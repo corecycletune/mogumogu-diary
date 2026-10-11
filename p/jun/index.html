@@ -100,7 +100,7 @@
       <p class="small">ほかの家族を追加するときは、このコードを本人にだけ伝えてください。</p>
       <div class="cloud-code"><code id="cloudFamilyCode"></code><button type="button" class="btn secondary" id="cloudCopy">コピー</button></div>
       <p class="warning">家族コードを知っている人はグループに参加できます。SNSや公開リポジトリには載せないでください。</p>
-      <p class="small">食事記録が端末間で同期されます。ガチャとコインのクラウド同期は今後の更新で対応します。</p>
+      <p class="small">食事記録とゲームデータをFirebaseで同期します。ゲームの保存には最新版のFirestoreルールが必要です。</p>
       <button id="cloudRetry" type="button" class="btn secondary" style="width:100%">同期を再試行</button>
     </div>
   </div>
@@ -135,6 +135,25 @@
         <button type="button" class="btn secondary" id="gameTicketDraw" disabled>ガチャ券で引く</button>
       </div>
       <div id="gameResult" aria-live="polite"></div>
+      <details class="dev-panel" id="devPanel">
+        <summary>🧪 動作確認モード（じゅんちゃん専用）</summary>
+        <label class="dev-switch"><input type="checkbox" id="devModeToggle"> <span>動作確認モードをONにする</span></label>
+        <div id="devControls" hidden>
+          <p class="small"><strong>テスト専用：</strong>Firebaseへの書き込み・コイン消費・無料回数の消費はありません。テストで当てたカードは本物の図鑑には追加されません。画面を閉じるとテスト結果は消えます。</p>
+          <label class="label" for="devRarity">出したいレア度</label>
+          <select class="field" id="devRarity">
+            <option value="random">通常確率でランダム</option>
+            <option value="N">Nを確認</option>
+            <option value="R">Rを確認</option>
+            <option value="SR">SRを確認</option>
+            <option value="SSR">SSRを確認</option>
+            <option value="UR">隠しカードを確認（開発者用）</option>
+          </select>
+          <p class="small" id="devConnectionStatus">本番の接続状態を確認中…</p>
+          <p class="small" id="devDrawCount">テスト抽選：0回</p>
+          <button type="button" class="btn secondary" id="devReset">テスト結果をリセット</button>
+        </div>
+      </details>
       <p class="small">N / R / SR / SSRの仲間が登場。排出率はN72%、R20%、SR6%、SSR1.75%。課金なし。</p>
       <p class="small">同じ仲間を引くと成長に使えます。コイン・所持カードはFirebaseに保存します。</p>
     </div>
