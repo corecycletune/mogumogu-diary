@@ -1,5 +1,4 @@
 import {CATALOG,BY_ID,levelForCopies,drawCharacter} from './game-catalog.js';
-import {illustratedCardSvg} from './card-illustrations.js';
 import {CARD_LAYER_MANIFEST} from './card-layer-manifest.js';
 (function(){
 'use strict';
@@ -130,7 +129,6 @@ function paintCard(char,entry,unknown){
   art.className='card-art rarity-'+char.rarity.toLowerCase()+' pattern-'+char.background;
   if(entry)art.className+=' evolved-level-'+levelForCopies(entry.copies);
   const layers=CARD_LAYER_MANIFEST[char.id];
-  const fallbackImage='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(illustratedCardSvg(char));
   function addLayer(cssClass,src,isDecorative){
     if(!src)return null;
     const img=document.createElement('img');
@@ -140,10 +138,8 @@ function paintCard(char,entry,unknown){
     img.loading='lazy';
     img.decoding='async';
     img.draggable=false;
-    if(!isDecorative)img.addEventListener('error',function(){
-      // Keep a visible card when images are not cached or the network fails.
-      if(img.src!==fallbackImage)img.src=fallbackImage;
-    },{once:true});
+    // Do not substitute generated SVG art when a character image is missing or fails.
+    if(!isDecorative)img.addEventListener('error',()=>img.remove(),{once:true});
     art.appendChild(img);
     return img;
   }
@@ -173,9 +169,11 @@ function paintCard(char,entry,unknown){
     art.appendChild(glint);
     }
   }else{
-    // Older SVG illustrations remain temporary for non-reference characters.
-    const glow=document.createElement('span');glow.className='card-shine';art.appendChild(glow);
-    addLayer('character-illustration',fallbackImage,false);
+    // No approved character asset yet: keep the card background and metadata,
+    // but leave its character area empty until proper artwork is supplied.
+    const glow=document.createElement('span');glow.className='card-shine';
+    glow.setAttribute('aria-hidden','true');
+    art.appendChild(glow);
   }
   const rarity=document.createElement('span');rarity.className='card-rarity';rarity.textContent=char.rarity;art.appendChild(rarity);
   const name=document.createElement('strong');name.className='card-name';name.textContent=unknown?'未発見':char.name;
