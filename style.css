@@ -366,3 +366,39 @@
   .collection-card:hover .layered-card.foil-sunflower .composite-glint,
   .collection-card:hover .layered-card.foil-pearl .composite-glint{animation:none}
 }
+
+/* Five independent layers — internal app preview (not exported card images).
+   These override only the opt-in dev preview; normal cards stay unchanged. */
+.layer-lab{margin:15px 0 23px;padding:18px;border:1px solid #d8ceb9;border-radius:18px;background:#f7f9f6;}
+.layer-lab-intro h3{font-size:17px;margin:0 0 8px;color:#273f37;}
+.layer-lab-intro p{line-height:1.65;}
+.layer-lab-controls{display:flex;flex-wrap:wrap;gap:9px 13px;padding:13px 0 16px;}
+.layer-lab-toggle{display:inline-flex;align-items:center;gap:6px;padding:7px 9px;border:1px solid #d9ded6;border-radius:9px;background:white;font-size:12px;cursor:pointer;}
+.layer-lab-toggle input{accent-color:#4b8067;}
+.layer-lab-foil-intensity{display:flex;align-items:center;gap:10px;font-size:13px;width:100%;margin-top:2px;}
+.layer-lab-foil-intensity input{flex:1;min-width:60px;accent-color:#4b8067;}
+.layer-lab-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;}
+.layer-lab-card{margin:0;min-width:0;padding:8px;background:white;border:1px solid #e2ded4;border-radius:16px;box-shadow:0 3px 8px #273e3213;}
+.layer-lab-card .card-art{width:100%;aspect-ratio:4/5;position:relative;}
+.layer-lab-card .layer-lab-caption{margin:9px 4px 3px;display:flex;flex-direction:column;gap:2px;min-height:43px;}
+.layer-lab-caption strong{font-size:13px;line-height:1.4;}
+.layer-lab-caption small{font-size:11px;color:#63776d;}
+.layer-lab-card .layer-lab-grain{
+ z-index:2;opacity:var(--lab-grain-opacity,.5);mix-blend-mode:screen;
+ background:
+  radial-gradient(circle at 14% 22%,#fffef7 0 1px,transparent 2.5px) 0 0/28px 39px,
+  radial-gradient(circle at 61% 78%,#ffeffd 0 1.5px,transparent 3px) 6px 13px/44px 47px,
+  radial-gradient(circle at 38% 41%,#e8fdff 0 1px,transparent 2.3px) 18px 27px/61px 55px,
+  repeating-conic-gradient(from 15deg,#faecff4a 0deg 9deg,#ffffe74d 15deg 24deg,#e6f8ff55 30deg 45deg) 0 0/42px 42px;
+}
+.layer-lab-card .card-rarity{z-index:7;}
+.layer-lab-card .lab-hide-substrate .holo-substrate,
+.layer-lab-card .lab-hide-background .card-background-image,
+.layer-lab-card .lab-hide-foil .composite-foil,
+.layer-lab-card .lab-hide-foil .layer-lab-grain,
+.layer-lab-card .lab-hide-under .card-frame-under,
+.layer-lab-card .lab-hide-character .card-portrait,
+.layer-lab-card .lab-hide-over .card-frame-over,
+.layer-lab-card .lab-hide-glint .composite-glint{display:none!important;}
+@media(max-width:720px){.layer-lab-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;}.layer-lab{padding:11px;}}
+@media(max-width:440px){.layer-lab-grid{grid-template-columns:1fr;max-width:300px;margin:0 auto;}.layer-lab-card .card-art{max-width:300px;margin:auto;}}
