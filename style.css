@@ -96,3 +96,11 @@
 .pattern-cosmos{--card-a:#a9d6ff!important;--card-b:#d4aafa!important}
 @media(max-width:480px){.collection-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.collection-card{padding:6px}.character-glyph{font-size:55px}.card-art{border-width:3px}.card-lore{font-size:10px}}
 @media(prefers-reduced-motion:reduce){.game-reveal{animation:none}}
+
+/* Evolved card treatment: levels enhance the card without changing rarity. */
+.card-art.evolved-level-2 .character-glyph{filter:drop-shadow(0 5px 10px #fff8) drop-shadow(0 8px 9px #384e4644)}
+.card-art.evolved-level-3{box-shadow:inset 0 0 0 2px #fff9,0 0 12px #f2cb89a6}
+.card-art.evolved-level-4{box-shadow:inset 0 0 0 3px #fff9,0 0 17px #e6b75caf}
+.card-art.evolved-level-5{box-shadow:inset 0 0 0 3px #fffdd1,0 0 20px #dca64fbd}
+.card-art.evolved-level-5 .character-glyph{filter:drop-shadow(0 1px 9px #fff9) drop-shadow(0 10px 8px #8e67355c);transform:rotate(-4deg) scale(1.08)}
+.card-art.evolved-level-5 .card-rarity::after{content:' ✦'}
