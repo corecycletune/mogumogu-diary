@@ -149,6 +149,12 @@ function paintCard(char,entry,unknown){
   }
   if(layers){
     art.className+=' layered-card visual-'+layers.layout+' foil-'+layers.foil;
+    // SSR/UR can use a commissioned full-bleed card image instead of the layered
+    // illustration. HTML name and rarity remain independently editable.
+    // All other cards keep the separately editable five-layer composition.
+    if(layers.fullArt){
+      addLayer('card-full-art',layers.fullArt,false);
+    }else{
     const under=document.createElement('div');
     under.className='composite-layer holo-substrate';
     under.setAttribute('aria-hidden','true');
@@ -165,6 +171,7 @@ function paintCard(char,entry,unknown){
     glint.className='composite-layer composite-glint';
     glint.setAttribute('aria-hidden','true');
     art.appendChild(glint);
+    }
   }else{
     // Older SVG illustrations remain temporary for non-reference characters.
     const glow=document.createElement('span');glow.className='card-shine';art.appendChild(glow);
