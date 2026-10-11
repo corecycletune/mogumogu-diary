@@ -1,6 +1,6 @@
 // On-page five-layer card construction lab, using only existing artwork.
 // Accessible only at /p/jun/?dev=1 and never touches Firebase, gacha or collection state.
-import {CARD_LAYER_MANIFEST} from './card-layer-manifest.js';
+import {CARD_LAYER_MANIFEST,RARITY_BACKGROUNDS} from './card-layer-manifest.js';
 import {BY_ID} from './game-catalog.js';
 (function(){
   const profile=document.body.dataset.profile;
@@ -54,7 +54,7 @@ import {BY_ID} from './game-catalog.js';
     stage.setAttribute('role','img');
     stage.setAttribute('aria-label',data.name+'をレイヤー合成した試作カード');
     layer(stage,'substrate','composite-layer holo-substrate','div');
-    if(visual.background)layer(stage,'background','composite-layer card-background-image','img',visual.background,'');
+    layer(stage,'background','composite-layer card-background-image','img',visual.background||RARITY_BACKGROUNDS[data.rarity],'');
     const foil=layer(stage,'foil','composite-layer composite-foil','div');
     if(visual.foil!=='none'){
       const grain=layer(stage,'foil','composite-layer layer-lab-grain','div');
@@ -77,7 +77,7 @@ import {BY_ID} from './game-catalog.js';
 
   const intro=elem('div','layer-lab-intro');
   intro.appendChild(elem('h3','', '🧩 N → UR：レア度5段階・実装比較'));
-  intro.appendChild(elem('p','small','フレーム・背景・ホロの比較画面です。簡易SVGキャラクター素材は削除済みのため、キャラが未制作のカードは空欄にしています。SSR/URも完成アートへの差し替え前です。'));
+  intro.appendChild(elem('p','small','N～URの背景はすべて画像形式（PNG）で、背景SVGは使用していません。枠はSVGのまま、未制作キャラは空欄です。レア度別の背景の違いとホロを確認してください。'));
   mount.appendChild(intro);
   const panel=elem('div','layer-lab-controls');
   for(const item of layerOrder){
