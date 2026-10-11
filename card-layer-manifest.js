@@ -1,13 +1,23 @@
 // Five-layer cards use raster PNG rarity backgrounds and independent SVG frames. No SVG backgrounds.
 // Every path is relative to /p/<profile>/; shared assets are under /assets/cards/.
 const root='../../assets/cards/';
-export const RARITY_BACKGROUNDS=Object.freeze({
-  N:root+'backgrounds/bg_n.png',
-  R:root+'backgrounds/bg_r.png',
-  SR:root+'backgrounds/bg_sr.png',
-  SSR:root+'backgrounds/bg_ssr.png',
-  UR:root+'backgrounds/bg_ur.png'
+export const RARITY_VARIANT_BACKGROUNDS=Object.freeze({
+  N:Object.freeze([root+'backgrounds/bg_n.png']),
+  R:Object.freeze([root+'backgrounds/bg_r_1.png,root+'backgrounds/bg_r_2.png,root+'backgrounds/bg_r_3.png,root+'backgrounds/bg_r_4.png,root+'backgrounds/bg_r_5.png,root+'backgrounds/bg_r_6.png,root+'backgrounds/bg_r_7.png]),
+  SR:Object.freeze([root+'backgrounds/bg_sr_1.png,root+'backgrounds/bg_sr_2.png,root+'backgrounds/bg_sr_3.png,root+'backgrounds/bg_sr_4.png,root+'backgrounds/bg_sr_5.png,root+'backgrounds/bg_sr_6.png,root+'backgrounds/bg_sr_7.png]),
+  SSR:Object.freeze([root+'backgrounds/bg_ssr_holo.png']),
+  UR:Object.freeze([root+'backgrounds/bg_ur.png'])
 });
+export const RARITY_BACKGROUNDS=Object.freeze(Object.fromEntries(
+  Object.entries(RARITY_VARIANT_BACKGROUNDS).map(([rarity,options])=>[rarity,options[0]])
+));
+// Stable across devices and sessions; no random background changes for owned cards.
+export function pickBackgroundForCard(cardId,rarity){
+  const options=RARITY_VARIANT_BACKGROUNDS[rarity]||RARITY_VARIANT_BACKGROUNDS.N;
+  let hash=2166136261;
+  for(const c of String(cardId||rarity)){hash^=c.charCodeAt(0);hash=Math.imul(hash,16777619)>>>0;}
+  return options[hash%options.length];
+}
 export const CARD_LAYER_MANIFEST=Object.freeze({
   rice_n:Object.freeze({
     character:null,
@@ -43,7 +53,7 @@ export const CARD_LAYER_MANIFEST=Object.freeze({
   }),
   mango_r:Object.freeze({
     character:null,
-    background:RARITY_BACKGROUNDS.R,
+    background:pickBackgroundForCard('mango_r','R'),
     lowerFrame:root+'frames/base/r-simple.svg',
     upperFrame:root+'frames/top/r-simple.svg',
     foil:'none',
@@ -51,7 +61,7 @@ export const CARD_LAYER_MANIFEST=Object.freeze({
   }),
   newton_apple_sr:Object.freeze({
     character:null,
-    background:RARITY_BACKGROUNDS.SR,
+    background:pickBackgroundForCard('newton_apple_sr','SR'),
     lowerFrame:root+'frames/base/sr-scholar.svg',
     upperFrame:root+'frames/top/sr-scholar.svg',
     foil:'pearl',
@@ -67,7 +77,7 @@ export const CARD_LAYER_MANIFEST=Object.freeze({
   }),
   omu_ketchup_r:Object.freeze({
     character:root+'characters/omu_ketchup_r.webp',
-    background:RARITY_BACKGROUNDS.R, // R uses a soft reusable CSS wash, not an elaborate illustrated scene.
+    background:pickBackgroundForCard('mango_r','R'), // R uses a soft reusable CSS wash, not an elaborate illustrated scene.
     lowerFrame:root+'frames/base/r-simple.svg',
     upperFrame:root+'frames/top/r-simple.svg',
     foil:'none',

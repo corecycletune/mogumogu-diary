@@ -494,3 +494,42 @@
 .card-art.rarity-sr .card-shine{opacity:.14}
 .card-art.rarity-ssr .card-shine{opacity:.22}
 .card-art.rarity-ur .card-shine{opacity:.36}
+
+
+/* Background revision: shared 7-color R/SR raster files and high-density SSR foil.
+   Hologram stays behind portraits and foreground frames. */
+.layered-card.rarity-ssr{
+  box-shadow:inset 0 0 0 1px #fff7db,0 2px 13px #ccab5880;
+}
+.layered-card.rarity-ssr .composite-foil{
+  opacity:.84;
+  mix-blend-mode:screen;
+  background:
+    radial-gradient(circle at 12% 19%,#fffdecfa 0 1.8px,transparent 3.4px) 0 0/25px 32px,
+    radial-gradient(circle at 69% 61%,#d6fbffec 0 1.5px,transparent 3px) 8px 14px/36px 41px,
+    radial-gradient(circle at 41% 78%,#ffe6fbec 0 1.2px,transparent 3px) 15px 5px/33px 47px,
+    repeating-conic-gradient(from 12deg,#dbfaff55 0 10deg,#fff6b947 15deg 23deg,#ffd5f755 28deg 38deg,transparent 43deg 58deg) 0 0/21px 21px,
+    linear-gradient(112deg,#faedb14d,#a4edfc8c 25%,#ffbce187 43%,#fff6af83 61%,#b7fce884 78%,#dfc4ffa4);
+  animation:mogumogu-ssr-holo 6.2s ease-in-out infinite alternate;
+}
+@keyframes mogumogu-ssr-holo{
+  0%{filter:hue-rotate(-12deg) brightness(.97)}
+  100%{filter:hue-rotate(18deg) brightness(1.15)}
+}
+.layered-card.rarity-ssr .composite-glint{
+  z-index:2;
+  opacity:.32;
+  background:linear-gradient(112deg,transparent 16%,#d9f8ff30 35%,#fffed6d9 47%,#fdd9ffb8 50%,#daffff93 54%,transparent 73%);
+}
+@media(prefers-reduced-motion:reduce){
+  .layered-card.rarity-ssr .composite-foil{animation:none}
+}
+
+.background-variant-gallery{margin:15px 0 20px;}
+.background-variant-gallery h4{margin:14px 0 8px;font-size:13px;}
+.background-variant-row{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;}
+.background-variant-swatch{min-width:0;margin:0;text-align:center;}
+.background-variant-swatch img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:7px;border:1px solid #d5d7d0;}
+.background-variant-swatch figcaption{margin-top:4px;font-size:10px;color:#536960;}
+.background-ssr-swatch{max-width:95px;}
+@media(max-width:520px){.background-variant-row{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;}}

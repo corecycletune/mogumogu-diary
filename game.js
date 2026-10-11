@@ -1,5 +1,5 @@
 import {CATALOG,BY_ID,levelForCopies,drawCharacter} from './game-catalog.js';
-import {CARD_LAYER_MANIFEST,RARITY_BACKGROUNDS} from './card-layer-manifest.js';
+import {CARD_LAYER_MANIFEST,RARITY_BACKGROUNDS,pickBackgroundForCard} from './card-layer-manifest.js';
 (function(){
 'use strict';
 const profile=document.body.dataset.profile;
@@ -155,7 +155,7 @@ function paintCard(char,entry,unknown){
     under.className='composite-layer holo-substrate';
     under.setAttribute('aria-hidden','true');
     art.appendChild(under);
-    addLayer('card-background-image',layers.background||RARITY_BACKGROUNDS[char.rarity],true);
+    addLayer('card-background-image',pickBackgroundForCard(char.id,char.rarity),true);
     const foilBase=document.createElement('div');
     foilBase.className='composite-layer composite-foil';
     foilBase.setAttribute('aria-hidden','true');
@@ -169,12 +169,23 @@ function paintCard(char,entry,unknown){
     art.appendChild(glint);
     }
   }else{
-    // Keep the approved rarity background even when this character has no art yet.
-    // No SVG or emoji character is generated as a fallback.
-    addLayer('generic-rarity-background',RARITY_BACKGROUNDS[char.rarity],true);
-    const glow=document.createElement('span');glow.className='card-shine';
-    glow.setAttribute('aria-hidden','true');
-    art.appendChild(glow);
+    // All cards receive the same approved raster background and rarity-specific
+    // foil. Missing character art stays empty: no SVG or emoji fallback.
+    const foilByRarity={N:'none',R:'none',SR:'pearl',SSR:'sunflower',UR:'legendary'};
+    art.className+=' layered-card foil-'+(foilByRarity[char.rarity]||'none');
+    const substrate=document.createElement('div');
+    substrate.className='composite-layer holo-substrate';
+    substrate.setAttribute('aria-hidden','true');
+    art.appendChild(substrate);
+    addLayer('card-background-image',pickBackgroundForCard(char.id,char.rarity),true);
+    const foil=document.createElement('div');
+    foil.className='composite-layer composite-foil';
+    foil.setAttribute('aria-hidden','true');
+    art.appendChild(foil);
+    const glint=document.createElement('div');
+    glint.className='composite-layer composite-glint';
+    glint.setAttribute('aria-hidden','true');
+    art.appendChild(glint);
   }
   const rarity=document.createElement('span');rarity.className='card-rarity';rarity.textContent=char.rarity;art.appendChild(rarity);
   const name=document.createElement('strong');name.className='card-name';name.textContent=unknown?'未発見':char.name;

@@ -1,6 +1,6 @@
 // On-page five-layer card construction lab, using only existing artwork.
 // Accessible only at /p/jun/?dev=1 and never touches Firebase, gacha or collection state.
-import {CARD_LAYER_MANIFEST,RARITY_BACKGROUNDS} from './card-layer-manifest.js';
+import {CARD_LAYER_MANIFEST,RARITY_BACKGROUNDS,RARITY_VARIANT_BACKGROUNDS} from './card-layer-manifest.js';
 import {BY_ID} from './game-catalog.js';
 (function(){
   const profile=document.body.dataset.profile;
@@ -79,6 +79,37 @@ import {BY_ID} from './game-catalog.js';
   intro.appendChild(elem('h3','', '🧩 N → UR：レア度5段階・実装比較'));
   intro.appendChild(elem('p','small','N～URの背景はすべて画像形式（PNG）で、背景SVGは使用していません。枠はSVGのまま、未制作キャラは空欄です。レア度別の背景の違いとホロを確認してください。'));
   mount.appendChild(intro);
+  // Background-only comparison: preserves the existing SR illustration and
+  // exposes all seven colorways without any placeholder characters.
+  const variants=elem('div','background-variant-gallery');
+  for(const [tier,labels] of [
+    ['R',['緑','青緑','青','紫','桃','珊瑚','琥珀']],
+    ['SR',['紺','藍','青紫','深緑','紫','赤紫','青緑']]
+  ]){
+    const heading=elem('h4','',tier+' 背景・7色');
+    variants.appendChild(heading);
+    const row=elem('div','background-variant-row');
+    RARITY_VARIANT_BACKGROUNDS[tier].forEach((src,i)=>{
+      const figure=elem('figure','background-variant-swatch');
+      const img=elem('img','');
+      img.src=src;
+      img.alt=tier+'背景 '+(i+1)+'番 '+labels[i];
+      img.loading='lazy';
+      figure.appendChild(img);
+      figure.appendChild(elem('figcaption','',labels[i]));
+      row.appendChild(figure);
+    });
+    variants.appendChild(row);
+  }
+  variants.appendChild(elem('h4','','SSR 強化ホログラム背景'));
+  const ssrFigure=elem('figure','background-variant-swatch background-ssr-swatch');
+  const ssrImage=elem('img','');
+  ssrImage.src=RARITY_BACKGROUNDS.SSR;
+  ssrImage.alt='SSR 金・虹箔・微細ラメのホログラム背景';
+  ssrFigure.appendChild(ssrImage);
+  ssrFigure.appendChild(elem('figcaption','','ホログラム'));
+  variants.appendChild(ssrFigure);
+  mount.appendChild(variants);
   const panel=elem('div','layer-lab-controls');
   for(const item of layerOrder){
     const label=elem('label','layer-lab-toggle');
