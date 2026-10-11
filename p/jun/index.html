@@ -149,6 +149,16 @@
             <option value="SSR">SSRを確認</option>
             <option value="UR">隠しカードを確認（開発者用）</option>
           </select>
+          <label class="label" for="devCharacter">代表カードを直接確認</label>
+          <select class="field" id="devCharacter">
+            <option value="random">ランダム抽選を使う</option>
+            <option value="omu_ichika_ssr">SSR：いちかのオムライス</option>
+            <option value="hokusai_wave_ssr">SSR：北斎・大波の和菓子</option>
+            <option value="omu_ketchup_r">R：ケチャップオムライス</option>
+            <option value="newton_apple_sr">SR：ニュートンりんご</option>
+            <option value="rice_n">N：おこめちゃん</option>
+          </select>
+          <p class="small">カードを指定した場合は、レア度の選択より優先します。</p>
           <p class="small" id="devConnectionStatus">本番の接続状態を確認中…</p>
           <p class="small" id="devDrawCount">テスト抽選：0回</p>
           <button type="button" class="btn secondary" id="devReset">テスト結果をリセット</button>
