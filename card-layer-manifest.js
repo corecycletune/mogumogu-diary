@@ -1,7 +1,23 @@
-// Curated five-layer art for six independently layered reference cards.
+// Curated five-layer art for N–UR reference cards with independent backgrounds, frames, art and printed foil.
 // Every path is relative to /p/<profile>/; shared assets are under /assets/cards/.
 const root='../../assets/cards/';
 export const CARD_LAYER_MANIFEST=Object.freeze({
+  rice_n:Object.freeze({
+    character:root+'characters/rice_daily_n.svg',
+    background:null,
+    lowerFrame:root+'frames/base/n-paper.svg',
+    upperFrame:root+'frames/top/n-paper.svg',
+    foil:'none',
+    layout:'basic-n'
+  }),
+  secret_rinpa_ur:Object.freeze({
+    character:root+'characters/rinpa_golden_rice_ur.svg',
+    background:root+'backgrounds/ur-rinpa-prismatic.svg',
+    lowerFrame:root+'frames/base/ur-gold.svg',
+    upperFrame:root+'frames/top/ur-gold.svg',
+    foil:'legendary',
+    layout:'legendary'
+  }),
   omu_ichika_ssr:Object.freeze({
     character:root+'characters/omu_ichika_ssr.webp',
     background:root+'backgrounds/ssr-ichika-palace.svg',
