@@ -53,47 +53,7 @@
 .secret-discovery{font-weight:900;color:#926306;background:#fff0b1;padding:12px;border-radius:13px;letter-spacing:.05em}
 .game-error{color:#a03838!important;font-weight:700}
 @keyframes game-pop{0%{opacity:.2;transform:scale(.75) rotate(-3deg)}65%{opacity:1;transform:scale(1.07) rotate(1deg)}100%{transform:scale(1)}}
-/* Each tier owns four reusable patterns; a few SSR/UR cards get special backgrounds. */
-.pattern-soft-dots::before{background:radial-gradient(#ffffffb0 22%,transparent 26%) 0 0/24px 24px}
-.pattern-soft-check::before{background:linear-gradient(90deg,#fff8 50%,transparent 50%) 0 0/28px 28px,linear-gradient(#fff6 50%,transparent 50%) 0 0/28px 28px}
-.pattern-soft-stripes::before{background:repeating-linear-gradient(140deg,#fff8 0 10px,transparent 10px 24px)}
-.pattern-soft-cloud::before{background:radial-gradient(ellipse,#fff9 0 40%,transparent 43%) 0 0/70px 45px}
-.pattern-candy{--card-a:#fbe9ac!important;--card-b:#f3a4bf!important}
-.pattern-fruit{--card-a:#f8df9a!important;--card-b:#9fd9a4!important}
-.pattern-cafe{--card-a:#e5c9b1!important;--card-b:#a7d5cc!important}
-.pattern-picnic{--card-a:#e0f2bb!important;--card-b:#a9d5c7!important}
-.pattern-candy::before{background:repeating-linear-gradient(135deg,#fff9 0 7px,transparent 8px 25px)}
-.pattern-fruit::before{background:radial-gradient(circle,#fff9 10%,transparent 15%) 0 0/31px 35px}
-.pattern-cafe::before{background:linear-gradient(90deg,#fff7 2px,transparent 2px) 0 0/27px 27px,linear-gradient(#fff7 2px,transparent 2px) 0 0/27px 27px}
-.pattern-picnic::before{background:repeating-linear-gradient(0deg,#fff7 0 9px,transparent 10px 19px),repeating-linear-gradient(90deg,#fff5 0 9px,transparent 10px 19px)}
-.pattern-holo{--card-a:#b5d8ff!important;--card-b:#f3bed5!important}
-.pattern-wagara{--card-a:#e5d8fb!important;--card-b:#c9e7ed!important}
-.pattern-music{--card-a:#a6d1fa!important;--card-b:#d0b8fa!important}
-.pattern-paint{--card-a:#b8dfff!important;--card-b:#f9c1b8!important}
-.pattern-holo::before{background:repeating-conic-gradient(from 0deg,#fff6 0 14deg,transparent 14deg 30deg) 0 0/35px 35px}
-.pattern-wagara::before{background:radial-gradient(ellipse at 50% 100%,transparent 60%,#fff9 61% 66%,transparent 67%) 0 0/54px 27px}
-.pattern-music::before{background:repeating-linear-gradient(0deg,#fff8 0 2px,transparent 2px 10px)}
-.pattern-paint::before{background:radial-gradient(circle at 25% 25%,#fff9 0 7px,transparent 8px) 0 0/65px 61px}
-.pattern-crown{--card-a:#fee6b3!important;--card-b:#e8b7df!important}
-.pattern-palace{--card-a:#c4bef6!important;--card-b:#fee2a8!important}
-.pattern-gallery{--card-a:#f3dcac!important;--card-b:#b9d9ea!important}
-.pattern-scroll{--card-a:#d9e6bd!important;--card-b:#e4c7ac!important}
-.pattern-crown::before{background:repeating-linear-gradient(120deg,#fff8 0 2px,transparent 2px 35px)}
-.pattern-palace::before{background:radial-gradient(ellipse at bottom,#ffffff99 0 25%,transparent 27%) 0 0/42px 70px}
-.pattern-gallery::before{background:repeating-linear-gradient(45deg,transparent 0 30px,#fff8 32px 35px)}
-.pattern-scroll::before{background:repeating-radial-gradient(circle at 20% 35%,#fff8 0 2px,transparent 4px 25px)}
-.pattern-aurora{--card-a:#f1c8fb!important;--card-b:#9ddeff!important}
-.pattern-space{--card-a:#b9a0f9!important;--card-b:#7bd5f7!important}
-.pattern-gold{--card-a:#ffed97!important;--card-b:#fac6b4!important}
-.pattern-treasure{--card-a:#f8cb80!important;--card-b:#efb9f4!important}
-.pattern-ichika{--card-a:#ffe4aa!important;--card-b:#ffaecf!important}
-.pattern-royal{--card-a:#fee0aa!important;--card-b:#dcc7ff!important}
-.pattern-wave{--card-a:#aed6fe!important;--card-b:#729cd2!important}
-.pattern-atelier{--card-a:#eecdaa!important;--card-b:#d0b9ee!important}
-.pattern-sun{--card-a:#ffdc8c!important;--card-b:#ffb2a4!important}
-.pattern-mountain{--card-a:#beddf6!important;--card-b:#d7e8e7!important}
-.pattern-legend{--card-a:#fff3a8!important;--card-b:#ffd0fd!important}
-.pattern-cosmos{--card-a:#a9d6ff!important;--card-b:#d4aafa!important}
+/* Old CSS-generated background patterns removed; rarity backgrounds are now PNG assets. */
 @media(max-width:480px){.collection-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.collection-card{padding:6px}.character-glyph{font-size:55px}.card-art{border-width:3px}.card-lore{font-size:10px}}
 @media(prefers-reduced-motion:reduce){.game-reveal{animation:none}}
 
@@ -517,3 +477,20 @@
 .layered-card:has(.card-full-art) .card-rarity{
   z-index:7;
 }
+
+/* APPROVED BACKGROUND PIPELINE (2026-10-11): five raster PNG tiers; SVG is for frames only.
+   Ignore legacy CSS pattern classes and use the raster image as the true background. */
+.card-art::before,.card-art::after{content:none!important;display:none!important}
+.card-art .generic-rarity-background{
+  position:absolute;inset:0;width:100%;height:100%;display:block;
+  object-fit:cover;z-index:0;pointer-events:none;user-select:none;
+}
+.card-art.layered-card .card-background-image{
+  position:absolute;inset:0;width:100%;height:100%;
+  z-index:1;object-fit:cover;display:block;
+}
+.card-art .card-shine{z-index:1;opacity:.12}
+.card-art.rarity-n .card-shine,.card-art.rarity-r .card-shine{opacity:0}
+.card-art.rarity-sr .card-shine{opacity:.14}
+.card-art.rarity-ssr .card-shine{opacity:.22}
+.card-art.rarity-ur .card-shine{opacity:.36}
