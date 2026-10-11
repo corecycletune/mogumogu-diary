@@ -114,3 +114,26 @@
 .dev-panel .small{margin:11px 0}
 .dev-panel .btn{margin:5px 0 1px;min-height:42px;font-size:13px}
 .game-test-warning{background:#fff0cd;border:1px solid #f1d69b;border-radius:10px;padding:10px;font-weight:800;color:#75501b;font-size:13px}
+
+/* Real scalable illustrated card foreground. Replaces emoji glyphs, keeps
+   backgrounds, frames, and holographic effects as independent CSS layers. */
+.card-art .character-illustration{
+  position:absolute;
+  inset:0;
+  z-index:2;
+  width:100%;
+  height:100%;
+  display:block;
+  object-fit:contain;
+  filter:drop-shadow(0 7px 6px #322b4f3b);
+  pointer-events:none;
+  user-select:none;
+}
+.card-art.rarity-sr .character-illustration{filter:drop-shadow(0 8px 8px #334b8a66)}
+.card-art.rarity-ssr .character-illustration{filter:drop-shadow(0 9px 10px #814b7270)}
+.card-art.rarity-ur .character-illustration{filter:drop-shadow(0 7px 14px #e7c555c9)}
+.card-art.evolved-level-2 .character-illustration{filter:drop-shadow(0 5px 12px #fffbd9bf)}
+.card-art.evolved-level-3 .character-illustration{filter:drop-shadow(0 5px 11px #ffeba6c9)}
+.card-art.evolved-level-4 .character-illustration{filter:drop-shadow(0 7px 13px #f8c682ed)}
+.card-art.evolved-level-5 .character-illustration{filter:drop-shadow(0 8px 16px #ffe48aff);transform:scale(1.04)}
+@media(max-width:480px){.card-art .character-illustration{max-width:100%}}
