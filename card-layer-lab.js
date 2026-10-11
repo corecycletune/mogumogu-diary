@@ -102,12 +102,12 @@ import {BY_ID} from './game-catalog.js';
     sliderValue.textContent=slider.value+'%';
     stageList.forEach(({stage,foil})=>{
       if(stage.classList.contains('foil-none'))return;
-      const max=stage.classList.contains('foil-legendary')?1:
-        stage.classList.contains('foil-sunflower')?.98:
-        stage.classList.contains('foil-pearl')?.30:.75;
+      const max=stage.classList.contains('foil-legendary') ? 1 :
+        stage.classList.contains('foil-sunflower') ? .98 :
+        stage.classList.contains('foil-pearl') ? .30 : .75;
       foil.style.opacity=String(max*Number(slider.value)/100);
-      stage.style.setProperty('--lab-grain-opacity',String(Number(slider.value)/100*(stage.classList.contains('foil-legendary')?1:.92)));
-      stage.style.setProperty('--lab-glint-opacity',String(Number(slider.value)/100*(stage.classList.contains('foil-legendary')?.78:.48)));
+      stage.style.setProperty('--lab-grain-opacity',String(Number(slider.value)/100*(stage.classList.contains('foil-legendary') ? 1 : .92)));
+      stage.style.setProperty('--lab-glint-opacity',String(Number(slider.value)/100*(stage.classList.contains('foil-legendary') ? .78 : .48)));
     });
   };
   slider.addEventListener('input',intensify);
