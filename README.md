@@ -1,7 +1,7 @@
 # もぐもぐ日記 / mogumogu-diary
 
-> **ゲーム・カード制作の正式仕様（SSOT）**：**[docs/GAME_DESIGN.md](./docs/GAME_DESIGN.md)**  
-> SSOT = Single Source of Truth（唯一の正本）。**承認済みの美術ルールとゲーム報酬の仕様はこのファイルを優先**してください。過去の試作履歴は [docs/history/GAME_DESIGN_NOTES_2026-10-11.md](./docs/history/GAME_DESIGN_NOTES_2026-10-11.md) に保管しています。READMEの過去の実装メモやコードがSSOTに反する場合、試作の都合で美術仕様を変更せず、事前承認のうえ修正します。
+> **ゲーム・カード制作の正式仕様（SSOT）**：**[docs/GAME_DESIGN_SSOT.md](./docs/GAME_DESIGN_SSOT.md)**  
+> SSOT = Single Source of Truth（唯一の正本）。**承認済みの美術ルールとゲーム報酬の仕様はこのファイルを優先**してください。過去の試作履歴は誤参照を防ぐため削除し、承認済み仕様だけを新SSOTに統合しています。READMEの過去の実装メモやコードがSSOTに反する場合、試作の都合で美術仕様を変更せず、事前承認のうえ修正します。
 
 いちか・じゅんちゃん・さとばぁばが食事時間を記録する、iPhone/iPad向けPWAです。
 
@@ -64,7 +64,7 @@ Webアプリの設定は `firebase-sync.js` に登録済みです。
 
 ## ゲーム試作（Firebase同期・ガチャ・図鑑）
 
-**仕様の正本（SSOT）は [docs/GAME_DESIGN.md](./docs/GAME_DESIGN.md) です。** とくに「高品質のキャラ透過画像」「N/R/SRの5レイヤー合成」「SSR/URのフルアート許可」「背景面のホロ」という美術仕様を必ず確認してください。技術的な表示成功は作画の完成を意味しません。食事記録機能は従来どおり利用できます。
+**仕様の正本（SSOT）は [docs/GAME_DESIGN_SSOT.md](./docs/GAME_DESIGN_SSOT.md) です。** とくに「高品質のキャラ透過画像」「N/R/SRの5レイヤー合成」「SSR/URのフルアート許可」「背景面のホロ」という美術仕様を必ず確認してください。技術的な表示成功は作画の完成を意味しません。食事記録機能は従来どおり利用できます。
 
 - **1日1回無料ガチャ**：家族のFirebaseに接続した本人だけが利用可。同じ日の2回目はFirestoreトランザクションで拒否。
 - **コイン・ガチャ券の保存**：各プロフィールの `families/{familyCode}/games/{profile}` に保存。別端末でも、同一プロフィールのゲーム状態を同期。
@@ -98,8 +98,14 @@ Webアプリの設定は `firebase-sync.js` に登録済みです。
 
 - **簡易SVGキャラクター画像5ファイルをGitHubから削除**し、自動生成プログラム `card-illustrations.js` も削除しました。画像が存在しないキャラクターは、背景・フレーム・ホロ・名前のみ表示します。勝手に簡易SVGで代替しません。
 - **残したキャラ画像**：`assets/cards/characters/omu_ichika_ssr.webp`、`hokusai_wave_ssr.webp`、`omu_ketchup_r.webp`。
-- **保持したもの**：`assets/cards/frames/` のSVG全件、`assets/cards/backgrounds/` のSVG全件、図鑑・ガチャ・レベル・所持データ、ゲームのルール、ホロ用CSS。
+- **保持したもの**：`assets/cards/frames/` のSVG全件、図鑑・ガチャ・レベル・所持データ、ゲームのルール、ホロ用CSS。**背景SVGは廃止し、レア度別のWebP画像に置き換えます。**
 - `card-layer-manifest.js` の対象5キャラは `character:null` として描画しません。図鑑のカード名・レア度・枠は維持します。
 - PWAキャッシュは `mogumogu-static-v14` に更新して旧簡易SVGの参照を外しました。公開後はブラウザの更新により反映されます。
-- **完成品質の基準は[SSOT](./docs/GAME_DESIGN.md)を参照**。過去の試作・会話経緯は[非SSOTの履歴](./docs/history/GAME_DESIGN_NOTES_2026-10-11.md)に保存しています。簡易SVGキャラの再制作・自動復活はしません。
+- **完成品質の基準は[SSOT](./docs/GAME_DESIGN_SSOT.md)を参照**。旧試作資料は削除し、承認済みの決定事項だけをSSOTに統合しています。簡易SVGキャラの再制作・自動復活はしません。
 
+
+### 正式背景素材のルール
+
+- N/R/SR/SSR/URの5段階背景は**ラスタ画像（WebP/PNG）のみ**。背景SVGを使用しません。
+- 背景画像にキャラクター・フレーム・文字を描き込まず、独立した部品として管理します。
+- **唯一の仕様書**：[GAME_DESIGN_SSOT.md](./docs/GAME_DESIGN_SSOT.md)。旧GAME_DESIGN.mdおよび旧履歴資料は削除対象です。
