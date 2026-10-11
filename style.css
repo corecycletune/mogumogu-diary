@@ -137,3 +137,134 @@
 .card-art.evolved-level-4 .character-illustration{filter:drop-shadow(0 7px 13px #f8c682ed)}
 .card-art.evolved-level-5 .character-illustration{filter:drop-shadow(0 8px 16px #ffe48aff);transform:scale(1.04)}
 @media(max-width:480px){.card-art .character-illustration{max-width:100%}}
+
+
+/* Five independently maintained layers for the three approved reference cards.
+   Each image is its own asset: foil substrate, background, rear frame SVG,
+   transparent WebP character, front frame SVG. Card text remains HTML. */
+.card-art.layered-card{
+  isolation:isolate;
+  overflow:hidden;
+  border:0;
+  border-radius:13px;
+  background:#f7efd9;
+}
+.card-art.layered-card::before,
+.card-art.layered-card::after{content:none!important;display:none!important}
+.layered-card .composite-layer{
+  display:block;
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  pointer-events:none;
+  user-select:none;
+}
+.layered-card .holo-substrate{
+  z-index:0;
+  background:linear-gradient(135deg,#d8e9df,#f8eee0);
+}
+.layered-card.visual-adventurer .holo-substrate{
+  background:
+    radial-gradient(circle at 15% 18%,#fff8 0 2px,transparent 3px) 0 0/43px 51px,
+    radial-gradient(ellipse at 60% 12%,#fff8,transparent 57%),
+    linear-gradient(160deg,#f6f0d9 0%,#dbebd7 45%,#bad4ba 100%);
+}
+.layered-card.visual-princess .holo-substrate{
+  background:linear-gradient(165deg,#f8d4e8,#f9b9d2 55%,#e8b5dd);
+}
+.layered-card.visual-wave .holo-substrate{
+  background:linear-gradient(170deg,#224f85,#77a9ce 68%,#1b5177);
+}
+.layered-card .card-background-image{
+  z-index:1;
+  object-fit:cover;
+}
+.layered-card .composite-foil{z-index:2;opacity:0;mix-blend-mode:screen}
+.layered-card.foil-pink .composite-foil{
+  opacity:.22;
+  background:
+     repeating-linear-gradient(112deg,transparent 0 22px,#fff4eeaa 23px 24px,transparent 27px 71px),
+     radial-gradient(ellipse at 25% 18%,#fff4c0aa,transparent 65%),
+     linear-gradient(132deg,transparent 33%,#facbff8b 50%,transparent 67%);
+}
+.layered-card.foil-blue .composite-foil{
+  opacity:.23;
+  background:
+     repeating-linear-gradient(126deg,transparent 0 31px,#d7faff83 32px 34px,transparent 35px 81px),
+     linear-gradient(135deg,#a4eafc35,transparent 32%,#e7edff99 51%,transparent 75%);
+}
+.layered-card.foil-none .composite-foil,
+.layered-card.foil-none .composite-glint{display:none}
+.layered-card .card-frame-under{
+  z-index:3;
+  object-fit:fill;
+}
+.layered-card .card-portrait{
+  z-index:4;
+  top:5%;
+  left:4%;
+  width:92%;
+  height:88%;
+  object-fit:contain;
+  filter:drop-shadow(0 8px 8px #483f4a46);
+}
+.layered-card.visual-adventurer .card-portrait{
+  top:10%;
+  left:4%;
+  width:92%;
+  height:79%;
+  filter:drop-shadow(0 6px 5px #455e4840);
+}
+.layered-card.visual-princess .card-portrait{
+  top:4%;
+  height:90%;
+  filter:drop-shadow(0 9px 12px #81486666);
+}
+.layered-card.visual-wave .card-portrait{
+  top:10%;
+  height:83%;
+  filter:drop-shadow(0 9px 10px #183c6475);
+}
+.layered-card .card-frame-over{
+  z-index:5;
+  object-fit:fill;
+}
+.layered-card .composite-glint{
+  z-index:6;
+  opacity:0;
+  mix-blend-mode:screen;
+  background:linear-gradient(112deg,transparent 28%,#fff9 46%,#fff3 52%,transparent 65%);
+  transform:translateX(-125%);
+}
+.layered-card.foil-pink .composite-glint,
+.layered-card.foil-blue .composite-glint{opacity:.13}
+.collection-card:hover .layered-card.foil-pink .composite-glint,
+.collection-card:hover .layered-card.foil-blue .composite-glint{
+  animation:mogumogu-foil-swipe 1.8s ease-out both;
+}
+@keyframes mogumogu-foil-swipe{
+  from{transform:translateX(-125%)}
+  to{transform:translateX(125%)}
+}
+.layered-card .card-rarity{
+  z-index:7;
+  right:8px;
+  top:8px;
+  box-shadow:0 2px 6px #493d3b3a;
+}
+.layered-card.rarity-r .card-rarity{
+  background:#f2f8f1;
+  color:#426a5b;
+}
+.layered-card.rarity-ssr .card-rarity{
+  background:linear-gradient(125deg,#ffedd1,#fffaf2,#f4d69d);
+  color:#784a34;
+  border:1px solid #d0a96d;
+}
+.layered-card.evolved-level-5 .card-portrait{
+  filter:drop-shadow(0 8px 18px #ffe79a88);
+}
+@media(prefers-reduced-motion:reduce){
+  .collection-card:hover .layered-card .composite-glint{animation:none}
+}
