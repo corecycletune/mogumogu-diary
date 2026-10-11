@@ -10,3 +10,89 @@
 .recent-list .history-item{padding:13px 2px}
 .history-item.latest-saved{background:#f0f8e9;border-radius:12px;padding-left:9px;padding-right:9px}
 .history-item .meta{max-width:240px;overflow-wrap:anywhere}
+
+/* Gacha / collection. Card foreground and backgrounds are independent layers. */
+.collection-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:10px 0 18px}
+.collection-head strong{font-size:13px;color:var(--sub)}
+.collection-head .field{max-width:185px;font-size:14px;min-height:41px;padding:7px 10px}
+.collection-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.collection-card{min-width:0;border:1px solid #e6e1d8;border-radius:16px;padding:7px 7px 10px;background:#fff;box-shadow:0 4px 12px #293d3012;overflow:hidden}
+.collection-card.rarity-ssr{border-color:#d5b77d;background:#fffaf0}
+.collection-card.rarity-ur{border-color:#cfac5f;box-shadow:0 4px 18px #c99b5466;background:#fff9e2}
+.card-art{--card-a:#f5f0e6;--card-b:#e7e9e6;position:relative;isolation:isolate;aspect-ratio:4/5;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:11px;background:linear-gradient(145deg,var(--card-a),var(--card-b));border:3px solid #e5e0d5}
+.card-art::before{content:"";position:absolute;inset:0;z-index:0;opacity:.65;pointer-events:none;background-image:radial-gradient(circle at 26% 25%,#ffffffb9 0 2px,transparent 3px),radial-gradient(circle at 75% 65%,#ffffffaa 0 3px,transparent 4px);background-size:32px 38px,41px 47px}
+.card-art.rarity-n{--card-a:#f4f1df;--card-b:#dde8df;border-color:#c5d0c6}
+.card-art.rarity-r{--card-a:#f4f6d1;--card-b:#bce1c8;border-color:#6bad8b}
+.card-art.rarity-sr{--card-a:#dde9ff;--card-b:#b4dbf9;border-color:#87a5dc}
+.card-art.rarity-ssr{--card-a:#edd9ff;--card-b:#f8d1ad;border:5px double #c09a45}
+.card-art.rarity-ur{--card-a:#ffe8b3;--card-b:#a9d3fd;border:5px double #e5ac28;box-shadow:inset 0 0 0 2px #fff5c5}
+.card-art.rarity-sr::after,.card-art.rarity-ssr::after,.card-art.rarity-ur::after{content:"";position:absolute;inset:-55%;z-index:0;pointer-events:none;opacity:.48;transform:rotate(22deg);background:repeating-linear-gradient(117deg,transparent 0 12px,#fff9 14px 16px,transparent 18px 35px)}
+.card-art.rarity-ssr::after{opacity:.7}
+.card-art.rarity-ur::after{background:conic-gradient(from 10deg,#ffa2e3aa,#98dbffaa,#ffea88cc,#b7a0ffaa,#ffa2e3aa);opacity:.7}
+.card-shine{position:absolute;z-index:1;inset:0;pointer-events:none;background:radial-gradient(ellipse at 40% 22%,#fff9,transparent 45%),linear-gradient(125deg,transparent 15%,#ffffff1f 35%,#fff9 48%,#ffffff2c 55%,transparent 80%);mix-blend-mode:screen}
+.character-glyph{position:relative;z-index:2;font-size:clamp(48px,8vw,90px);filter:drop-shadow(0 8px 8px #384e4644);transform:rotate(-4deg);line-height:1.2;text-align:center}
+.card-rarity{position:absolute;z-index:3;right:7px;top:7px;padding:2px 7px;border-radius:8px;background:#ffffffdc;font-size:11px;font-weight:900;color:#344d49;box-shadow:0 2px 6px #0002}
+.rarity-ssr .card-rarity{background:#fff1ac;color:#855300}
+.rarity-ur .card-rarity{background:#fff9ca;color:#8f4f00}
+.card-name{display:block;font-size:13px;line-height:1.5;margin-top:7px;overflow-wrap:anywhere}
+.card-subtitle{font-size:11px;line-height:1.5;color:var(--sub);margin-top:2px}
+.card-lore{font-size:11px;line-height:1.45;color:#617069;overflow-wrap:anywhere;margin:6px 1px 1px}
+.game-wallet{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:16px 0}
+.game-wallet>div{padding:11px 6px;background:#f8f8f1;border-radius:12px;text-align:center;display:flex;flex-direction:column;gap:4px}
+.game-wallet span{font-size:12px;color:var(--sub)}
+.game-wallet strong{font-size:22px;font-variant-numeric:tabular-nums}
+.game-free-button{display:block;width:100%;min-height:58px;margin:12px 0 9px}
+.game-draw-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.game-draw-actions .btn{font-size:13px;padding:12px 7px}
+#gameResult:not(:empty){border-top:1px solid var(--line);margin-top:20px;padding-top:18px;text-align:center}
+.game-win-title{font-size:17px;font-weight:800;margin:8px 0 12px}
+.game-reveal{width:min(250px,85%);margin:0 auto 13px;animation:game-pop .55s ease-out}
+.game-reveal .character-glyph{font-size:96px}
+.game-reveal .card-name{font-size:18px}
+.game-reveal .card-lore{font-size:13px}
+.secret-discovery{font-weight:900;color:#926306;background:#fff0b1;padding:12px;border-radius:13px;letter-spacing:.05em}
+.game-error{color:#a03838!important;font-weight:700}
+@keyframes game-pop{0%{opacity:.2;transform:scale(.75) rotate(-3deg)}65%{opacity:1;transform:scale(1.07) rotate(1deg)}100%{transform:scale(1)}}
+/* Each tier owns four reusable patterns; a few SSR/UR cards get special backgrounds. */
+.pattern-soft-dots::before{background:radial-gradient(#ffffffb0 22%,transparent 26%) 0 0/24px 24px}
+.pattern-soft-check::before{background:linear-gradient(90deg,#fff8 50%,transparent 50%) 0 0/28px 28px,linear-gradient(#fff6 50%,transparent 50%) 0 0/28px 28px}
+.pattern-soft-stripes::before{background:repeating-linear-gradient(140deg,#fff8 0 10px,transparent 10px 24px)}
+.pattern-soft-cloud::before{background:radial-gradient(ellipse,#fff9 0 40%,transparent 43%) 0 0/70px 45px}
+.pattern-candy{--card-a:#fbe9ac!important;--card-b:#f3a4bf!important}
+.pattern-fruit{--card-a:#f8df9a!important;--card-b:#9fd9a4!important}
+.pattern-cafe{--card-a:#e5c9b1!important;--card-b:#a7d5cc!important}
+.pattern-picnic{--card-a:#e0f2bb!important;--card-b:#a9d5c7!important}
+.pattern-candy::before{background:repeating-linear-gradient(135deg,#fff9 0 7px,transparent 8px 25px)}
+.pattern-fruit::before{background:radial-gradient(circle,#fff9 10%,transparent 15%) 0 0/31px 35px}
+.pattern-cafe::before{background:linear-gradient(90deg,#fff7 2px,transparent 2px) 0 0/27px 27px,linear-gradient(#fff7 2px,transparent 2px) 0 0/27px 27px}
+.pattern-picnic::before{background:repeating-linear-gradient(0deg,#fff7 0 9px,transparent 10px 19px),repeating-linear-gradient(90deg,#fff5 0 9px,transparent 10px 19px)}
+.pattern-holo{--card-a:#b5d8ff!important;--card-b:#f3bed5!important}
+.pattern-wagara{--card-a:#e5d8fb!important;--card-b:#c9e7ed!important}
+.pattern-music{--card-a:#a6d1fa!important;--card-b:#d0b8fa!important}
+.pattern-paint{--card-a:#b8dfff!important;--card-b:#f9c1b8!important}
+.pattern-holo::before{background:repeating-conic-gradient(from 0deg,#fff6 0 14deg,transparent 14deg 30deg) 0 0/35px 35px}
+.pattern-wagara::before{background:radial-gradient(ellipse at 50% 100%,transparent 60%,#fff9 61% 66%,transparent 67%) 0 0/54px 27px}
+.pattern-music::before{background:repeating-linear-gradient(0deg,#fff8 0 2px,transparent 2px 10px)}
+.pattern-paint::before{background:radial-gradient(circle at 25% 25%,#fff9 0 7px,transparent 8px) 0 0/65px 61px}
+.pattern-crown{--card-a:#fee6b3!important;--card-b:#e8b7df!important}
+.pattern-palace{--card-a:#c4bef6!important;--card-b:#fee2a8!important}
+.pattern-gallery{--card-a:#f3dcac!important;--card-b:#b9d9ea!important}
+.pattern-scroll{--card-a:#d9e6bd!important;--card-b:#e4c7ac!important}
+.pattern-crown::before{background:repeating-linear-gradient(120deg,#fff8 0 2px,transparent 2px 35px)}
+.pattern-palace::before{background:radial-gradient(ellipse at bottom,#ffffff99 0 25%,transparent 27%) 0 0/42px 70px}
+.pattern-gallery::before{background:repeating-linear-gradient(45deg,transparent 0 30px,#fff8 32px 35px)}
+.pattern-scroll::before{background:repeating-radial-gradient(circle at 20% 35%,#fff8 0 2px,transparent 4px 25px)}
+.pattern-aurora{--card-a:#f1c8fb!important;--card-b:#9ddeff!important}
+.pattern-space{--card-a:#b9a0f9!important;--card-b:#7bd5f7!important}
+.pattern-gold{--card-a:#ffed97!important;--card-b:#fac6b4!important}
+.pattern-treasure{--card-a:#f8cb80!important;--card-b:#efb9f4!important}
+.pattern-ichika{--card-a:#ffe4aa!important;--card-b:#ffaecf!important}
+.pattern-royal{--card-a:#fee0aa!important;--card-b:#dcc7ff!important}
+.pattern-wave{--card-a:#aed6fe!important;--card-b:#729cd2!important}
+.pattern-atelier{--card-a:#eecdaa!important;--card-b:#d0b9ee!important}
+.pattern-sun{--card-a:#ffdc8c!important;--card-b:#ffb2a4!important}
+.pattern-mountain{--card-a:#beddf6!important;--card-b:#d7e8e7!important}
+.pattern-legend{--card-a:#fff3a8!important;--card-b:#ffd0fd!important}
+.pattern-cosmos{--card-a:#a9d6ff!important;--card-b:#d4aafa!important}
+@media(max-width:480px){.collection-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.collection-card{padding:6px}.character-glyph{font-size:55px}.card-art{border-width:3px}.card-lore{font-size:10px}}
+@media(prefers-reduced-motion:reduce){.game-reveal{animation:none}}
