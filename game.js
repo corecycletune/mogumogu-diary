@@ -216,8 +216,10 @@ function render(){
 function testPull(){
   if(!isTesting()||busy)return;
   const choice=el('devRarity').value;
+  const chosenId=el('devCharacter').value;
   let card;
-  if(choice==='random')card=drawCharacter();
+  if(chosenId!=='random'&&BY_ID[chosenId])card=BY_ID[chosenId];
+  else if(choice==='random')card=drawCharacter();
   else{
     const pool=CATALOG.filter(x=>x.rarity===choice);
     if(!pool.length){message('選択したレア度のキャラクターがありません。');return;}
