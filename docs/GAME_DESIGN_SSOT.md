@@ -139,12 +139,12 @@
 ### 実装済みの背景画像と管理（2026-10-11）
 
 - **N:** `assets/cards/backgrounds/bg_n.png`（控えめな室内光）
-- **R:** `assets/cards/backgrounds/bg_r.png`（日光・花・緑）
-- **SR:** `assets/cards/backgrounds/bg_sr.png`（天文・青銀の光）
-- **SSR:** `assets/cards/backgrounds/bg_ssr.png`（金・花・強い輝き）
+- **R:** `assets/cards/backgrounds/bg_r_1.png`〜`bg_r_7.png`（元の光と質感を残す7色）
+- **SR:** `assets/cards/backgrounds/bg_sr_1.png`〜`bg_sr_7.png`（星・円環を残した紺系統7色）
+- **SSR:** `assets/cards/backgrounds/bg_ssr_holo.png`（金・微細ラメ・虹色箔）
 - **UR:** `assets/cards/backgrounds/bg_ur.png`（紫青・星空・虹色）
 
-画像5件はすべて**PNGのラスタ画像**であり、背景SVGは残さない。カード表示 `game.js` とテスト表示 `card-layer-lab.js` の背景参照は `card-layer-manifest.js` の `RARITY_BACKGROUNDS` に統一し、完成フレームのSVGだけを残す。背景にキャラクター・文字・額縁は焼き込まない。旧CSSのランダム背景パターン設定も撤去済み。
+使用中の背景17件（N1/R7/SR7/SSR1/UR1）はすべて**PNGのラスタ画像**であり、背景SVGは残さない。カード表示 `game.js` とテスト表示 `card-layer-lab.js` の背景参照は `card-layer-manifest.js` の `RARITY_BACKGROUNDS` に統一し、完成フレームのSVGだけを残す。背景にキャラクター・文字・額縁は焼き込まない。旧CSSのランダム背景パターン設定も撤去済み。
 
 これらは**背景素材の実装完了**を意味するが、最終のデザイン品質承認を意味しない。ユーザーがWebアプリで確認した結果を受けて必要なら再制作する。SSOT自体の制作ルールは無断変更しない。
 
