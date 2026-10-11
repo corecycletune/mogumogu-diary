@@ -15,7 +15,7 @@
   </header>
   <nav class="tabs" aria-label="メニュー">
     <button class="tab" data-target="timer" aria-selected="true">⏱ ごはん</button>
-    <button class="tab" data-target="calendar" aria-selected="false">⭐ カード</button>
+    <button class="tab" data-target="calendar" aria-selected="false">📚 図鑑</button>
     <button class="tab" data-target="history" aria-selected="false">📖 きろく</button>
     <button class="tab" data-target="bonus" aria-selected="false">🎁 ごほうび</button>
   </nav>
@@ -62,7 +62,23 @@
       <h2 class="section-title">スタンプカード</h2>
       <div class="calendar-header"><button class="btn secondary" id="prevMonth" aria-label="前の月">‹</button><strong id="monthLabel"></strong><button class="btn secondary" id="nextMonth" aria-label="次の月">›</button></div>
       <div class="calendar" id="calendarGrid"></div>
-      <p class="small">1日に1回以上記録するとスタンプがつくよ。</p>
+      <p class="small">1日に1回以上ごはんを記録するとスタンプがつくよ。</p>
+    </div>
+    <div class="card">
+      <h2 class="section-title">🍙 たべもの図鑑</h2>
+      <p class="small">食べ物や芸術から生まれた仲間を集めよう。まだ出会っていないカードも見られるよ。</p>
+      <div class="collection-head">
+        <strong id="collectionCount">図鑑を読み込み中…</strong>
+        <select id="collectionFilter" class="field" aria-label="図鑑の絞り込み">
+          <option value="all">すべて</option>
+          <option value="owned">持っている</option>
+          <option value="missing">まだ持っていない</option>
+          <option value="omurice">オムライス</option>
+          <option value="japanese">日本の芸術家</option>
+        </select>
+      </div>
+      <div id="collectionGrid" class="collection-grid" aria-live="polite"></div>
+      <p class="small">カードを重ねて引くと成長します。レア度は変わらず、Lv.1〜5まで育ちます。</p>
     </div>
   </section>
   <section data-panel="history" hidden>
@@ -103,11 +119,24 @@
     <div class="card">
       <h2 class="section-title">ごほうび</h2>
       <div class="metrics"><div class="metric"><strong id="coins">0</strong><span>コイン</span></div><div class="metric"><strong id="markedDays">0</strong><span>記録した日</span></div><div class="metric"><strong id="bonusDays">0</strong><span>ログインした日</span></div></div>
-      <p class="small">1日1回のログイン：10コイン。1日に記録した最初の食事：20コイン、2〜3食目：各10コイン。</p>
+      <p class="small">毎日無料ガチャ1回。ログインで10コイン、ごはんの記録で最大40コイン/日。連続記録ではコインやガチャ券がもらえます。食事時間の長短で差はつきません。</p>
     </div>
-    <div class="card"><h2 class="section-title">🎰 ガチャと図鑑</h2>
-      <p>UR・SR・R・Nの4種類を準備中！</p>
-      <p class="small">ガチャ、食材・料理のキャラクター、家具・装飾のカテゴリは次の開発段階で追加します。今はコインだけ貯まります。</p>
+    <div class="card" id="gachaCard">
+      <h2 class="section-title">🎁 もぐもぐガチャ</h2>
+      <p id="gameStatus" class="small" role="status">ゲームデータの接続を確認中…</p>
+      <div class="game-wallet">
+        <div><span>🪙 コイン</span><strong id="gameCoinCount">--</strong></div>
+        <div><span>🎫 ガチャ券</span><strong id="gameTickets">0</strong></div>
+        <div><span>引いた回数</span><strong id="gamePullCount">0</strong></div>
+      </div>
+      <button type="button" class="btn primary game-free-button" id="gameFreeDraw" disabled>🎁 今日の無料ガチャを引く</button>
+      <div class="game-draw-actions">
+        <button type="button" class="btn secondary" id="gameCoinDraw" disabled>100コインで引く</button>
+        <button type="button" class="btn secondary" id="gameTicketDraw" disabled>ガチャ券で引く</button>
+      </div>
+      <div id="gameResult" aria-live="polite"></div>
+      <p class="small">N / R / SR / SSRの仲間が登場。排出率はN72%、R20%、SR6%、SSR1.75%。課金なし。何か秘密があるかも…？</p>
+      <p class="small">同じ仲間を引くと成長に使えます。コイン・所持カードはFirebaseに保存します。</p>
     </div>
     <div class="card"><h2 class="section-title">🤝 みんなで協力</h2>
       <p id="coopStatus" class="small">家族で同期すると、3人の記録がここに集まります。</p><p class="small">協力達成時の特別報酬は今後のアップデートで追加します。</p></div>
@@ -115,4 +144,5 @@
   <p class="warning" id="offlineNotice">食事記録はまず端末に保存します。Firebaseとの同期状況は、最近の記録・履歴に表示します。</p>
   <p class="footer subtle">記録を楽しく続けよう。食事時間の長さで良し悪しを決めないよ。</p>
 </main><div class="toast" id="feedback" role="status" hidden></div>
-<script src="../../app.js" defer></script></body></html>
+<script src="../../app.js" defer></script>
+<script src="../../game.js" type="module"></script></body></html>
