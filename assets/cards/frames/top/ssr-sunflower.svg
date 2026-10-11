@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 525" preserveAspectRatio="none">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff8c5"/><stop offset=".5" stop-color="#d79f32"/><stop offset="1" stop-color="#ffe6a1"/></linearGradient></defs>
+<!-- Small corner flower clusters overlap portrait to establish real front-frame depth -->
+<g fill="url(#g)" stroke="#af752c" stroke-width="2.8">
+<g transform="translate(48 60)">
+<ellipse rx="11" ry="24" transform="rotate(0)"/><ellipse rx="11" ry="24" transform="rotate(60)"/><ellipse rx="11" ry="24" transform="rotate(120)"/>
+<circle r="13" fill="#85643d"/><circle r="6" fill="#fff3c1" stroke="none"/>
+</g>
+<g transform="translate(369 463) scale(.95)">
+<ellipse rx="11" ry="24" transform="rotate(0)"/><ellipse rx="11" ry="24" transform="rotate(60)"/><ellipse rx="11" ry="24" transform="rotate(120)"/>
+<circle r="13" fill="#85643d"/><circle r="6" fill="#fff3c1" stroke="none"/>
+</g>
+<g transform="translate(367 62) scale(.68)">
+<ellipse rx="11" ry="24" transform="rotate(0)"/><ellipse rx="11" ry="24" transform="rotate(60)"/><ellipse rx="11" ry="24" transform="rotate(120)"/><circle r="11" fill="#a06d36"/>
+</g>
+<g transform="translate(49 462) scale(.7)">
+<ellipse rx="11" ry="24" transform="rotate(0)"/><ellipse rx="11" ry="24" transform="rotate(60)"/><ellipse rx="11" ry="24" transform="rotate(120)"/><circle r="11" fill="#a06d36"/>
+</g>
+</g>
+<g fill="#fff5d7" stroke="#bb8a3e" stroke-width="2.3">
+<path d="M209 8l9 12 14 1-10 12 4 13-17-7-16 7 3-13-10-12 15-1z"/>
+<path d="M210 518l8-12 14-1-10-12 3-13-16 7-17-7 4 13-10 12 15 1z"/>
+</g>
+<g stroke="#fffdf2" stroke-width="3" stroke-linecap="round" opacity=".8">
+<path d="M112 43v16m-8-8h16M311 447v16m-8-8h16M337 125v16m-8-8h16"/>
+</g>
+</svg>
