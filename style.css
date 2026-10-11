@@ -402,3 +402,107 @@
 .layer-lab-card .lab-hide-glint .composite-glint{display:none!important;}
 @media(max-width:720px){.layer-lab-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;}.layer-lab{padding:11px;}}
 @media(max-width:440px){.layer-lab-grid{grid-template-columns:1fr;max-width:300px;margin:0 auto;}.layer-lab-card .card-art{max-width:300px;margin:auto;}}
+
+/* Five rarity stages: N subtle paper -> R fresh ornament -> SR pearl ->
+   SSR intense printed glitter -> secret UR prismatic foil.
+   Reflective layers sit behind the portrait (z2 < character z4), never over it. */
+.layered-card.visual-basic-n .holo-substrate{
+  background:linear-gradient(165deg,#fcfaf1 0%,#e9ede3 60%,#dce4dd 100%);
+}
+.layered-card.visual-basic-n .card-portrait{
+  top:8%;left:5%;width:90%;height:82%;filter:drop-shadow(0 5px 4px #46534325);
+}
+.layered-card.rarity-n.visual-basic-n{border:1px solid #d4d6c8}
+.layered-card.visual-mango .holo-substrate{
+  background:
+    radial-gradient(circle at 16% 21%,#fffcdeb0 0 2px,transparent 3px) 0 0/37px 43px,
+    radial-gradient(circle at 78% 30%,#fefbdfa8,transparent 36%),
+    linear-gradient(155deg,#fff4cb,#e8efcc 46%,#a8d8b9);
+}
+.layered-card.rarity-r.visual-mango{
+  box-shadow:inset 0 0 0 2px #fffbdf,0 2px 8px #94aa9e38;
+}
+/* Ink-like pearls for SR; no glitter confetti. */
+.layered-card.foil-pearl .composite-foil{
+  opacity:.29;
+  background:
+    linear-gradient(125deg,transparent 9%,#fff6 27%,#c6d7ffad 40%,transparent 61%,#fff7 85%,transparent 98%),
+    repeating-linear-gradient(132deg,transparent 0 72px,#f9ffff77 75px 76px,transparent 81px 133px);
+}
+/* Richer SSR foil: small holographic diffraction flakes on the open background. */
+.layered-card.foil-sunflower .composite-foil{
+  opacity:.96;
+  mix-blend-mode:screen;
+  background:
+    radial-gradient(circle at 14% 18%,#fffceb 0 2px,transparent 3.5px) 0 0/27px 34px,
+    radial-gradient(circle at 72% 61%,#e7faff 0 1.6px,transparent 3.1px) 13px 17px/43px 49px,
+    radial-gradient(circle at 43% 83%,#fff6bd 0 1px,transparent 2.8px) 22px 5px/37px 57px,
+    radial-gradient(circle at 82% 25%,#ffe2fb 0 1.5px,transparent 3px) 9px 23px/66px 65px,
+    repeating-conic-gradient(from 5deg at 50% 50%,#daf7ff73 0deg 10deg,#fffbd259 13deg 20deg,#fbcefb71 24deg 36deg,#fff4 42deg 55deg) 0 0/23px 23px,
+    linear-gradient(109deg,#fff1a243 0%,#b8eeff9a 19%,#f6b8f49b 35%,#fff09f97 51%,#a3ffe098 72%,#e0c0ffa8 90%,#fff2c764);
+  background-size:27px 34px,43px 49px,37px 57px,66px 65px,23px 23px,100% 100%;
+}
+.layered-card.foil-sunflower .composite-glint{
+  z-index:2;opacity:.42;
+  background:linear-gradient(110deg,transparent 15%,#ffffff10 28%,#d5fbfff0 46%,#fff9abdf 49%,#f9d9ffea 51%,#ffffff15 67%,transparent 83%);
+}
+/* UR: bespoke holographic substrate, distinct from SSR's golden glitter. */
+.layered-card.visual-legendary .holo-substrate{
+  background:linear-gradient(154deg,#1c2153,#744b91 42%,#263e77 78%,#35285b);
+}
+.layered-card.visual-legendary .card-portrait{
+  top:5%;left:0;width:100%;height:88%;
+  filter:drop-shadow(0 0 12px #fff8c09e) drop-shadow(0 10px 14px #3c275e99);
+}
+.layered-card.foil-legendary .composite-foil{
+  opacity:1;mix-blend-mode:screen;
+  background:
+    radial-gradient(circle at 15% 18%,#fefefb 0 2.7px,transparent 4.2px) 0 0/29px 37px,
+    radial-gradient(circle at 66% 47%,#e8fbff 0 2px,transparent 3.4px) 15px 3px/39px 43px,
+    radial-gradient(circle at 39% 79%,#ffdeef 0 1.6px,transparent 3px) 7px 21px/35px 53px,
+    repeating-conic-gradient(from 12deg,#e1d1ffb0 0deg 17deg,#87e5ffae 19deg 33deg,#fff2a0ab 36deg 55deg,#ffa9ecb9 58deg 70deg) 0 0/32px 32px,
+    linear-gradient(115deg,#b0edff94,#eab2ff9e 20%,#fffcd5a7 37%,#a8fceab0 52%,#ffb6eab5 70%,#d8ffff91 86%,#ffe0aa84);
+}
+.layered-card.foil-legendary .composite-glint{
+  z-index:2;
+  opacity:.72;
+  background:linear-gradient(105deg,transparent 15%,#aefaff26 31%,#edcbffef 45%,#fffdf1f0 49%,#ffe6b0e8 52%,#b9f9ff50 69%,transparent 85%);
+  animation:mogumogu-prismatic-sweep 6s ease-in-out infinite alternate;
+}
+@keyframes mogumogu-prismatic-sweep{
+  from{transform:translateX(-55%) rotate(-2deg);opacity:.40}
+  to{transform:translateX(55%) rotate(2deg);opacity:.78}
+}
+.layered-card.foil-legendary .card-rarity{
+  background:linear-gradient(105deg,#fff8b6,#d1fdff 33%,#ffe1ef 66%,#f6c45b);
+  border:1px solid #ffffd5;
+  box-shadow:0 0 16px #ffeeb79f;
+  color:#653b74;
+}
+.layered-card.foil-sunflower .card-rarity{
+  background:linear-gradient(128deg,#fff9d0,#fff4a0,#fbd7bd);
+  border:1px solid #b48b38;
+  box-shadow:0 0 12px #fff2be81;
+}
+.layer-lab .layered-card.foil-sunflower .composite-glint,
+.layer-lab .layered-card.foil-legendary .composite-glint{
+  opacity:var(--lab-glint-opacity,.6);
+}
+.layer-lab-card .layer-lab-grain{
+  background:
+    radial-gradient(circle at 14% 22%,#fffef8 0 1.7px,transparent 3.1px) 0 0/23px 31px,
+    radial-gradient(circle at 61% 78%,#ffdafa 0 2px,transparent 3.7px) 6px 13px/41px 48px,
+    radial-gradient(circle at 38% 41%,#c9f8ff 0 1.6px,transparent 3px) 18px 27px/37px 56px,
+    repeating-conic-gradient(from 15deg,#faecff86 0deg 12deg,#ffffe782 15deg 28deg,#d5faff95 30deg 45deg) 0 0/29px 29px;
+}
+.layer-lab-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;}
+.layer-lab-card{padding:6px;}
+.layer-lab-card .layer-lab-caption{min-height:80px;}
+.layer-lab-card .layer-lab-caption strong{font-size:12px;}
+.layer-lab-caption small{font-size:10px;line-height:1.45;}
+@media(max-width:940px){.layer-lab-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
+@media(max-width:620px){.layer-lab-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:440px){.layer-lab-grid{grid-template-columns:repeat(2,minmax(0,1fr));max-width:none;}}
+@media(prefers-reduced-motion:reduce){
+  .layered-card.foil-legendary .composite-glint{animation:none;transform:none;}
+}
