@@ -115,12 +115,12 @@ Webアプリの設定は `firebase-sync.js` に登録済みです。
 | レア度 | 背景画像 | 傾向 |
 |---|---|---|
 | N | `assets/cards/backgrounds/bg_n.png` | 淡い暖色・控えめな室内光 |
-| R | `assets/cards/backgrounds/bg_r.png` | 明るい緑・花・日光 |
-| SR | `assets/cards/backgrounds/bg_sr.png` | 青銀・天文の光・弱い反射 |
-| SSR | `assets/cards/backgrounds/bg_ssr.png` | 金色・花・強いキラ感 |
+| R | `assets/cards/backgrounds/bg_r_1.png`〜`bg_r_7.png` | 7色・花と日光 |
+| SR | `assets/cards/backgrounds/bg_sr_1.png`〜`bg_sr_7.png` | 紺系統7色・円環と星 |
+| SSR | `assets/cards/backgrounds/bg_ssr_holo.png` | 金・微細ラメ・強い虹色ホログラム |
 | UR | `assets/cards/backgrounds/bg_ur.png` | 紫青・星・虹色光沢 |
 
-**キャラクターや枠・文字を焼き込まない背景だけのPNGファイル**です。共通の`RARITY_BACKGROUNDS`に従い、62種類すべてのカードと開発用比較画面で再利用します。背景SVGや旧CSSパターン選択は削除済みです。フレームSVGは維持しています。
+**キャラクターや枠・文字を焼き込まない、現行17種類の背景PNG**です。共通の`RARITY_BACKGROUNDS`に従い、62種類すべてのカードと開発用比較画面で再利用します。背景SVGや旧CSSパターン選択は削除済みです。フレームSVGは維持しています。
 
 ### 背景7色展開とSSRホログラム強化（2026-10-11）
 
