@@ -1,5 +1,5 @@
 import {CATALOG,BY_ID,levelForCopies,drawCharacter} from './game-catalog.js';
-import {CARD_LAYER_MANIFEST,pickBackgroundForCard,frameForCard,characterArtForCard} from './card-layer-manifest.js';
+import {CARD_LAYER_MANIFEST,pickBackgroundForCard,frameForCard} from './card-layer-manifest.js';
 (function(){
 'use strict';
 const profile=document.body.dataset.profile;
@@ -161,7 +161,7 @@ function paintCard(char,entry,unknown){
     foilBase.setAttribute('aria-hidden','true');
     art.appendChild(foilBase);
     addLayer('card-frame-under',layers.lowerFrame,true);
-    addLayer('card-portrait',layers.character||characterArtForCard(char.id),false);
+    addLayer('card-portrait',layers.character,false);
     addLayer('card-frame-over',layers.upperFrame,true);
     const glint=document.createElement('div');
     glint.className='composite-layer composite-glint';
@@ -186,8 +186,6 @@ function paintCard(char,entry,unknown){
     // receives its stable, themed split-SVG frame set.
     const frame=frameForCard(char.id,char.rarity);
     if(frame)addLayer('card-frame-under',frame.lowerFrame,true);
-    // Portraits live between the split SVG frame layers, never burned into raster backgrounds.
-    addLayer('card-portrait',characterArtForCard(char.id),false);
     if(frame)addLayer('card-frame-over',frame.upperFrame,true);
     const glint=document.createElement('div');
     glint.className='composite-layer composite-glint';
