@@ -1,48 +1,11 @@
-const source='https://fooddb.mext.go.jp/';
+import {NUTRITION_MODELS} from './nutrition-models.js';
+import {CARD_PROFILES} from './card-profiles.js';
 export function putCardName(node,name){
   node.textContent=name;
   node.style.setProperty('--card-name-length',String(Math.max(1,name.length)*1.04));
 }
-// Qualitative descriptions, not inferred laboratory values or medical claims.
-const foods={
- rice:['ごはん','C（炭水化物）が中心。P（たんぱく質）は少量、F（脂質）は少なめ。','主にでんぷんで、体を動かすエネルギーになります。おかずと合わせると栄養の種類を増やせます。'],
- carrot:['にんじん','P・Fは少なく、Cと食物繊維を含みます。','βカロテンが特徴。体内で必要に応じてビタミンAになり、目や皮膚の正常な働きに関わります。'],
- tofu:['豆腐','植物性のPとFを含み、Cは少なめ。','大豆由来のたんぱく質が特徴。カルシウムの量は凝固剤や製品で異なります。'],
- bread:['パン','Cが中心。Pも含み、Fは種類によって変わります。','主食としてエネルギーを補給します。全粒粉入りは食物繊維をとる選択肢です。'],
- egg:['たまご','PとFが中心で、Cは少なめ。','たんぱく質のほかビタミンB12などを含みます。体の組織をつくる材料になります。'],
- miso:['みそ汁','具によってPFCが変わります。豆腐入りならP、いも入りならCが増えます。','みそは塩分を含みます。野菜や海藻などの具で栄養の種類を増やせます。'],
- corn:['とうもろこし','野菜の中ではCが多め。Pと食物繊維も含みます。','でんぷんによるエネルギーと、食物繊維が特徴です。'],
- cucumber:['きゅうり','P・F・Cとも少なく、水分が多い野菜。','カリウムを含みます。水分の多い、さっぱりした食材です。'],
- banana:['バナナ','Cが中心で、Fは少なめ。','カリウムやビタミンB6、食物繊維を含みます。手軽なエネルギー源です。'],
- potato:['じゃがいも','Cが中心。PとFは少なめ。揚げるとFが増えます。','カリウムやビタミンCを含みます。調理方法で脂質量が大きく変わります。'],
- salmon:['さけ','Pが豊富でFも含み、Cは少なめ。','ビタミンDやB12、魚の脂に含まれるEPA・DHAが特徴です。'],
- apple:['りんご','Cが中心で、P・Fは少なめ。','食物繊維を含みます。果汁だけより果肉も食べると食物繊維をとりやすくなります。'],
- milk:['牛乳','P・F・Cを含みます。低脂肪タイプではFが少なくなります。','カルシウムやビタミンB2を含みます。カルシウムは骨や歯の材料です。'],
- tomato:['トマト','P・Fは少なく、水分と少量のCを含みます。','ビタミンCやカリウム、赤い色素のリコピンを含みます。'],
- mushroom:['きのこ','P・F・Cは比較的少なく、食物繊維を含みます。','種類によってビタミンDなどを含みます。栄養量は種類・栽培方法で変わります。'],
- strawberry:['いちご','Cを含み、P・Fは少なめ。','ビタミンCと葉酸を含みます。ビタミンCはコラーゲンづくりに関わります。'],
- noodle:['うどん・めん','主にC。Pは少量、Fは調理で変わります。','主食のエネルギー源です。肉・卵・豆腐や野菜を加えると栄養の幅が広がります。'],
- seaweed:['のり・海藻','少量のPと食物繊維を含み、Fは少なめ。','ヨウ素などのミネラルが特徴。種類によって量が大きく違い、たくさん食べるほどよいわけではありません。'],
- omu:['オムライス','ごはんのC、卵のPとFを組み合わせた料理。油やソースでFが変わります。','卵由来のビタミン類を含みます。チーズ・肉・野菜など、具材で特徴が変わる料理です。'],
- pudding:['プリン','砂糖のC、卵・乳のPとFを含みます。','卵や乳を使うタイプはカルシウムなども含みます。配合や一食の量で違いがあります。'],
- ramen:['ラーメン','めんのCが中心。肉や卵でP、スープの油でFが増えます。','スープは塩分を含みます。具の種類と、飲むスープの量で栄養量が変わります。'],
- mango:['マンゴー','Cが中心で、P・Fは少なめ。','βカロテンやビタミンCを含む果物です。'],
- pizza:['ピザ','生地のC、チーズや具のP・Fを組み合わせた料理。','チーズ由来のカルシウムを含みます。具材と量によって塩分や脂質が変わります。'],
- taiyaki:['たい焼き・和菓子','砂糖や粉・米のCが中心。あんや乳入りなどでP・Fが変わります。','小豆あんには食物繊維も含まれます。材料と一食の量で栄養量が違います。'],
- parfait:['パフェ','果物や砂糖のC、乳・クリームのPとFを含みます。','果物由来のビタミン、乳由来のカルシウムなど。組み合わせによる違いが大きいデザートです。'],
- sushi:['寿司','酢飯のCと、魚介のPが中心。Fは魚の種類で変わります。','魚介由来のビタミンやミネラルを含みます。しょうゆの量で塩分が増えます。'],
- melon:['メロンパン','粉と砂糖のC、バターなどのFが中心。Pも少量含みます。','一般的なメロンパンは、メロンの形をまねたパンで、果物のメロンを含むとは限りません。'],
- tea:['お茶・コーヒー','無糖ならP・F・Cはごく少量。砂糖や乳を加えると変わります。','カフェインを含む種類があります。子ども向けには量や種類に配慮し、麦茶なども選べます。'],
- jelly:['ゼリー','甘いゼリーは砂糖のCが中心。P・Fは材料で変わります。','果汁・ゼラチン・寒天など配合はさまざま。見た目だけではビタミン量を判断できません。'],
- pasta:['パスタ','めんのCが中心。Pも含み、Fはソースによって変わります。','肉・魚・豆や野菜と合わせて栄養の種類を増やせます。'],
- veggie:['野菜','種類によりますがP・Fは少なめ。Cや食物繊維を含みます。','ビタミンやミネラルは種類で違います。いろいろな野菜を組み合わせるのが特徴です。'],
- pumpkin:['かぼちゃ','野菜の中ではCが多め。Fは少なめ。','βカロテン、ビタミンEなどを含みます。'],
- chestnut:['栗','Cが中心。多くのナッツと比べてFは少なめ。','食物繊維やカリウムを含みます。甘露煮などは砂糖が加わります。'],
- honey:['はちみつ','糖のCが中心で、P・Fはごく少量。','甘味のエネルギー源です。1歳未満の乳児には与えません。'],
- donut:['ドーナツ','粉と砂糖のC、油のFが中心。卵や乳でPも含みます。','揚げる・焼くなど製法でFが変わります。量を楽しみながら食べるお菓子です。'],
- sweets:['お菓子','多くはCが中心。乳・卵・油・ナッツの有無でPとFが変わります。','材料による違いが大きく、キャラクターの色や姿から栄養量は判断できません。']
-};
 const people={
+ 'アンリ・ルソー':'フランスの画家。独学で絵を学び、大きな葉や動物が重なる幻想的な密林の絵で知られます。',
  '葛飾北斎':'江戸時代の浮世絵師。「冨嶽三十六景」など、山や波、暮らしを大胆な構図で表しました。',
  '歌川広重':'江戸時代の浮世絵師。「東海道五十三次」など、雨や雪、旅先の風景を描きました。',
  '円山応挙':'江戸時代の画家。実物をよく観察した写生を重視し、動物や草花を描きました。',
@@ -65,32 +28,45 @@ const people={
  '俵屋宗達':'江戸時代初期の画家。「風神雷神図屏風」など、豊かな装飾と大胆な構図の作品を残しました。'
 };
 function foodKey(card){
+  if(card.id==='rousseau_jungle_ssr_trial')return 'mango';
+  if(NUTRITION_MODELS[card.id])return card.id;
   if(card.id==='secret_omurice_ur')return 'donut';
   if(card.id==='secret_celestial_ur')return 'jelly';
+  if(card.id==='noodle_n')return 'ramen';
+  if(card.id==='beethoven_coffee_sr')return 'coffee';
   if(card.food==='オムライス')return 'omu';
-  const first=card.id.split('_')[0];if(foods[first])return first;
-  const byFood={'ごはん':'rice','パン':'bread','トマト':'tomato','りんご':'apple','ミルク':'milk','うどん':'noodle','せんべい':'rice','だんご':'taiyaki','和菓子':'taiyaki','お茶':'tea','飲み物':'tea','ゼリー':'jelly','パスタ':'pasta','野菜':'veggie','かぼちゃ':'pumpkin','栗':'chestnut','はちみつ':'honey','かき氷':'sweets'};
+  const first=card.id.split('_')[0];if(NUTRITION_MODELS[first])return first;
+  const byFood={'ごはん':'rice','パン':'bread','トマト':'tomato','りんご':'apple','ミルク':'milk','うどん':'udon','せんべい':'senbei','だんご':'dango','和菓子':'mochi','お茶':'tea','飲み物':'tea','ゼリー':'jelly','パスタ':'pasta','野菜':'veggie','かぼちゃ':'pumpkin','栗':'chestnut','はちみつ':'honey','かき氷':'sweets'};
   return byFood[card.food]||'sweets';
 }
 export function detailsForCard(card){
-  const [food,pfc,nutrients]=foods[foodKey(card)];
-  return {food,pfc,nutrients,figure:card.figure?people[card.figure]:null,source,
-    motif:card.id==='secret_omurice_ur'?'カッシーニは土星とその環・衛星を調べた探査機。環の形をドーナツと金の装飾に重ねています。':card.id==='secret_celestial_ur'?'ボイジャー2号は海王星を近くから観測した探査機。青い惑星をゼリーと白金の装飾に重ねています。':null};
+  const model=NUTRITION_MODELS[foodKey(card)];
+  return {food:model.food,pfc:model.ratios,nutrition:model,nutrients:model.nutrients,story:CARD_PROFILES[card.id]?.story||card.lore,figure:card.figure?people[card.figure]:null,
+    motif:card.id==='secret_omurice_ur'?'カッシーニは土星とその環・衛星を調べた探査機。環の道をめぐる小さな相棒だ。':card.id==='secret_celestial_ur'?'ボイジャー2号は海王星を近くから観測した探査機。星の海で進む方向を照らしてくれる。':null};
 }
 export function openCardDetails(card,entry){
   let dialog=document.getElementById('cardDetails');
   if(!dialog){dialog=document.createElement('dialog');dialog.id='cardDetails';dialog.className='card-details';document.body.append(dialog);dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close();});}
-  dialog.replaceChildren();
-  const add=(tag,value)=>{const node=document.createElement(tag);node.textContent=value;dialog.append(node);return node;};
+  dialog.replaceChildren();dialog.dataset.rarity=card.rarity.toLowerCase();
+  const add=(tag,value,parent=dialog)=>{const node=document.createElement(tag);node.textContent=value;parent.append(node);return node;};
   const close=add('button','閉じる ×');close.className='btn secondary';close.addEventListener('click',()=>dialog.close());
-  const heading=add('h2',card.name);heading.id='cardDetailTitle';dialog.setAttribute('aria-labelledby',heading.id);
-  add('p',card.lore);
-  const data=detailsForCard(card);
-  if(data.figure){add('h3',card.figure);add('p',data.figure);add('p','人物や作品から着想した創作カードです。本人の好物を示すものではありません。');}
-  if(data.motif){add('h3','惑星と探査機');add('p',data.motif);}
-  add('h3',data.food+'の栄養');add('p','P＝たんぱく質、F＝脂質、C＝炭水化物');add('p',data.pfc);add('p',data.nutrients);
-  add('p','一般的な食材の特徴です。品種・商品・レシピ・食べる量で変わります。');
-  const link=add('a','食品成分の資料（文部科学省）');link.href=data.source;link.target='_blank';link.rel='noopener noreferrer';
-  if(entry)add('p','Lv.'+entry.level+' · '+entry.copies+'枚所持');
+  const data=detailsForCard(card),hero=add('div','');hero.className='card-back-hero';
+  const heading=add('h2',card.name,hero);heading.id='cardDetailTitle';dialog.setAttribute('aria-labelledby',heading.id);
+  add('p',data.story,hero);
+  add('h3','PFCバランス');
+  if(data.pfc){
+    const bar=add('div','');bar.className='pfc-bar';bar.setAttribute('role','img');bar.setAttribute('aria-label','エネルギーの割合：たんぱく質'+data.pfc[0]+'%、脂質'+data.pfc[1]+'%、炭水化物'+data.pfc[2]+'%');
+    const legend=add('div','');legend.className='pfc-legend';
+    ['P たんぱく質','F 脂質','C 炭水化物'].forEach((label,index)=>{
+      const part=add('span','',bar);part.className='pfc-part pfc-'+index;part.style.width=data.pfc[index]+'%';
+      const item=add('div','',legend);item.className='pfc-item pfc-label-'+index;add('strong',data.pfc[index]+'%',item);add('span',label,item);
+    });
+    add('p','エネルギーの割合（目安）').className='small';
+  }else add('p','ほとんどエネルギーがなく、水分が中心。');
+  add('p',data.nutrition.tip);
+  if(data.nutrients){add('h3','体へのはたらき');add('p',data.nutrients);}
+  if(data.figure){add('h3',card.figure);add('p',data.figure);}
+  if(data.motif){add('h3','星の相棒');add('p',data.motif);}
+  if(entry)add('p','Lv.'+entry.level+' · '+entry.copies+'枚所持').className='small';
   dialog.showModal();
 }

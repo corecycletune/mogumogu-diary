@@ -1,3 +1,4 @@
+import {localContext,prepareCloudContext,freshGame} from './progress-store.js';
 import {openCardDetails,putCardName} from './card-details.js';
 import {CATALOG,BY_ID,levelForCopies,drawCharacter} from './game-catalog.js';
 import {CARD_LAYER_MANIFEST,pickBackgroundForCard,frameForCard,sceneForRarity,SR_PREMIUM_TRIM} from './card-layer-manifest.js';
@@ -8,23 +9,24 @@ if(!['ichika','jun','sato'].includes(profile))return;
 const el=id=>document.getElementById(id);
 const bridge=window.MogumoguGameBridge;
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
-const fresh=()=>({profile,version:1,coins:0,tickets:0,drawCount:0,lastFreeDay:'',lastLoginDay:'',loginDays:0,inventory:{},history:[],mealRewardDays:{},streakRewardKeys:[],updatedAt:new Date().toISOString()});
+const fresh=()=>freshGame(profile);
 const clone=state=>state?JSON.parse(JSON.stringify(state)):fresh();
 let ctx=null,unsubscribe=null,state=fresh(),ready=false,busy=false,lastMealSignature='',statusError='',latestDraw=null,connectionSeq=0;
 let testDrawCount=0,testInventory={};
 const devAvailable=profile==='jun'&&!!el('devModeToggle')&&/(?:^|[?&])dev=1(?:&|$)/.test(window.location.search);
 if(devAvailable)el('devPanel').hidden=false;
+if(devAvailable){const select=el('devCharacter');select.replaceChildren(new Option('ランダム抽選を使う','random'),...CATALOG.map(card=>new Option(card.rarity+'：'+card.name,card.id)));}
 function isTesting(){return devAvailable&&el('devModeToggle').checked;}
 function testSummary(){
   if(!devAvailable)return;
   el('devDrawCount').textContent='テスト抽選：'+testDrawCount+'回（未保存）';
   el('devConnectionStatus').textContent=!ctx
-    ?'本番ガチャ：家族同期に未接続。「きろく」から家族コードで参加してください。'
+    ?'この端末でプレイできます。'
     :statusError
       ?'本番ガチャ：エラーあり。上部のエラー内容を確認してください。'
       :ready
-        ?'本番ガチャ：Firebase接続済み。'
-        :'本番ガチャ：接続確認中。接続できない場合は「きろく」の状態を確認してください。';
+        ?'プレイできます。'
+        :'本番ガチャ：接続確認中。接続できない場合は「設定」の状態を確認してください。';
 }
 window.mogumoguGameManaged=true;
 const rarityRank=['N','R','SR','SSR','UR'];
@@ -33,13 +35,7 @@ function message(msg){const x=el('feedback');if(x){x.textContent=msg;x.hidden=fa
 function status(msg,error){statusError=error?msg:'';el('gameStatus').textContent=msg;el('gameStatus').classList.toggle('game-error',!!error);}
 function setBusy(next){busy=next;renderHeader();}
 function gameError(e){
-  const code=e&&e.code||e&&e.message||String(e);
-  const reason=String(code).includes('permission-denied')
-    ?'ゲーム用Firestoreルールが未公開、またはこの端末が家族プロフィールに参加できていない可能性があります。'
-    :String(code).includes('unavailable')
-      ?'ネットワーク状態やFirebaseの接続を確認してください。'
-      :'「きろく」の家族接続を確認してください。';
-  status('本番ガチャの保存・読み取りエラー（'+code+'）。'+reason,true);
+  status('記録を保存できませんでした。もう一度お試しください。',true);
   renderHeader();
 }
 async function awardLogin(){
@@ -57,17 +53,20 @@ async function awardLogin(){
 }
 async function connect(context){
   if(!context||!context.watchGame)return;
+  const seq=++connectionSeq;
+  ready=false;renderHeader();
+  try{context=await prepareCloudContext(context);}catch(e){if(seq!==connectionSeq)return;message('家族の記録を読み込めませんでした。あとで設定から試してください。');if(!context.isLocal)void connect(localContext(profile));return;}
+  if(seq!==connectionSeq)return;
   if(unsubscribe)unsubscribe();
   ctx=context;ready=false;statusError='';lastMealSignature='';latestDraw=null;
-  const seq=++connectionSeq;
   state=fresh();render();
-  status('ゲームデータをFirebaseから確認しています…');
+  status('');
   unsubscribe=ctx.watchGame((value,meta)=>{
     if(seq!==connectionSeq)return;
     if(value && (value.version!==1||value.profile!==profile)){status('保存されたゲームデータの形式が一致しません。',true);ready=false;render();return;}
     state=value||fresh();
     ready=!meta.fromCache&&!meta.hasPendingWrites;
-    if(!statusError)status(ready?'Firebaseにゲームデータを保存しています。':'クラウドとの接続を確認中…');
+    if(!statusError)status(ready?'':'準備しています…');
     render();
     if(ready)window.dispatchEvent(new CustomEvent('mogumogu:game-ready'));
   },err=>{if(seq!==connectionSeq)return;ready=false;gameError(err);render();});
@@ -175,7 +174,7 @@ function renderCollection(){
     if(filter==='owned')return !!state.inventory[card.id];
     if(filter==='missing')return !state.inventory[card.id];
     if(filter==='omurice')return card.food==='オムライス';
-    if(filter==='japanese')return !!card.figure&&['葛飾北斎','歌川広重','円山応挙','雪舟','竹久夢二','東洲斎写楽','伊藤若冲','尾形光琳','岡本太郎','草間彌生','棟方志功','横山大観','俵屋宗達'].includes(card.figure);
+    if(filter==='figures')return !!card.figure;
     return true;
   });
   filtered.sort((a,b)=>rarityRank.indexOf(b.rarity)-rarityRank.indexOf(a.rarity)||a.name.localeCompare(b.name,'ja'));
@@ -185,7 +184,7 @@ function renderCollection(){
   if(!filtered.length){const p=document.createElement('p');p.className='empty';p.textContent='ここにはまだカードがありません。';target.appendChild(p);}
   const count=visible.filter(card=>state.inventory[card.id]).length;
   const publiclyCount=CATALOG.filter(x=>x.rarity!=='UR').length;
-  el('collectionCount').textContent='図鑑 '+count+' / '+(publiclyCount+visible.filter(x=>x.rarity==='UR').length)+' 種 発見';
+  el('collectionCount').textContent='コレクション '+count+' / '+(publiclyCount+visible.filter(x=>x.rarity==='UR').length)+' 種 発見';
 }
 function renderHeader(){
   el('coins').textContent=ctx?String(state.coins):'--';
@@ -220,7 +219,7 @@ function showLatestDraw(){
   if(latestDraw.test){
     const label=document.createElement('p');
     label.className='game-test-warning';
-    label.textContent='これは動作確認です。Firebase・コイン・実際の図鑑には反映されません。';
+    label.textContent='練習ガチャです。コインやコレクションは変わりません。';
     target.appendChild(label);
   }
   target.appendChild(caption);
@@ -255,7 +254,7 @@ function testPull(){
 }
 async function pull(mode){
   if(mode==='free'&&isTesting()){testPull();return;}
-  if(busy||!ctx||!ready){message('Firebaseとの接続を確認してください');return;}
+  if(busy||!ctx||!ready){message('まだ準備中です。もう一度お試しください。');return;}
   const character=drawCharacter();
   const d=today(),at=new Date().toISOString();
   setBusy(true);
@@ -303,6 +302,6 @@ el('gameTicketDraw').addEventListener('click',()=>void pull('ticket'));
 el('collectionFilter').addEventListener('change',renderCollection);
 window.addEventListener('mogumogu:connected',event=>void connect(event.detail.context));
 if(bridge&&bridge.getContext())void connect(bridge.getContext());
-else status('「きろく」から家族と同期すると、無料ガチャや図鑑を使えます。');
+else void connect(localContext(profile));
 render();
 })();

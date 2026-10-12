@@ -1,3 +1,4 @@
+import {CARD_PROFILES} from './card-profiles.js';
 // Client-side prototype character master. All characters are ORIGINAL fictional designs.
 export const RARITY_ODDS = Object.freeze([
   {rarity:'N', threshold:0.72},
@@ -79,7 +80,7 @@ const rows=[
 // Backgrounds are determined only by rarity via RARITY_BACKGROUNDS.
 // Legacy per-card SVG/CSS pattern metadata is intentionally not used.
 export const CATALOG=Object.freeze(rows.map(([id,name,rarity,emoji,food,figure,relation,lore,style])=>
-  Object.freeze({id,name,rarity,emoji,food,figure:figure||null,relation:relation||null,lore,style})
+  Object.freeze({id,name:CARD_PROFILES[id]?.name||name,rarity,emoji,food:id==='noodle_n'?'ラーメン':food,figure:figure||null,relation:relation||null,lore:CARD_PROFILES[id]?.story||lore,style})
 ));
 export const BY_ID=Object.fromEntries(CATALOG.map(x=>[x.id,x]));
 export function levelForCopies(copies){

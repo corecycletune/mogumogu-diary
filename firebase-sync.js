@@ -82,7 +82,7 @@ function context(familyId, profile) {
     )
   };
 }
-async function ensureMember(familyId, profile) {
+async function ensureMember(familyId, profile, activate=true) {
   const current = await user();
   const ref = memberRef(familyId, current.uid);
   const old = await getDoc(ref);
@@ -91,7 +91,8 @@ async function ensureMember(familyId, profile) {
   } else {
     await setDoc(ref, { profile, joinedAt: serverTimestamp() });
   }
-  localStorage.setItem(key(profile), familyId);
+  if(activate)localStorage.setItem(key(profile), familyId);
+  rememberGroup(profile,familyId);
   return context(familyId, profile);
 }
 export function savedFamilyCode(profile) {
@@ -113,4 +114,26 @@ export async function joinFamily(profile, rawCode) {
 export async function resumeFamily(profile) {
   const code = savedFamilyCode(profile);
   return code ? joinFamily(profile, code) : null;
+}
+
+const groupsKey=profile=>'mogumogu:groups:'+profile;
+export function savedGroups(profile){
+  const value=JSON.parse(localStorage.getItem(groupsKey(profile))||'[]');
+  return Array.isArray(value)?value.filter(group=>validCode(group.id)&&typeof group.name==='string'):[];
+}
+function rememberGroup(profile,id,name){
+  const groups=savedGroups(profile),old=groups.find(group=>group.id===id);
+  if(old){if(name)old.name=name;}else groups.push({id,name:name||'グループ '+(groups.length+1)});
+  localStorage.setItem(groupsKey(profile),JSON.stringify(groups));
+}
+export function renameGroup(profile,id,name){if(!validCode(id)||!name.trim()||name.trim().length>30)throw new Error('group-name');rememberGroup(profile,id,name.trim());}
+export async function joinChatGroup(profile,code,name){
+  const id=code.trim();if(!users.includes(profile)||!validCode(id))throw new Error('group-code');
+  const ctx=await ensureMember(id,profile,false);if(name)rememberGroup(profile,id,name.trim().slice(0,30));return ctx;
+}
+export async function createChatGroup(profile,name){
+  if(!users.includes(profile))throw new Error('profile');
+  const current=await user(),id=newFamilyCode();
+  await setDoc(familyRef(id),{createdBy:current.uid,createdAt:serverTimestamp()});
+  const ctx=await ensureMember(id,profile,false);rememberGroup(profile,id,name.trim().slice(0,30)||'新しいグループ');return ctx;
 }

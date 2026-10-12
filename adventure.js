@@ -1,10 +1,12 @@
-import {emptyQuests,completeQuest,localDay,streakFor} from './quest-core.js';
+import {localContext,prepareCloudContext} from './progress-store.js';
+import {emptyQuests,completeQuest,localDay,streakFor,stampForDay,nextMilestone} from './quest-core.js';
 import {BY_ID} from './game-catalog.js';
 const profile=document.body.dataset.profile;
 const mount=document.getElementById('questList');
 if(mount){
   const el=id=>document.getElementById(id);
-  let ctx=null,quests=emptyQuests(profile),confirmed=false,working=false,unwatch=null,unmessages=null;
+  let ctx=null,chatCtx=null,chatLibrary=null,chatWorking=false,quests=emptyQuests(profile),confirmed=false,working=false,unwatch=null,unmessages=null,connectionSeq=0;
+  window.MogumoguStampForDay=stampForDay;
   const names={jun:'じゅんちゃん',ichika:'いちかちゃん',sato:'ばぁば'};
   function text(tag,value,className){const e=document.createElement(tag);e.textContent=value;if(className)e.className=className;return e;}
   function notice(value){el('questStatus').textContent=value;}
@@ -12,11 +14,13 @@ if(mount){
     const day=localDay(),done=quests.days[day]||[];
     el('questStreak').textContent=streakFor(quests.days,null,day)+'日';
     el('questDone').textContent=done.length+'件';
+    const next=nextMilestone(quests.days,null,day);el('questNextReward').textContent=next&&next.remaining<=2?'あと'+next.remaining+'日で '+next.coins+'コイン！':'';el('questNextReward').hidden=!el('questNextReward').textContent;
     mount.replaceChildren();
-    const list=[['meal',{name:'ごはんを記録する'}],...Object.entries(quests.tasks).filter(([,v])=>!v.archived)];
+    const list=[['meal',{name:'ごはんを1回記録する'}],...Object.entries(quests.tasks).filter(([,v])=>!v.archived)];
     for(const [id,task] of list){
       const row=text('div','', 'quest-row');
       const label=text('div','');label.append(text('strong',task.name),text('small','個別の連続記録 '+streakFor(quests.days,id,day)+'日'));
+      const nextTask=nextMilestone(quests.days,id,day);if(nextTask&&nextTask.remaining<=2)label.append(text('small','あと'+nextTask.remaining+'日で '+nextTask.coins+'コイン！','milestone-hint'));
       const button=text('button',done.includes(id)?'✓ できた':id==='meal'?'ごはんへ':'できた！','btn '+(done.includes(id)?'secondary':'primary'));
       button.type='button';button.disabled=working||(!confirmed&&id!=='meal')||done.includes(id);
       button.addEventListener('click',()=>id==='meal'?document.querySelector('[data-target="timer"]').click():void finish(id));
@@ -34,7 +38,9 @@ if(mount){
       restart.addEventListener('click',()=>void changeTask(id,null,true));row.append(restart);archived.append(row);
     }
     el('questAdd').disabled=working||!confirmed||list.length>=11||Object.keys(quests.tasks).length>=50;
-    el('messageSend').disabled=!ctx;
+    el('messageSend').disabled=!chatCtx||chatWorking;
+    el('chatGroupSelect').disabled=!el('chatGroupSelect').options.length||chatWorking;
+    el('chatCreate').disabled=chatWorking;el('chatJoin').disabled=chatWorking;
   }
   async function finish(id){
     if(!ctx||!confirmed||working)return;
@@ -68,7 +74,7 @@ if(mount){
   el('questForm').addEventListener('submit',e=>{e.preventDefault();const name=el('questName').value.trim();if(name&&name.length<=60)void changeTask(null,name);});
   async function recordMeal(){
     const bridge=window.MogumoguGameBridge;
-    if(confirmed&&bridge?.confirmedMeals()&&bridge.getCloudMeals().some(m=>m.date===localDay()&&m.mealType!=='snack')&&!(quests.days[localDay()]||[]).includes('meal'))await finish('meal');
+    if(confirmed&&bridge?.getLocalMeals&&bridge.getLocalMeals().some(m=>m.date===localDay()&&m.mealType!=='snack')&&!(quests.days[localDay()]||[]).includes('meal'))await finish('meal');
   }
   function messages(items){
     const list=el('familyMessages');list.replaceChildren();
@@ -82,28 +88,64 @@ if(mount){
     if(!items.length)list.append(text('p','家族に「できた！」を伝えてみよう。','small'));
   }
   async function send(value,cardId=''){
-    if(!ctx)return;
-    el('messageSend').disabled=true;el('messageStatus').textContent='送信中…通信が戻ると送信されます。';
-    try{await ctx.sendMessage(value,cardId);el('messageText').value='';el('messageStatus').textContent='送信しました。';}
+    if(!chatCtx||chatWorking)return;
+    chatWorking=true;render();el('messageStatus').textContent='送信中…';
+    try{await chatCtx.sendMessage(value,chatCtx.familyId===ctx?.familyId&&!ctx?.isLocal?cardId:'');el('messageText').value='';el('messageStatus').textContent='送信しました。';}
     catch(e){el('messageStatus').textContent='送信できませんでした。通信・家族接続を確認してください。';}
-    finally{el('messageSend').disabled=!ctx;}
+    finally{chatWorking=false;render();}
   }
   el('messageForm').addEventListener('submit',e=>{e.preventDefault();const value=el('messageText').value.trim();if(value&&value.length<=500)void send(value);});
   window.addEventListener('mogumogu:share-card',e=>{const card=BY_ID[e.detail.id];if(card)void send(card.name+'（'+card.rarity+'）をゲットしたよ！',card.id);});
+  function groupList(){try{const value=JSON.parse(localStorage.getItem('mogumogu:groups:'+profile)||'[]');return Array.isArray(value)?value.filter(g=>typeof g.name==='string'&&/^[A-Za-z0-9_-]{24}$/.test(g.id)):[];}catch(e){return [];}}
+  function refreshGroups(){
+    const select=el('chatGroupSelect');select.replaceChildren();
+    for(const group of groupList()){const option=text('option',group.name);option.value=group.id;select.append(option);}
+    if(chatCtx)select.value=chatCtx.familyId;
+    else {const remembered=localStorage.getItem('mogumogu:chat-current:'+profile);if(remembered&&groupList().some(g=>g.id===remembered))select.value=remembered;}
+    select.disabled=!select.options.length||chatWorking;
+    el('chatInvite').textContent=chatCtx?.familyId||'';el('chatInviteCopy').disabled=!chatCtx;el('chatRename').disabled=!chatCtx;
+  }
+  async function selectChat(context){
+    unmessages?.();chatCtx=context;el('familyMessages').replaceChildren();
+    localStorage.setItem('mogumogu:chat-current:'+profile,context.familyId);
+    unmessages=chatCtx.watchMessages(items=>{if(chatCtx.familyId===context.familyId)messages(items);},()=>{if(chatCtx.familyId===context.familyId)el('messageStatus').textContent='おしゃべりに接続できません。もう一度お試しください。';});
+    el('messageStatus').textContent='';refreshGroups();render();
+  }
+  async function manageGroup(action){
+    if(chatWorking)return;chatWorking=true;render();
+    try{
+      chatLibrary=chatLibrary||await import('./firebase-sync.js');
+      const name=el('chatGroupName').value.trim(),code=el('chatGroupCode').value.trim();
+      const context=action==='create'?await chatLibrary.createChatGroup(profile,name):await chatLibrary.joinChatGroup(profile,action==='select'?el('chatGroupSelect').value:code,action==='select'?undefined:name);
+      await selectChat(context);el('chatGroupCode').value='';el('chatGroupName').value='';
+    }catch(e){el('messageStatus').textContent='グループに参加できませんでした。招待コードを確認してください。';}
+    finally{chatWorking=false;refreshGroups();render();}
+  }
+  el('chatGroupSelect').addEventListener('change',()=>void manageGroup('select'));
+  el('chatCreate').addEventListener('click',()=>void manageGroup('create'));
+  el('chatJoin').addEventListener('click',()=>void manageGroup('join'));
+  el('chatInviteCopy').addEventListener('click',async()=>{if(!chatCtx)return;try{await navigator.clipboard.writeText(chatCtx.familyId);el('messageStatus').textContent='招待コードをコピーしました。';}catch(e){el('messageStatus').textContent='招待コードを選んでコピーしてください。';}});
+  el('chatRename').addEventListener('click',async()=>{if(!chatCtx||chatWorking)return;const name=el('chatGroupName').value.trim();if(!name){el('chatGroupName').focus();return;}try{chatLibrary=chatLibrary||await import('./firebase-sync.js');chatLibrary.renameGroup(profile,chatCtx.familyId,name);refreshGroups();el('messageStatus').textContent='グループの名前を変更しました。';}catch(e){el('messageStatus').textContent='名前を変更できませんでした。もう一度お試しください。';}});
   async function connect(context){
-    unwatch?.();unmessages?.();ctx=context;confirmed=false;quests=emptyQuests(profile);render();
-    notice('家族と習慣を同期中…');
+    const seq=++connectionSeq;
+    confirmed=false;working=true;render();
+    try{context=await prepareCloudContext(context);}catch(e){if(seq!==connectionSeq)return;notice('家族の記録を読み込めませんでした。');void connect(localContext(profile));return;}
+    if(seq!==connectionSeq)return;
+    unwatch?.();ctx=context;working=false;confirmed=false;quests=emptyQuests(profile);render();
+    notice('');
     unwatch=ctx.watchQuests((value,meta)=>{
+      if(seq!==connectionSeq)return;
       quests=value||emptyQuests(profile);confirmed=!meta.fromCache&&!meta.hasPendingWrites;render();
-      notice(confirmed?'今日も、自分のペースでひとつずつ。':'同期を確認中…');void recordMeal();
+      notice(confirmed?'今日も、自分のペースでひとつずつ。':'準備しています…');void recordMeal();
       window.dispatchEvent(new CustomEvent('mogumogu:quest',{detail:{days:quests.days}}));
-    },()=>{confirmed=false;notice('習慣の同期に接続できません。家族接続を確認してください。');render();});
-    unmessages=ctx.watchMessages(messages,()=>{el('messageStatus').textContent='メッセージを読み込めません。家族接続を確認してください。';});
-    el('messageStatus').textContent='同じ家族グループの人だけに届きます。';
+    },()=>{if(seq!==connectionSeq)return;confirmed=false;notice('習慣を読み込めませんでした。もう一度お試しください。');render();});
+    if(!ctx.isLocal){if(!chatCtx&&!chatWorking)await selectChat(ctx);refreshGroups();}
+
   }
   window.addEventListener('mogumogu:connected',e=>void connect(e.detail.context));
   window.addEventListener('mogumogu:game-ready',()=>void recordMeal());
   window.addEventListener('mogumogu:meals',()=>void recordMeal());
   if(window.MogumoguGameBridge?.getContext())void connect(window.MogumoguGameBridge.getContext());
-  render();
+  else void connect(localContext(profile));
+  refreshGroups();if(groupList().length)void manageGroup('select');render();
 }
