@@ -61,7 +61,7 @@ const rows=[
   ['da_vinci_pasta_sr','ダ・ヴィンチのパスタ','SR','🍝','パスタ','レオナルド・ダ・ヴィンチ','inspired','万能な発想を表した歯車パスタ。※好物ではなく創作','mixed'],
   // SSR: special art and Ichika omurice.
   ["omu_ichika_ssr","ドレスドオムライス","SSR","🍳","オムライス","","inspired","ひだを重ねたたまごのドレス。特別な一皿の華やかな主役。","food","ichika"],
-  ['omu_royal_ssr','ロイヤルオムライス','SSR','🍳','オムライス','','','ふわふわの王宮からやってきた特別な騎士。','person','royal'],
+  ["omu_royal_ssr","オムハヤシ","SSR","🍳","オムライス","","","香り豊かなハヤシソースとたまご。洋食の華やかな一皿。","food","royal"],
   ['hokusai_wave_ssr','北斎・大波の和菓子','SSR','🌊','和菓子','葛飾北斎','artwork','力強い波の作品をテーマにした創作和菓子。','mixed','wave'],
   ['jakuchu_veggie_ssr','若冲の彩菜鳳凰','SSR','🥬','野菜','伊藤若冲','artwork','精緻な動植物画から着想した野菜の鳳凰。','mixed','atelier'],
   ['korin_plum_ssr','光琳の梅もち','SSR','🌸','和菓子','尾形光琳','artwork','梅の意匠をテーマにした金屏風風の創作もち。','food','atelier'],

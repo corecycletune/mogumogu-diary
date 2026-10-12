@@ -15,7 +15,7 @@ import {BY_ID} from './game-catalog.js';
     {key:'background',text:'② 背景'},
     {key:'foil',text:'② 背景上のホロ'},
     {key:'under',text:'③ 下フレームSVG'},
-    {key:'character',text:'④ 透過キャラ画像'},
+    {key:'character',text:'④ キャラ画像／専用カード絵'},
     {key:'over',text:'⑤ 上フレームSVG'},
     {key:'glint',text:'反射の光'}
   ];
@@ -56,9 +56,16 @@ import {BY_ID} from './game-catalog.js';
     const stage=elem('div','card-art layered-card rarity-'+data.rarity.toLowerCase()+' visual-'+visual.layout+' foil-'+visual.foil);
     stage.setAttribute('role','img');
     stage.setAttribute('aria-label',data.name+'をレイヤー合成した試作カード');
+    let foil;
+    if(visual.fullArt){
+      stage.className+=' full-art-card';
+      layer(stage,'character','composite-layer card-full-art','img',visual.fullArt,data.name);
+      foil=layer(stage,'foil','composite-layer composite-foil full-art-foil','div');
+      if(visual.foil!=='none')layer(stage,'glint','composite-layer composite-glint full-art-glint','div');
+    }else{
     layer(stage,'substrate','composite-layer holo-substrate','div');
     layer(stage,'background','composite-layer card-background-image','img',visual.background||RARITY_BACKGROUNDS[data.rarity],'');
-    const foil=layer(stage,'foil','composite-layer composite-foil','div');
+    foil=layer(stage,'foil','composite-layer composite-foil','div');
     if(visual.foil!=='none'){
       const grain=layer(stage,'foil','composite-layer layer-lab-grain','div');
       grain.setAttribute('aria-hidden','true');
@@ -67,12 +74,13 @@ import {BY_ID} from './game-catalog.js';
     if(visual.character)layer(stage,'character','composite-layer card-portrait','img',visual.character,data.name);
     layer(stage,'over','composite-layer card-frame-over','img',visual.upperFrame,'');
     if(visual.foil!=='none')layer(stage,'glint','composite-layer composite-glint','div');
+    }
     const badge=elem('span','card-rarity',data.rarity);
     stage.appendChild(badge);
     const cap=elem('figcaption','layer-lab-caption');
     cap.appendChild(elem('strong','',data.name));
-    cap.appendChild(elem('small','',descriptions[id]||'背景面のホロのみ'));
-    if(!visual.character)cap.appendChild(elem('small','', 'キャラクター画像：未制作'));
+    cap.appendChild(elem('small','',descriptions[id]||(visual.fullArt?'SSR｜専用フルアート・独立ホロ':'背景面のホロのみ')));
+    if(!visual.character&&!visual.fullArt)cap.appendChild(elem('small','', 'キャラクター画像：未制作'));
     figure.append(stage,cap);
     stageList.push({stage,foil});
     return figure;
@@ -80,7 +88,7 @@ import {BY_ID} from './game-catalog.js';
 
   const intro=elem('div','layer-lab-intro');
   intro.appendChild(elem('h3','', '🧩 N → UR：レア度5段階・実装比較'));
-  intro.appendChild(elem('p','small','N～URの背景はすべて画像形式（PNG）、フレームはSVGです。新規N2枚・R1枚・SR2枚の透明WebPと既存R1枚を実際の背景・枠に重ねて確認できます。画像未制作のカードは空欄です。'));
+  intro.appendChild(elem('p','small','N～SRは独立したキャラ画像と背景・枠を合成。SSRは各カード固有の1枚絵に、独立したホロを重ねています。画像未制作のカードは空欄です。'));
   mount.appendChild(intro);
 
   // Prototype frames only. Not used for real cards until design approval.
@@ -134,7 +142,7 @@ import {BY_ID} from './game-catalog.js';
     comparison.classList.add('frame-prototype-reference');
     const comparisonCaption=comparison.querySelector('.layer-lab-caption');
     if(comparisonCaption){
-      comparisonCaption.insertBefore(elem('small','', 'SSR比較基準（従来の試作フレーム）'),comparisonCaption.firstChild);
+      comparisonCaption.insertBefore(elem('small','', 'SSR比較基準（専用フルアート＋独立ホロ）'),comparisonCaption.firstChild);
     }
     frameGrid.appendChild(comparison);
   }
@@ -215,6 +223,15 @@ import {BY_ID} from './game-catalog.js';
   ssrFigure.appendChild(elem('figcaption','','ホログラム'));
   variants.appendChild(ssrFigure);
   mount.appendChild(variants);
+  const ssrGallery=elem('section','ssr-full-art-gallery');
+  ssrGallery.appendChild(elem('h3','','🌈 SSR｜極彩色の専用カード11種類'));
+  ssrGallery.appendChild(elem('p','small','カードごとに背景・額縁・キャラを個別制作。ホロの表示は下の切替と強度で確認できます。'));
+  const ssrGrid=elem('div','layer-lab-grid');
+  Object.values(BY_ID).filter(data=>data.rarity==='SSR').forEach(data=>{
+    const sample=card(data.id);if(sample)ssrGrid.appendChild(sample);
+  });
+  ssrGallery.appendChild(ssrGrid);
+  mount.appendChild(ssrGallery);
   const panel=elem('div','layer-lab-controls');
   for(const item of layerOrder){
     const label=elem('label','layer-lab-toggle');
@@ -239,11 +256,11 @@ import {BY_ID} from './game-catalog.js';
     sliderValue.textContent=slider.value+'%';
     stageList.forEach(({stage,foil})=>{
       if(stage.classList.contains('foil-none'))return;
-      const max=stage.classList.contains('foil-legendary') ? 1 :
+      const max=stage.classList.contains('foil-ssr-vivid') ? .42 : stage.classList.contains('foil-legendary') ? 1 :
         stage.classList.contains('foil-sunflower') ? .98 :
         stage.classList.contains('foil-pearl') ? .30 : .75;
       foil.style.opacity=String(max*Number(slider.value)/100);
-      stage.style.setProperty('--lab-grain-opacity',String(Number(slider.value)/100*(stage.classList.contains('foil-legendary') ? 1 : .92)));
+      stage.style.setProperty('--lab-grain-opacity',String(Number(slider.value)/100*(stage.classList.contains('foil-ssr-vivid') ? .42 : stage.classList.contains('foil-legendary') ? 1 : .92)));
       stage.style.setProperty('--lab-glint-opacity',String(Number(slider.value)/100*(stage.classList.contains('foil-legendary') ? .78 : .48)));
     });
   };

@@ -478,6 +478,42 @@
   z-index:7;
 }
 
+/* Bespoke SSR art stays intact; independent foil is masked away from the hero. */
+.layered-card.full-art-card.foil-ssr-vivid .full-art-foil,
+.layered-card.full-art-card.foil-ssr-vivid .full-art-glint{
+  mask-image:radial-gradient(ellipse 42% 46% at 50% 48%,transparent 0 70%,#0004 90%,#000 110%);
+  -webkit-mask-image:radial-gradient(ellipse 42% 46% at 50% 48%,transparent 0 70%,#0004 90%,#000 110%);
+}
+.layered-card.full-art-card.foil-ssr-vivid .full-art-foil{
+  z-index:2;opacity:.38;mix-blend-mode:screen;
+  background:
+    radial-gradient(circle at 19% 23%,#fff3bde6 0 1px,transparent 2.3px) 0 0/29px 37px,
+    radial-gradient(circle at 71% 61%,#b4fbffe0 0 1.3px,transparent 2.6px) 11px 7px/41px 53px,
+    radial-gradient(circle at 43% 79%,#ffd5f1df 0 .8px,transparent 2px) 7px 19px/37px 47px,
+    repeating-conic-gradient(from 21deg,#fff1bf30 0 17deg,#b6f3ff40 23deg 37deg,#efc5ff38 42deg 51deg,transparent 58deg 90deg) 0 0/23px 29px,
+    linear-gradient(120deg,#ffe0a83d,#94faff55 27%,#ffb5e955 49%,#c2ffa63d 72%,#e1b6ff55);
+  animation:ssr-full-art-foil 8s ease-in-out infinite alternate;
+}
+.layered-card.full-art-card.foil-ssr-vivid .full-art-glint{
+  z-index:3;opacity:.14;mix-blend-mode:screen;
+  background:linear-gradient(115deg,transparent 35%,#c6f6ff55 45%,#fffbdbaa 50%,#ffc6f966 55%,transparent 65%);
+  background-size:300% 100%;background-position:140% 0;
+  animation:ssr-full-art-reflection 9s ease-in-out infinite;
+}
+@keyframes ssr-full-art-foil{
+  from{filter:hue-rotate(-8deg) brightness(.97)}
+  to{filter:hue-rotate(14deg) brightness(1.08)}
+}
+@keyframes ssr-full-art-reflection{
+  0%,18%{background-position:140% 0}
+  72%,100%{background-position:-100% 0}
+}
+.layer-lab-card .lab-hide-character .card-full-art{display:none}
+@media(prefers-reduced-motion:reduce){
+  .layered-card.full-art-card.foil-ssr-vivid .full-art-foil,
+  .layered-card.full-art-card.foil-ssr-vivid .full-art-glint{animation:none;filter:none}
+}
+
 /* APPROVED BACKGROUND PIPELINE (2026-10-11): five raster PNG tiers; SVG is for frames only.
    Ignore legacy CSS pattern classes and use the raster image as the true background. */
 .card-art::before,.card-art::after{content:none!important;display:none!important}

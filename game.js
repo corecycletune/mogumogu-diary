@@ -149,7 +149,18 @@ function paintCard(char,entry,unknown){
     // illustration. HTML name and rarity remain independently editable.
     // All other cards keep the separately editable five-layer composition.
     if(layers.fullArt){
+      art.className+=' full-art-card';
       addLayer('card-full-art',layers.fullArt,false);
+      if(layers.foil!=='none'){
+        const foil=document.createElement('div');
+        foil.className='composite-layer composite-foil full-art-foil';
+        foil.setAttribute('aria-hidden','true');
+        art.appendChild(foil);
+        const glint=document.createElement('div');
+        glint.className='composite-layer composite-glint full-art-glint';
+        glint.setAttribute('aria-hidden','true');
+        art.appendChild(glint);
+      }
     }else{
     const under=document.createElement('div');
     under.className='composite-layer holo-substrate';

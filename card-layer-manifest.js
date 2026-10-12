@@ -92,6 +92,61 @@ export function frameForCard(cardId,rarity){
 }
 
 export const CARD_LAYER_MANIFEST=Object.freeze({
+  omu_ichika_ssr:Object.freeze({
+    fullArt:root+'full-art/omu_ichika_ssr.webp?v=ssr-full-art-v1',
+    foil:'ssr-vivid',
+    layout:'full-art'
+  }),
+  omu_royal_ssr:Object.freeze({
+    fullArt:root+'full-art/omu_royal_ssr.webp?v=ssr-full-art-v1',
+    foil:'ssr-vivid',
+    layout:'full-art'
+  }),
+  hokusai_wave_ssr:Object.freeze({
+    fullArt:root+'full-art/hokusai_wave_ssr.webp?v=ssr-full-art-v1',
+    foil:'ssr-vivid',
+    layout:'full-art'
+  }),
+  jakuchu_veggie_ssr:Object.freeze({
+    fullArt:root+'full-art/jakuchu_veggie_ssr.webp?v=ssr-full-art-v1',
+    foil:'ssr-vivid',
+    layout:'full-art'
+  }),
+  korin_plum_ssr:Object.freeze({
+    fullArt:root+'full-art/korin_plum_ssr.webp?v=ssr-full-art-v1',
+    foil:'ssr-vivid',
+    layout:'full-art'
+  }),
+  taro_sun_ssr:Object.freeze({
+    fullArt:root+'full-art/taro_sun_ssr.webp?v=ssr-full-art-v1',
+    foil:'ssr-vivid',
+    layout:'full-art'
+  }),
+  kusama_pumpkin_ssr:Object.freeze({
+    fullArt:root+'full-art/kusama_pumpkin_ssr.webp?v=ssr-full-art-v1',
+    foil:'ssr-vivid',
+    layout:'full-art'
+  }),
+  munakata_chestnut_ssr:Object.freeze({
+    fullArt:root+'full-art/munakata_chestnut_ssr.webp?v=ssr-full-art-v1',
+    foil:'ssr-vivid',
+    layout:'full-art'
+  }),
+  taikan_fuji_ssr:Object.freeze({
+    fullArt:root+'full-art/taikan_fuji_ssr.webp?v=ssr-full-art-v1',
+    foil:'ssr-vivid',
+    layout:'full-art'
+  }),
+  vangogh_bread_ssr:Object.freeze({
+    fullArt:root+'full-art/vangogh_bread_ssr.webp?v=ssr-full-art-v1',
+    foil:'ssr-vivid',
+    layout:'full-art'
+  }),
+  klimt_honey_ssr:Object.freeze({
+    fullArt:root+'full-art/klimt_honey_ssr.webp?v=ssr-full-art-v1',
+    foil:'ssr-vivid',
+    layout:'full-art'
+  }),
   milk_n:Object.freeze({
     character:root+'characters/milk_n.webp',
     background:pickBackgroundForCard('milk_n','N'),
@@ -452,22 +507,6 @@ export const CARD_LAYER_MANIFEST=Object.freeze({
     foil:'legendary',
     layout:'legendary'
   }),
-  omu_ichika_ssr:Object.freeze({
-    character:root+'characters/omu_ichika_ssr.webp?v=omurice-menu-v1',
-    background:RARITY_BACKGROUNDS.SSR,
-    lowerFrame:root+'frames/base/ssr-heart.svg',
-    upperFrame:root+'frames/top/ssr-heart.svg',
-    foil:'pink',
-    layout:'princess'
-  }),
-  hokusai_wave_ssr:Object.freeze({
-    character:root+'characters/hokusai_wave_ssr.webp',
-    background:RARITY_BACKGROUNDS.SSR,
-    lowerFrame:root+'frames/base/ssr-wave.svg',
-    upperFrame:root+'frames/top/ssr-wave.svg',
-    foil:'blue',
-    layout:'wave'
-  }),
   mango_r:Object.freeze({
     character:root+'characters/mango_r.webp',
     background:pickBackgroundForCard('mango_r','R'),
@@ -491,14 +530,6 @@ export const CARD_LAYER_MANIFEST=Object.freeze({
     upperFrame:frameForCard('omu_princess_sr','SR').upperFrame,
     foil:'pearl',
     layout:'scholar'
-  }),
-  vangogh_bread_ssr:Object.freeze({
-    character:null,
-    background:RARITY_BACKGROUNDS.SSR,
-    lowerFrame:root+'frames/base/ssr-sunflower.svg',
-    upperFrame:root+'frames/top/ssr-sunflower.svg',
-    foil:'sunflower',
-    layout:'sunflower'
   }),
   omu_ketchup_r:Object.freeze({
     character:root+'characters/omu_ketchup_r.webp?v=omurice-menu-v1',
