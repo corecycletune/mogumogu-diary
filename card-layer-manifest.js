@@ -93,10 +93,18 @@ export function frameForCard(cardId,rarity){
 
 export const CARD_LAYER_MANIFEST=Object.freeze({
   rice_n:Object.freeze({
-    character:null,
+    character:root+'characters/rice_n.webp',
     background:RARITY_BACKGROUNDS.N,
     lowerFrame:RARITY_FRAME_TEMPLATES.N.lowerFrame,
     upperFrame:RARITY_FRAME_TEMPLATES.N.upperFrame,
+    foil:'none',
+    layout:'basic-n'
+  }),
+  bread_n:Object.freeze({
+    character:root+'characters/bread_n.webp',
+    background:pickBackgroundForCard('bread_n','N'),
+    lowerFrame:frameForCard('bread_n','N').lowerFrame,
+    upperFrame:frameForCard('bread_n','N').upperFrame,
     foil:'none',
     layout:'basic-n'
   }),
@@ -125,7 +133,7 @@ export const CARD_LAYER_MANIFEST=Object.freeze({
     layout:'wave'
   }),
   mango_r:Object.freeze({
-    character:null,
+    character:root+'characters/mango_r.webp',
     background:pickBackgroundForCard('mango_r','R'),
     lowerFrame:frameForCard('mango_r','R').lowerFrame,
     upperFrame:frameForCard('mango_r','R').upperFrame,
@@ -133,10 +141,18 @@ export const CARD_LAYER_MANIFEST=Object.freeze({
     layout:'mango'
   }),
   newton_apple_sr:Object.freeze({
-    character:null,
+    character:root+'characters/newton_apple_sr.webp',
     background:pickBackgroundForCard('newton_apple_sr','SR'),
     lowerFrame:frameForCard('newton_apple_sr','SR').lowerFrame,
     upperFrame:frameForCard('newton_apple_sr','SR').upperFrame,
+    foil:'pearl',
+    layout:'scholar'
+  }),
+  omu_princess_sr:Object.freeze({
+    character:root+'characters/omu_princess_sr.webp',
+    background:pickBackgroundForCard('omu_princess_sr','SR'),
+    lowerFrame:frameForCard('omu_princess_sr','SR').lowerFrame,
+    upperFrame:frameForCard('omu_princess_sr','SR').upperFrame,
     foil:'pearl',
     layout:'scholar'
   }),
@@ -157,4 +173,4 @@ export const CARD_LAYER_MANIFEST=Object.freeze({
     layout:'adventurer'
   })
 });
-// Cards without an approved character image intentionally render with an empty character layer.
+// Only designated raster character images are rendered; all other cards keep empty character layers.

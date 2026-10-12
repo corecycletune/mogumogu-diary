@@ -9,7 +9,7 @@ import {BY_ID} from './game-catalog.js';
   const toggle=document.getElementById('devModeToggle');
   if(!mount||!toggle)return;
 
-  const examples=['rice_n','mango_r','newton_apple_sr','vangogh_bread_ssr','secret_rinpa_ur'];
+  const examples=['rice_n','bread_n','mango_r','omu_ketchup_r','newton_apple_sr','omu_princess_sr','vangogh_bread_ssr','secret_rinpa_ur'];
   const layerOrder=[
     {key:'substrate',text:'① ホロ下地'},
     {key:'background',text:'② 背景'},
@@ -21,9 +21,12 @@ import {BY_ID} from './game-catalog.js';
   ];
   const stageList=[];
   const descriptions={
-    rice_n:'N｜紙のような淡い単色・細い枠・ホロなし',
-    mango_r:'R｜Nより明るい彩色・緑の装飾枠・ホロなし',
-    newton_apple_sr:'SR｜青銀のフレーム・弱いパール反射',
+    rice_n:'N｜新キャラ試作・やさしい紙風背景、ホロなし',
+    bread_n:'N｜新キャラ試作・トースト、シンプルな枠',
+    mango_r:'R｜新キャラ試作・植物フレーム、ホロなし',
+    omu_ketchup_r:'R｜既存の承認済みキャラを維持',
+    newton_apple_sr:'SR｜新キャラ試作・銀細工フレーム、弱いパール反射',
+    omu_princess_sr:'SR｜新キャラ試作・宝飾フレーム、弱いパール反射',
     vangogh_bread_ssr:'SSR｜豪華な金枠・高密度の虹色ホログラム',
     secret_rinpa_ur:'UR｜開発画面限定・専用の金虹箔・伝説級の背景'
   };
@@ -77,7 +80,7 @@ import {BY_ID} from './game-catalog.js';
 
   const intro=elem('div','layer-lab-intro');
   intro.appendChild(elem('h3','', '🧩 N → UR：レア度5段階・実装比較'));
-  intro.appendChild(elem('p','small','N～URの背景はすべて画像形式（PNG）で、背景SVGは使用していません。枠はSVGのまま、未制作キャラは空欄です。レア度別の背景の違いとホロを確認してください。'));
+  intro.appendChild(elem('p','small','N～URの背景はすべて画像形式（PNG）、フレームはSVGです。新規N2枚・R1枚・SR2枚の透明WebPと既存R1枚を実際の背景・枠に重ねて確認できます。画像未制作のカードは空欄です。'));
   mount.appendChild(intro);
 
   // Prototype frames only. Not used for real cards until design approval.
