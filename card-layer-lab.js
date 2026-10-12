@@ -24,9 +24,9 @@ import {BY_ID} from './game-catalog.js';
     rice_n:'N｜新キャラ試作・やさしい紙風背景、ホロなし',
     bread_n:'N｜新キャラ試作・トースト、シンプルな枠',
     mango_r:'R｜新キャラ試作・植物フレーム、ホロなし',
-    omu_ketchup_r:'R｜既存の承認済みキャラを維持',
+    omu_ketchup_r:'R｜ケチャップオムライス・実メニューから再制作',
     newton_apple_sr:'SR｜新キャラ試作・銀細工フレーム、弱いパール反射',
-    omu_princess_sr:'SR｜新キャラ試作・宝飾フレーム、弱いパール反射',
+    omu_princess_sr:'SR｜麻婆オムライス・既存フレーム、弱いパール反射',
     vangogh_bread_ssr:'SSR｜豪華な金枠・高密度の虹色ホログラム',
     secret_rinpa_ur:'UR｜開発画面限定・専用の金虹箔・伝説級の背景'
   };

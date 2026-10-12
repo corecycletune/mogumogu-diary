@@ -133,7 +133,7 @@ export const CARD_LAYER_MANIFEST=Object.freeze({
     layout:'basic'
   }),
   omu_mini_r:Object.freeze({
-    character:root+'characters/omu_mini_r.webp',
+    character:root+'characters/omu_mini_r.webp?v=omurice-menu-v1',
     background:pickBackgroundForCard('omu_mini_r','R'),
     lowerFrame:frameForCard('omu_mini_r','R').lowerFrame,
     upperFrame:frameForCard('omu_mini_r','R').upperFrame,
@@ -149,7 +149,7 @@ export const CARD_LAYER_MANIFEST=Object.freeze({
     layout:'basic'
   }),
   omu_lunch_r:Object.freeze({
-    character:root+'characters/omu_lunch_r.webp',
+    character:root+'characters/omu_lunch_r.webp?v=omurice-menu-v1',
     background:pickBackgroundForCard('omu_lunch_r','R'),
     lowerFrame:frameForCard('omu_lunch_r','R').lowerFrame,
     upperFrame:frameForCard('omu_lunch_r','R').upperFrame,
@@ -157,7 +157,7 @@ export const CARD_LAYER_MANIFEST=Object.freeze({
     layout:'basic'
   }),
   omu_star_r:Object.freeze({
-    character:root+'characters/omu_star_r.webp',
+    character:root+'characters/omu_star_r.webp?v=omurice-menu-v1',
     background:pickBackgroundForCard('omu_star_r','R'),
     lowerFrame:frameForCard('omu_star_r','R').lowerFrame,
     upperFrame:frameForCard('omu_star_r','R').upperFrame,
@@ -165,7 +165,7 @@ export const CARD_LAYER_MANIFEST=Object.freeze({
     layout:'basic'
   }),
   omu_heart_r:Object.freeze({
-    character:root+'characters/omu_heart_r.webp',
+    character:root+'characters/omu_heart_r.webp?v=omurice-menu-v1',
     background:pickBackgroundForCard('omu_heart_r','R'),
     lowerFrame:frameForCard('omu_heart_r','R').lowerFrame,
     upperFrame:frameForCard('omu_heart_r','R').upperFrame,
@@ -173,7 +173,7 @@ export const CARD_LAYER_MANIFEST=Object.freeze({
     layout:'basic'
   }),
   omu_cheese_r:Object.freeze({
-    character:root+'characters/omu_cheese_r.webp',
+    character:root+'characters/omu_cheese_r.webp?v=omurice-menu-v1',
     background:pickBackgroundForCard('omu_cheese_r','R'),
     lowerFrame:frameForCard('omu_cheese_r','R').lowerFrame,
     upperFrame:frameForCard('omu_cheese_r','R').upperFrame,
@@ -181,7 +181,7 @@ export const CARD_LAYER_MANIFEST=Object.freeze({
     layout:'basic'
   }),
   omu_tomato_r:Object.freeze({
-    character:root+'characters/omu_tomato_r.webp',
+    character:root+'characters/omu_tomato_r.webp?v=omurice-menu-v1',
     background:pickBackgroundForCard('omu_tomato_r','R'),
     lowerFrame:frameForCard('omu_tomato_r','R').lowerFrame,
     upperFrame:frameForCard('omu_tomato_r','R').upperFrame,
@@ -245,7 +245,7 @@ export const CARD_LAYER_MANIFEST=Object.freeze({
     layout:'basic'
   }),
   omu_fuwatoro_sr:Object.freeze({
-    character:root+'characters/omu_fuwatoro_sr.webp',
+    character:root+'characters/omu_fuwatoro_sr.webp?v=omurice-menu-v1',
     background:pickBackgroundForCard('omu_fuwatoro_sr','SR'),
     lowerFrame:frameForCard('omu_fuwatoro_sr','SR').lowerFrame,
     upperFrame:frameForCard('omu_fuwatoro_sr','SR').upperFrame,
@@ -253,7 +253,7 @@ export const CARD_LAYER_MANIFEST=Object.freeze({
     layout:'basic'
   }),
   omu_demi_sr:Object.freeze({
-    character:root+'characters/omu_demi_sr.webp',
+    character:root+'characters/omu_demi_sr.webp?v=omurice-menu-v1',
     background:pickBackgroundForCard('omu_demi_sr','SR'),
     lowerFrame:frameForCard('omu_demi_sr','SR').lowerFrame,
     upperFrame:frameForCard('omu_demi_sr','SR').upperFrame,
@@ -261,7 +261,7 @@ export const CARD_LAYER_MANIFEST=Object.freeze({
     layout:'basic'
   }),
   omu_cafe_sr:Object.freeze({
-    character:root+'characters/omu_cafe_sr.webp',
+    character:root+'characters/omu_cafe_sr.webp?v=omurice-menu-v1',
     background:pickBackgroundForCard('omu_cafe_sr','SR'),
     lowerFrame:frameForCard('omu_cafe_sr','SR').lowerFrame,
     upperFrame:frameForCard('omu_cafe_sr','SR').upperFrame,
@@ -453,7 +453,7 @@ export const CARD_LAYER_MANIFEST=Object.freeze({
     layout:'legendary'
   }),
   omu_ichika_ssr:Object.freeze({
-    character:root+'characters/omu_ichika_ssr.webp',
+    character:root+'characters/omu_ichika_ssr.webp?v=omurice-menu-v1',
     background:RARITY_BACKGROUNDS.SSR,
     lowerFrame:root+'frames/base/ssr-heart.svg',
     upperFrame:root+'frames/top/ssr-heart.svg',
@@ -485,7 +485,7 @@ export const CARD_LAYER_MANIFEST=Object.freeze({
     layout:'scholar'
   }),
   omu_princess_sr:Object.freeze({
-    character:root+'characters/omu_princess_sr.webp',
+    character:root+'characters/omu_princess_sr.webp?v=omurice-menu-v1',
     background:pickBackgroundForCard('omu_princess_sr','SR'),
     lowerFrame:frameForCard('omu_princess_sr','SR').lowerFrame,
     upperFrame:frameForCard('omu_princess_sr','SR').upperFrame,
@@ -501,7 +501,7 @@ export const CARD_LAYER_MANIFEST=Object.freeze({
     layout:'sunflower'
   }),
   omu_ketchup_r:Object.freeze({
-    character:root+'characters/omu_ketchup_r.webp',
+    character:root+'characters/omu_ketchup_r.webp?v=omurice-menu-v1',
     background:pickBackgroundForCard('omu_ketchup_r','R'), // Colorway fixed by character ID.
     lowerFrame:frameForCard('omu_ketchup_r','R').lowerFrame,
     upperFrame:frameForCard('omu_ketchup_r','R').upperFrame,
