@@ -1,7 +1,7 @@
 // On-page five-layer card construction lab, using only existing artwork.
 // Accessible only at /p/jun/?dev=1 and never touches Firebase, gacha or collection state.
-import {CARD_LAYER_MANIFEST,RARITY_BACKGROUNDS,RARITY_VARIANT_BACKGROUNDS,RARITY_FRAME_VARIANTS,CARD_FRAME_ASSIGNMENTS,frameForCard,pickBackgroundForCard} from './card-layer-manifest.js';
-import {BY_ID} from './game-catalog.js';
+import {CARD_LAYER_MANIFEST,RARITY_BACKGROUNDS,RARITY_VARIANT_BACKGROUNDS,RARITY_FRAME_VARIANTS,CARD_FRAME_ASSIGNMENTS,frameForCard,pickBackgroundForCard,characterArtForCard} from './card-layer-manifest.js';
+import {CATALOG,BY_ID} from './game-catalog.js';
 (function(){
   const profile=document.body.dataset.profile;
   if(profile!=='jun'||!/(?:^|[?&])dev=1(?:&|$)/.test(location.search))return;
@@ -50,8 +50,16 @@ import {BY_ID} from './game-catalog.js';
     return node;
   }
   function card(id){
-    const data=BY_ID[id],visual=CARD_LAYER_MANIFEST[id];
-    if(!data||!visual)return null;
+    const data=BY_ID[id];
+    if(!data)return null;
+    const fallbackFrame=frameForCard(id,data.rarity);
+    const visual=CARD_LAYER_MANIFEST[id] || (fallbackFrame?{
+      background:pickBackgroundForCard(id,data.rarity),
+      lowerFrame:fallbackFrame.lowerFrame,upperFrame:fallbackFrame.upperFrame,
+      character:characterArtForCard(id),
+      foil:data.rarity==='SR'?'pearl':'none',layout:data.rarity==='N'?'basic-n':data.rarity==='R'?'mango':'scholar'
+    }:null);
+    if(!visual)return null;
     const figure=elem('figure','layer-lab-card');
     const stage=elem('div','card-art layered-card rarity-'+data.rarity.toLowerCase()+' visual-'+visual.layout+' foil-'+visual.foil);
     stage.setAttribute('role','img');
@@ -64,7 +72,8 @@ import {BY_ID} from './game-catalog.js';
       grain.setAttribute('aria-hidden','true');
     }
     layer(stage,'under','composite-layer card-frame-under','img',visual.lowerFrame,'');
-    if(visual.character)layer(stage,'character','composite-layer card-portrait','img',visual.character,data.name);
+    const portrait=visual.character||characterArtForCard(id);
+    if(portrait)layer(stage,'character','composite-layer card-portrait','img',portrait,data.name);
     layer(stage,'over','composite-layer card-frame-over','img',visual.upperFrame,'');
     if(visual.foil!=='none')layer(stage,'glint','composite-layer composite-glint','div');
     const badge=elem('span','card-rarity',data.rarity);
@@ -72,7 +81,7 @@ import {BY_ID} from './game-catalog.js';
     const cap=elem('figcaption','layer-lab-caption');
     cap.appendChild(elem('strong','',data.name));
     cap.appendChild(elem('small','',descriptions[id]||'背景面のホロのみ'));
-    if(!visual.character)cap.appendChild(elem('small','', 'キャラクター画像：未制作'));
+    if(!portrait)cap.appendChild(elem('small','', 'キャラクター画像：未制作'));
     figure.append(stage,cap);
     stageList.push({stage,foil});
     return figure;
@@ -254,7 +263,26 @@ import {BY_ID} from './game-catalog.js';
   const grid=elem('div','layer-lab-grid');
   examples.forEach(id=>{const sample=card(id);if(sample)grid.appendChild(sample);});
   mount.appendChild(grid);
-  mount.appendChild(elem('p','small','※ キャラクター画像が未制作のカードは空欄です。背景・前後SVGフレーム・ホロは残しています。画像素材は今後追加するまで表示されません。URは通常の図鑑で未所持時には見えません。開発用比較は本番の抽選や所持記録に影響しません。'));
+
+  // All N/R/SR sprites in actual SVG frames and existing rarity backgrounds.
+  // Purely read-only; never updates gacha records or inventory.
+  const characterGallery=elem('section','character-gallery-section');
+  characterGallery.appendChild(elem('h3','', '🍽 N・R・SR 全48枚｜キャラ実装一覧（試作）'));
+  characterGallery.appendChild(elem('p','small','キャラクター画像は独立した透過WebPです。実物の背景・上下フレーム・ホロと合成しています。現在の42枚は初期作画で、最終美術品質の承認はまだ受けていません。'));
+  for(const rarity of ['N','R','SR']){
+    const subset=CATALOG.filter(item=>item.rarity===rarity);
+    const group=elem('div','character-gallery-group');
+    group.appendChild(elem('h4','',rarity+'｜'+subset.length+'枚'));
+    const grid=elem('div','character-gallery-grid');
+    subset.forEach(item=>{
+      const preview=card(item.id);
+      if(preview)grid.appendChild(preview);
+    });
+    group.appendChild(grid);
+    characterGallery.appendChild(group);
+  }
+  mount.appendChild(characterGallery);
+  mount.appendChild(elem('p','small','※ キャラクター画像が未制作のカードは空欄です.背景・前後SVGフレーム・ホロは残しています。画像素材は今後追加するまで表示されません。URは通常の図鑑で未所持時には見えません。開発用比較は本番の抽選や所持記録に影響しません。'));
   intensify();
   const reflect=()=>{mount.hidden=!toggle.checked;};
   toggle.addEventListener('change',reflect);

@@ -563,3 +563,17 @@
 .frame-variant-caption small{font-size:10px;color:#62766f;overflow-wrap:anywhere;}
 @media(max-width:700px){.frame-variants-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
 @media(max-width:390px){.frame-variants-section{padding:7px;}.frame-variants-grid{gap:5px;}.frame-variant-item{padding:3px;}}
+
+
+/* 48-card sprite inspection gallery, available only inside the development lab. */
+.character-gallery-section{background:#fafcf8;border:1px solid #c8d9d2;border-radius:14px;padding:12px;margin:18px 0;}
+.character-gallery-section h3{font-size:16px;margin:2px 0 8px;}
+.character-gallery-section h4{font-size:14px;margin:12px 0 7px;}
+.character-gallery-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px;}
+.character-gallery-grid .layer-lab-card{min-width:0;margin:0;padding:5px;}
+.character-gallery-grid .layer-lab-card .card-art{aspect-ratio:4/5;}
+.character-gallery-grid .layer-lab-caption{min-height:66px;}
+.character-gallery-grid .layer-lab-caption strong{font-size:11px;}
+.character-gallery-grid .layer-lab-caption small{font-size:10px;}
+@media(max-width:750px){.character-gallery-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
+@media(max-width:440px){.character-gallery-section{padding:7px;}.character-gallery-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}

@@ -91,6 +91,16 @@ export function frameForCard(cardId,rarity){
   return variants[hash%variants.length];
 }
 
+
+// Independently replaceable transparent raster sprites for every N/R/SR card.
+// Character names and game state remain outside the image assets.
+export const CARD_CHARACTER_IMAGES=Object.freeze(Object.fromEntries(
+  ["rice_n","carrot_n","tofu_n","bread_n","egg_n","miso_n","corn_n","cucumber_n","banana_n","potato_n","salmon_n","apple_n","milk_n","tomato_n","mushroom_n","strawberry_n","noodle_n","seaweed_n","omu_ketchup_r","omu_mini_r","omu_lunch_r","omu_heart_r","omu_star_r","omu_cheese_r","omu_tomato_r","pudding_r","ramen_r","mango_r","pizza_r","taiyaki_r","parfait_r","sushi_r","melon_r","omu_fuwatoro_sr","omu_demi_sr","omu_cafe_sr","omu_princess_sr","hokusai_senbei_sr","hiroshige_tea_sr","okyo_dango_sr","sesshu_udon_sr","yumeji_candy_sr","monet_jelly_sr","beethoven_coffee_sr","newton_apple_sr","sharaku_taiyaki_sr","vermeer_milk_sr","da_vinci_pasta_sr"].map(id=>[id,root+'characters/'+id+'.webp'])
+));
+export function characterArtForCard(cardId){
+  return CARD_CHARACTER_IMAGES[cardId]||null;
+}
+
 export const CARD_LAYER_MANIFEST=Object.freeze({
   rice_n:Object.freeze({
     character:root+'characters/rice_n.webp',
@@ -173,4 +183,4 @@ export const CARD_LAYER_MANIFEST=Object.freeze({
     layout:'adventurer'
   })
 });
-// Only designated raster character images are rendered; all other cards keep empty character layers.
+// N/R/SR all have separately replaceable transparent WebP sprites; SSR/UR retain their original per-card manifests.
