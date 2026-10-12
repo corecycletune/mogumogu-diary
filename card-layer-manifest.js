@@ -511,12 +511,9 @@ export const CARD_LAYER_MANIFEST=Object.freeze({
     layout:'basic-n'
   }),
   secret_rinpa_ur:Object.freeze({
-    character:null,
-    background:RARITY_BACKGROUNDS.SSR,
-    lowerFrame:null,
-    upperFrame:null,
-    foil:'sunflower',
-    layout:'ssr'
+    fullArt:root+'full-art/secret_rinpa_ur.webp?v=sotatsu-ssr-v1',
+    foil:'ssr-vivid',
+    layout:'ssr-full-art'
   }),
   mango_r:Object.freeze({
     character:root+'characters/mango_r.webp',
