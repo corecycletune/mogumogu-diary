@@ -553,3 +553,5 @@ export const CARD_LAYER_MANIFEST=Object.freeze({
 // Only designated raster character images are rendered; all other cards keep empty character layers.
 
 export function sceneForRarity(rarity){return ['N','R','SR'].includes(rarity)?root+'scenes/scene-'+rarity.toLowerCase()+'.webp':null;}
+
+export const SR_PREMIUM_TRIM=root+'frames/top/sr-premium-trim.svg';

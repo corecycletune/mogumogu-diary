@@ -649,7 +649,15 @@ button.collection-card{font:inherit;text-align:left;color:inherit;width:100%;cur
 .rarity-sr .card-name{background:linear-gradient(105deg,#cedff5a3,#f4f9ffc9 45%,#b5cee8a1);border-color:#ecf9ffb3;color:#233b53;text-shadow:0 1px 3px #fff}
 .rarity-ssr .card-name{background:linear-gradient(105deg,#ae772a8a,#fff2bcc9 46%,#d19b4594);border-color:#ffe6a7c7;color:#4c3015;text-shadow:0 1px 3px #fff3dccc}
 .rarity-ur .card-name{background:linear-gradient(105deg,#101e4382,#11233eaf 50%,#12345182);border-color:#ecd99ecc;color:#fff2c4;text-shadow:0 1px 3px #071120,0 0 5px #071120;letter-spacing:.04em}
-.card-name-word{display:inline-block;white-space:nowrap}
+.card-art .card-name{white-space:nowrap;overflow-wrap:normal}
+@supports (font-size:1cqi){
+  .card-art{container-type:inline-size}
+  .card-art .card-name{font-size:min(17px,calc((94cqw - 22px)/var(--card-name-length,10)))}
+}
+.layered-card .card-sr-premium{z-index:6;object-fit:fill;pointer-events:none;filter:drop-shadow(0 1px 1px #22384e55)}
+.card-art.layered-card.rarity-sr{border:4px double #9ebcd7;box-shadow:inset 0 0 0 1px #f1faff,0 0 6px #b8d6ed55}
+.layered-card.rarity-sr .card-rarity{background:linear-gradient(135deg,#fff,#d3e7f8,#f9fcff);border:1px solid #a0bfd6;color:#294b6c;box-shadow:0 0 5px #dbeeff99}
+
 .card-art .card-scene{z-index:2;object-fit:cover;opacity:.76}
 .card-art.rarity-n .card-scene{opacity:.7}
 .card-art.rarity-sr .card-scene{opacity:.92}

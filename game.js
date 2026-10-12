@@ -1,6 +1,6 @@
 import {openCardDetails,putCardName} from './card-details.js';
 import {CATALOG,BY_ID,levelForCopies,drawCharacter} from './game-catalog.js';
-import {CARD_LAYER_MANIFEST,pickBackgroundForCard,frameForCard,sceneForRarity} from './card-layer-manifest.js';
+import {CARD_LAYER_MANIFEST,pickBackgroundForCard,frameForCard,sceneForRarity,SR_PREMIUM_TRIM} from './card-layer-manifest.js';
 (function(){
 'use strict';
 const profile=document.body.dataset.profile;
@@ -159,6 +159,7 @@ function paintCard(char,entry,unknown){
     glint.setAttribute('aria-hidden','true');
     art.appendChild(glint);
   }
+  if(char.rarity==='SR')addLayer('card-sr-premium',SR_PREMIUM_TRIM,true);
   const rarity=document.createElement('span');rarity.className='card-rarity';rarity.textContent=char.rarity;art.appendChild(rarity);
   const name=document.createElement('strong');name.className='card-name';putCardName(name,unknown?'未発見':char.name);
   art.appendChild(name);outer.appendChild(art);
