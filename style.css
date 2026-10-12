@@ -640,3 +640,20 @@
 .frame-variant-caption small{font-size:10px;color:#62766f;overflow-wrap:anywhere;}
 @media(max-width:700px){.frame-variants-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
 @media(max-width:390px){.frame-variants-section{padding:7px;}.frame-variants-grid{gap:5px;}.frame-variant-item{padding:3px;}}
+
+/* Card text belongs to the card face; learning content opens in a second layer. */
+button.collection-card{font:inherit;text-align:left;color:inherit;width:100%;cursor:pointer;appearance:none}
+.card-art .card-name{position:absolute;z-index:9;top:3%;left:5%;right:22%;margin:0;padding:4px 6px;border-radius:6px;color:#283d35;background:#fff8eced;font-size:clamp(13px,1.9vw,16px);line-height:1.4;text-shadow:0 1px white;box-shadow:0 1px 4px #342c2420}
+.rarity-r .card-name{background:linear-gradient(110deg,#fff8ec,#f4ebd6,#fff8ec);border-bottom:1px solid #c6ab67}
+.rarity-sr .card-name{background:linear-gradient(115deg,#f9ffff,#e2eafa,#fff5ed);box-shadow:0 1px 5px #869cbd55}
+.rarity-ssr .card-name{background:linear-gradient(110deg,#fff6cb,#ffde82,#fff7dc);border:1px solid #dfb446;color:#593f16}
+.rarity-ur .card-name{background:linear-gradient(110deg,#142c47,#233754,#182942);color:#f4dfad;border:1px solid #d6bd7b;text-shadow:0 1px #000;box-shadow:0 0 5px #f8dc8270}
+.card-art .card-scene{z-index:2;object-fit:cover;opacity:.76}
+.card-art.rarity-n .card-scene{opacity:.7}
+.card-art.rarity-sr .card-scene{opacity:.92}
+.card-art:has(.card-scene) .composite-foil{z-index:3}
+.card-details{width:min(550px,calc(100% - 32px));max-height:85dvh;border:1px solid #d6bd91;border-radius:20px;padding:24px;color:#284238;background:#fffaf0;line-height:1.8}
+.card-details::backdrop{background:#172b3ab3}.card-details>button{float:right}.card-details h2{clear:both}.card-details h3{margin-bottom:4px}.card-details p{margin-top:8px}.card-details a{color:#355f8d}
+.tabs{display:flex;flex-wrap:wrap}.tabs .tab{flex:1 0 21%;min-height:44px}
+.quest-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 0;border-bottom:1px solid #e5ddce}.quest-row>div{flex:1;min-width:130px}.quest-row small{display:block;color:#607266;margin-top:4px}.quest-row .btn{min-height:44px}.quest-row .link-button{width:100%;text-align:right}
+.family-messages{max-height:55dvh;overflow:auto;margin-bottom:20px}.family-message{padding:10px 14px;border-radius:14px;background:#eef1e7;margin:12px 30px 12px 0;overflow-wrap:anywhere}.family-message.own{background:#e1efd9;margin:12px 0 12px 30px}.family-message p{margin:6px 0}.family-message small{color:#526554}textarea.field{resize:vertical}

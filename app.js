@@ -252,6 +252,7 @@ function renderCalendar(){
   var y=month.getFullYear(),m=month.getMonth();
   el('monthLabel').textContent=y+'年'+(m+1)+'月';
   var dates=dailyDates();
+  Object.keys(window.mogumoguQuestDays||{}).forEach(function(day){if((window.mogumoguQuestDays[day]||[]).length)dates.add(day);});
   var html='';
   ['日','月','火','水','木','金','土'].forEach(function(s){html+='<div class="weekname">'+s+'</div>';});
   for(var i=0;i<new Date(y,m,1).getDay();i++)html+='<div class="day blank"></div>';
@@ -328,6 +329,7 @@ function changePanel(name){
   document.querySelectorAll('[data-panel]').forEach(function(n){n.hidden=n.dataset.panel!==name;});
   document.querySelectorAll('[data-target]').forEach(function(n){n.setAttribute('aria-selected',String(n.dataset.target===name));});
 }
+window.addEventListener('mogumogu:quest',function(event){window.mogumoguQuestDays=event.detail.days||{};renderCalendar();});
 async function init(){
   el('timerMeal').value=guessMeal();
   el('manualMeal').value=guessMeal();

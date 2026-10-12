@@ -1,6 +1,6 @@
 // On-page five-layer card construction lab, using only existing artwork.
 // Accessible only at /p/jun/?dev=1 and never touches Firebase, gacha or collection state.
-import {CARD_LAYER_MANIFEST,RARITY_BACKGROUNDS,RARITY_VARIANT_BACKGROUNDS,RARITY_FRAME_VARIANTS,CARD_FRAME_ASSIGNMENTS,frameForCard,pickBackgroundForCard} from './card-layer-manifest.js';
+import {CARD_LAYER_MANIFEST,RARITY_BACKGROUNDS,RARITY_VARIANT_BACKGROUNDS,RARITY_FRAME_VARIANTS,CARD_FRAME_ASSIGNMENTS,frameForCard,pickBackgroundForCard,sceneForRarity} from './card-layer-manifest.js';
 import {BY_ID} from './game-catalog.js';
 (function(){
   const profile=document.body.dataset.profile;
@@ -71,6 +71,7 @@ import {BY_ID} from './game-catalog.js';
       const grain=layer(stage,'foil','composite-layer layer-lab-grain','div');
       grain.setAttribute('aria-hidden','true');
     }
+    const scene=sceneForRarity(data.rarity);if(scene)layer(stage,'background','composite-layer card-scene','img',scene,'');
     layer(stage,'under','composite-layer card-frame-under','img',visual.lowerFrame,'');
     if(visual.character)layer(stage,'character','composite-layer card-portrait','img',visual.character,data.name);
     layer(stage,'over','composite-layer card-frame-over','img',visual.upperFrame,'');
@@ -79,7 +80,7 @@ import {BY_ID} from './game-catalog.js';
     const badge=elem('span','card-rarity',data.rarity);
     stage.appendChild(badge);
     const cap=elem('figcaption','layer-lab-caption');
-    cap.appendChild(elem('strong','',data.name));
+    stage.appendChild(elem('strong','card-name',data.name));
     cap.appendChild(elem('small','',descriptions[id]||(visual.fullArt?data.rarity+'｜専用フルアート・独立ホロ':'背景面のホロのみ')));
     if(!visual.character&&!visual.fullArt)cap.appendChild(elem('small','', 'キャラクター画像：未制作'));
     figure.append(stage,cap);

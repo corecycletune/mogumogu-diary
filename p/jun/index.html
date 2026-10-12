@@ -15,9 +15,12 @@
   </header>
   <nav class="tabs" aria-label="メニュー">
     <button class="tab" data-target="timer" aria-selected="true">⏱ ごはん</button>
-    <button class="tab" data-target="calendar" aria-selected="false">📚 図鑑</button>
+    <button class="tab" data-target="collection" aria-selected="false">📚 図鑑</button>
     <button class="tab" data-target="history" aria-selected="false">📖 きろく</button>
     <button class="tab" data-target="bonus" aria-selected="false">🎁 ごほうび</button>
+    <button class="tab" data-target="calendar" aria-selected="false">📅 カレンダー</button>
+    <button class="tab" data-target="quests" aria-selected="false">🌱 クエスト</button>
+    <button class="tab" data-target="family" aria-selected="false">💬 家族</button>
   </nav>
   <section data-panel="timer">
     <div class="card">
@@ -62,8 +65,10 @@
       <h2 class="section-title">スタンプカード</h2>
       <div class="calendar-header"><button class="btn secondary" id="prevMonth" aria-label="前の月">‹</button><strong id="monthLabel"></strong><button class="btn secondary" id="nextMonth" aria-label="次の月">›</button></div>
       <div class="calendar" id="calendarGrid"></div>
-      <p class="small">1日に1回以上ごはんを記録するとスタンプがつくよ。</p>
+      <p class="small">ごはんの記録や、どれかひとつのクエスト達成でスタンプがつくよ。</p>
     </div>
+  </section>
+  <section data-panel="collection" hidden>
     <div class="card">
       <h2 class="section-title">🍙 たべもの図鑑</h2>
       <p class="small">食べ物や芸術から生まれた仲間を集めよう。まだ出会っていないカードも見られるよ。</p>
@@ -81,6 +86,17 @@
       <p class="small">カードを重ねて引くと成長します。レア度は変わらず、Lv.1〜5まで育ちます。</p>
     </div>
   </section>
+  <section data-panel="quests" hidden>
+    <div class="card"><h2 class="section-title">🌱 今日のクエスト</h2>
+      <p id="questStatus" class="small" role="status">家族と同期すると習慣を登録できます。</p>
+      <div class="metrics"><div class="metric"><strong id="questStreak">0日</strong><span>どれかできた連続記録</span></div><div class="metric"><strong id="questDone">0件</strong><span>今日できたこと</span></div></div>
+      <div id="questList"></div>
+      <details><summary>お休み中の習慣</summary><div id="questArchived"></div></details>
+      <form id="questForm"><label class="label" for="questName">続けたい習慣（10件まで）</label><div class="input-row"><input id="questName" class="field" maxlength="60" required placeholder="例：歯をみがく・本を読む"><button id="questAdd" class="btn secondary" type="submit" disabled>登録 ＋</button></div></form>
+      <details><summary>ごほうびと連続記録</summary><p class="small">最初の達成でガチャ券1枚。2件目は20コイン、3件目以降は5コイン（追加は1日40コインまで）。100コインでガチャ1回。ごはん記録も1日1件のクエストになります。</p><p class="small">どれかできれば全体の連続記録。各習慣を毎日続けると個別の連続記録になり、3・7・14・30日の節目では個別の方が多くコインをもらえます。記録をお休みにしても過去の達成は残ります。</p></details>
+    </div>
+  </section>
+  <section data-panel="family" hidden><div class="card"><h2 class="section-title">💬 家族のおしゃべり</h2><p id="messageStatus" class="small" role="status">「きろく」から家族と同期してください。</p><div id="familyMessages" class="family-messages" aria-live="polite"></div><form id="messageForm"><label class="label" for="messageText">メッセージ</label><textarea id="messageText" class="field" maxlength="500" rows="3" required placeholder="今日できたこと、カードのお知らせなど"></textarea><button id="messageSend" class="btn primary" type="submit" disabled>送る</button></form></div></section>
   <section data-panel="history" hidden>
   <div class="card" id="cloudCard">
     <h2 class="section-title">☁ 家族と同期 <span id="cloudBadge" class="badge">未接続</span></h2>
@@ -119,7 +135,7 @@
     <div class="card">
       <h2 class="section-title">ごほうび</h2>
       <div class="metrics"><div class="metric"><strong id="coins">0</strong><span>コイン</span></div><div class="metric"><strong id="markedDays">0</strong><span>記録した日</span></div><div class="metric"><strong id="bonusDays">0</strong><span>ログインした日</span></div></div>
-      <p class="small">毎日無料ガチャ1回。ログインで10コイン、ごはんの記録で最大40コイン/日。連続記録ではコインやガチャ券がもらえます。食事時間の長短で差はつきません。</p>
+      <p class="small">毎日無料ガチャ1回。今日のクエストをひとつ達成すると、もう1回分のガチャ券。複数達成や連続記録でコインがたまり、ときどき追加で引けます。食事時間の長短で差はつきません。</p>
     </div>
     <div class="card" id="gachaCard">
       <h2 class="section-title">🎁 もぐもぐガチャ</h2>
@@ -181,4 +197,5 @@
 </main><div class="toast" id="feedback" role="status" hidden></div>
 <script src="../../app.js" defer></script>
 <script src="../../game.js" type="module"></script>
+<script src="../../adventure.js" type="module"></script>
 <script src="../../card-layer-lab.js" type="module"></script></body></html>

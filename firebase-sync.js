@@ -2,7 +2,7 @@
 // This app deliberately never includes service-account credentials.
 import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js";
-import { getFirestore, collection, doc, setDoc, getDoc, deleteDoc, onSnapshot, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js";
+import { getFirestore, collection, doc, setDoc, getDoc, deleteDoc, onSnapshot, runTransaction, serverTimestamp, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js";
 
 const config = {
   apiKey: "AIzaSyA6yTBzzI8WrVrkX1ubJ1HsptS1S1ieelA",
@@ -38,6 +38,19 @@ function context(familyId, profile) {
   return {
     familyId,
     profile,
+    watchQuests: (onValue,onError) => onSnapshot(doc(db,'families',familyId,'adventures',profile), {includeMetadataChanges:true},
+      snapshot=>onValue(snapshot.exists()?snapshot.data():null,{fromCache:snapshot.metadata.fromCache,hasPendingWrites:snapshot.metadata.hasPendingWrites}),onError),
+    updateAdventure: callback => runTransaction(db,async transaction=>{
+      const qref=doc(db,'families',familyId,'adventures',profile),gref=gameRef(familyId,profile);
+      const q=await transaction.get(qref),g=await transaction.get(gref);
+      const next=callback(q.exists()?q.data():null,g.exists()?g.data():null);
+      if(!next)return null;
+      transaction.set(qref,next.quests);
+      if(next.game)transaction.set(gref,next.game);
+      return next;
+    }),
+    watchMessages: (onValue,onError) => onSnapshot(query(collection(db,'families',familyId,'messages'),orderBy('createdAt','desc'),limit(100)),snapshot=>onValue(snapshot.docs.map(item=>item.data()).reverse()),onError),
+    sendMessage: (text,cardId='') => setDoc(doc(collection(db,'families',familyId,'messages')),{sender:profile,text,cardId,createdAt:serverTimestamp()}),
     saveMeal: entry => setDoc(mealRef(familyId, entry.id), entry),
     deleteMeal: id => deleteDoc(mealRef(familyId, id)),
     watchGame: (onValue,onError) => onSnapshot(gameRef(familyId, profile), {includeMetadataChanges:true},

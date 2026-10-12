@@ -38,6 +38,32 @@ service cloud.firestore {
       request.resource.data.updatedAt is string;
     }
 
+
+    // Family prototype: existing per-profile game balances remain client-driven.
+    // adventures/{profile}: bounded habit definitions, daily completions and reward ledger.
+    function validAdventure(gameProfile) {
+      let d=request.resource.data;
+      return d.keys().hasAll(['profile','version','tasks','days','rewards','updatedAt']) &&
+        d.keys().hasOnly(['profile','version','tasks','days','rewards','updatedAt']) &&
+        d.profile == gameProfile && d.version == 1 &&
+        d.tasks is map && d.tasks.size() <= 50 &&
+        d.days is map && d.days.size() <= 400 &&
+        d.rewards is map && d.rewards.size() <= 5000 && d.updatedAt is string;
+    }
+    function validMessage(fid) {
+      let d=request.resource.data;
+      return d.keys().hasAll(['sender','text','cardId','createdAt']) &&
+        d.keys().hasOnly(['sender','text','cardId','createdAt']) &&
+        d.sender == myProfile(fid) && d.text is string &&
+        d.text.size() > 0 && d.text.size() <= 500 &&
+        d.cardId is string && d.cardId.size() <= 100 &&
+        d.createdAt == request.time &&
+        (d.cardId == '' ||
+          (exists(/databases/$(database)/documents/families/$(fid)/games/$(d.sender)) &&
+           d.cardId in get(/databases/$(database)/documents/families/$(fid)/games/$(d.sender)).data.inventory &&
+           get(/databases/$(database)/documents/families/$(fid)/games/$(d.sender)).data.inventory[d.cardId].copies > 0));
+    }
+
     match /families/{fid} {
       // A group ID is 144-bit cryptographic randomness and must stay private.
       allow create: if signedIn() &&
@@ -98,6 +124,17 @@ service cloud.firestore {
           request.resource.data.updatedAt is string;
       }
 
+      match /adventures/{gameProfile} {
+        allow get: if isMember(fid) && gameProfile == myProfile(fid);
+        allow list, delete: if false;
+        allow create, update: if isMember(fid) && gameProfile == myProfile(fid) && validAdventure(gameProfile);
+      }
+      match /messages/{messageId} {
+        allow get: if isMember(fid);
+        allow list: if isMember(fid) && request.query.limit != null && request.query.limit <= 100;
+        allow create: if isMember(fid) && validMessage(fid);
+        allow update, delete: if false;
+      }
       match /meals/{mealId} {
         // Family members may read all entries for cooperative missions.
         allow get, list: if isMember(fid);

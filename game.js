@@ -1,5 +1,6 @@
+import {openCardDetails} from './card-details.js';
 import {CATALOG,BY_ID,levelForCopies,drawCharacter} from './game-catalog.js';
-import {CARD_LAYER_MANIFEST,pickBackgroundForCard,frameForCard} from './card-layer-manifest.js';
+import {CARD_LAYER_MANIFEST,pickBackgroundForCard,frameForCard,sceneForRarity} from './card-layer-manifest.js';
 (function(){
 'use strict';
 const profile=document.body.dataset.profile;
@@ -41,23 +42,6 @@ function gameError(e){
   status('本番ガチャの保存・読み取りエラー（'+code+'）。'+reason,true);
   renderHeader();
 }
-function computeStreakRewards(days){
-  let streak=0,previous='',events=[];
-  for(const date of days){
-    streak=previous&&Date.parse(date)-Date.parse(previous)===86400000?streak+1:1;
-    if(streak===3||streak===7||streak===14||streak===30)events.push({key:date+':'+streak,streak});
-    previous=date;
-  }
-  return events;
-}
-function countMeals(records){
-  const result={};
-  for(const r of records){
-    if(r.profile!==profile||r.mealType==='snack'||typeof r.date!=='string'||r.date>today())continue;
-    result[r.date]=Math.min(3,(result[r.date]||0)+1);
-  }
-  return result;
-}
 async function awardLogin(){
   if(!ctx)return;
   const d=today();
@@ -70,39 +54,6 @@ async function awardLogin(){
     });
     if(awarded)message('ログインボーナス ＋10コイン！');
   }catch(e){gameError(e);}
-}
-async function syncMealRewards(){
-  if(!ctx||!bridge||!bridge.confirmedMeals())return;
-  const meals=bridge.getCloudMeals();
-  const counts=countMeals(meals);
-  const sorted=Object.keys(counts).sort();
-  const events=computeStreakRewards(sorted);
-  const signature=JSON.stringify({counts,events:events.map(x=>x.key)});
-  if(signature===lastMealSignature)return;
-  lastMealSignature=signature;
-  try{
-    await ctx.updateGame(current=>{
-      const st=clone(current);
-      let changed=false;
-      for(const date of sorted){
-        const n=counts[date],previous=st.mealRewardDays[date]||0;
-        if(n<=previous)continue;
-        for(let i=previous;i<n;i++)st.coins+=(i===0?20:10);
-        st.mealRewardDays[date]=n;changed=true;
-      }
-      for(const event of events){
-        if(st.streakRewardKeys.includes(event.key))continue;
-        st.streakRewardKeys.push(event.key);
-        if(event.streak===3)st.coins+=30;
-        if(event.streak===7)st.tickets+=1;
-        if(event.streak===14)st.tickets+=2;
-        if(event.streak===30)st.tickets+=3;
-        changed=true;
-      }
-      if(!changed)return null;
-      st.updatedAt=new Date().toISOString();return st;
-    });
-  }catch(e){lastMealSignature='';gameError(e);}
 }
 async function connect(context){
   if(!context||!context.watchGame)return;
@@ -118,12 +69,15 @@ async function connect(context){
     ready=!meta.fromCache&&!meta.hasPendingWrites;
     if(!statusError)status(ready?'Firebaseにゲームデータを保存しています。':'クラウドとの接続を確認中…');
     render();
+    if(ready)window.dispatchEvent(new CustomEvent('mogumogu:game-ready'));
   },err=>{if(seq!==connectionSeq)return;ready=false;gameError(err);render();});
   await awardLogin();
-  if(seq===connectionSeq)void syncMealRewards();
 }
 function paintCard(char,entry,unknown){
-  const outer=document.createElement('div');
+  const outer=document.createElement('button');
+  outer.type='button';
+  outer.setAttribute('aria-label',char.name+'の説明を読む');
+  outer.addEventListener('click',()=>openCardDetails(char,entry?{copies:entry.copies,level:levelForCopies(entry.copies)}:null));
   outer.className='collection-card rarity-'+char.rarity.toLowerCase();
   const art=document.createElement('div');
   art.className='card-art rarity-'+char.rarity.toLowerCase();
@@ -171,6 +125,7 @@ function paintCard(char,entry,unknown){
     foilBase.className='composite-layer composite-foil';
     foilBase.setAttribute('aria-hidden','true');
     art.appendChild(foilBase);
+    addLayer('card-scene',sceneForRarity(char.rarity),true);
     addLayer('card-frame-under',layers.lowerFrame,true);
     addLayer('card-portrait',layers.character,false);
     addLayer('card-frame-over',layers.upperFrame,true);
@@ -195,6 +150,7 @@ function paintCard(char,entry,unknown){
     art.appendChild(foil);
     // Every N/R/SR card, including ones without individual art assets,
     // receives its stable, themed split-SVG frame set.
+    addLayer('card-scene',sceneForRarity(char.rarity),true);
     const frame=frameForCard(char.id,char.rarity);
     if(frame)addLayer('card-frame-under',frame.lowerFrame,true);
     if(frame)addLayer('card-frame-over',frame.upperFrame,true);
@@ -205,14 +161,8 @@ function paintCard(char,entry,unknown){
   }
   const rarity=document.createElement('span');rarity.className='card-rarity';rarity.textContent=char.rarity;art.appendChild(rarity);
   const name=document.createElement('strong');name.className='card-name';name.textContent=unknown?'未発見':char.name;
-  const meta=document.createElement('div');meta.className='card-subtitle';
-  if(unknown)meta.textContent='まだ出会っていません';
-  else if(entry){meta.textContent='Lv.'+levelForCopies(entry.copies)+' · '+entry.copies+'枚所持';}
-  else meta.textContent=char.figure?'芸術・歴史モチーフ':'たべもの';
-  outer.appendChild(art);outer.appendChild(name);outer.appendChild(meta);
-  if(entry){
-    const detail=document.createElement('p');detail.className='card-lore';detail.textContent=char.lore;outer.appendChild(detail);
-  }
+  art.appendChild(name);outer.appendChild(art);
+  if(entry){const meta=document.createElement('div');meta.className='card-subtitle';meta.textContent='Lv.'+levelForCopies(entry.copies)+' · '+entry.copies+'枚所持';outer.appendChild(meta);}
   return outer;
 }
 function renderCollection(){
@@ -273,6 +223,7 @@ function showLatestDraw(){
     target.appendChild(label);
   }
   target.appendChild(caption);
+  if(!latestDraw.test){const share=document.createElement('button');share.type='button';share.className='btn secondary';share.textContent='家族にゲットを報告';share.addEventListener('click',()=>window.dispatchEvent(new CustomEvent('mogumogu:share-card',{detail:{id:card.id}})));target.appendChild(share);}
   if(card.rarity==='UR'){
     const secret=document.createElement('p');secret.className='secret-discovery';secret.textContent='✨ ひみつのカードを発見しました！ ✨';target.insertBefore(secret,head);
   }
@@ -350,7 +301,6 @@ el('gameCoinDraw').addEventListener('click',()=>void pull('coin'));
 el('gameTicketDraw').addEventListener('click',()=>void pull('ticket'));
 el('collectionFilter').addEventListener('change',renderCollection);
 window.addEventListener('mogumogu:connected',event=>void connect(event.detail.context));
-window.addEventListener('mogumogu:meals',()=>void syncMealRewards());
 if(bridge&&bridge.getContext())void connect(bridge.getContext());
 else status('「きろく」から家族と同期すると、無料ガチャや図鑑を使えます。');
 render();
