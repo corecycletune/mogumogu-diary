@@ -1,4 +1,14 @@
 const source='https://fooddb.mext.go.jp/';
+export function putCardName(node,name){
+  let words=[name];
+  const of=name.indexOf('の');
+  if(of>0&&of<name.length-1)words=[name.slice(0,of+1),name.slice(of+1)];
+  else if(name.endsWith('オムライス')&&name!=='オムライス')words=[name.slice(0,-5),'オムライス'];
+  else if(name.endsWith('珈琲'))words=[name.slice(0,-2),'珈琲'];
+  if(words.length===1){node.textContent=name;return;}
+  node.replaceChildren();
+  words.forEach((word,index)=>{if(index)node.append(document.createElement('wbr'));const span=document.createElement('span');span.className='card-name-word';span.textContent=word;node.append(span);});
+}
 // Qualitative descriptions, not inferred laboratory values or medical claims.
 const foods={
  rice:['ごはん','C（炭水化物）が中心。P（たんぱく質）は少量、F（脂質）は少なめ。','主にでんぷんで、体を動かすエネルギーになります。おかずと合わせると栄養の種類を増やせます。'],

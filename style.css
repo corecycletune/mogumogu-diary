@@ -643,11 +643,13 @@
 
 /* Card text belongs to the card face; learning content opens in a second layer. */
 button.collection-card{font:inherit;text-align:left;color:inherit;width:100%;cursor:pointer;appearance:none}
-.card-art .card-name{position:absolute;z-index:9;top:3%;left:5%;right:22%;margin:0;padding:4px 6px;border-radius:6px;color:#283d35;background:#fff8eced;font-size:clamp(13px,1.9vw,16px);line-height:1.4;text-shadow:0 1px white;box-shadow:0 1px 4px #342c2420}
-.rarity-r .card-name{background:linear-gradient(110deg,#fff8ec,#f4ebd6,#fff8ec);border-bottom:1px solid #c6ab67}
-.rarity-sr .card-name{background:linear-gradient(115deg,#f9ffff,#e2eafa,#fff5ed);box-shadow:0 1px 5px #869cbd55}
-.rarity-ssr .card-name{background:linear-gradient(110deg,#fff6cb,#ffde82,#fff7dc);border:1px solid #dfb446;color:#593f16}
-.rarity-ur .card-name{background:linear-gradient(110deg,#142c47,#233754,#182942);color:#f4dfad;border:1px solid #d6bd7b;text-shadow:0 1px #000;box-shadow:0 0 5px #f8dc8270}
+/* Original translucent name ribbon, integrated into the lower card face. */
+.card-art .card-name{position:absolute;z-index:9;top:auto;bottom:4%;left:3%;right:3%;margin:0;padding:9px 9px 8px;text-align:center;border:0;border-radius:0;clip-path:polygon(4% 0,96% 0,100% 20%,98% 100%,0 100%,0 22%);color:#283d35;background:linear-gradient(105deg,#f8f3e5a6,#fff9e6d1 50%,#f8f3e5a6);font-size:clamp(13px,1.9vw,17px);font-weight:850;line-height:1.3;letter-spacing:.02em;text-shadow:0 1px 2px #fff9;box-shadow:none;overflow-wrap:anywhere;border-top:1px solid #c6bda575;border-bottom:1px solid #c6bda575}
+.rarity-r .card-name{background:linear-gradient(105deg,#ded0a894,#fff8ddc2 45%,#d2ba7c9c);border-color:#b0924c80;color:#3b402d}
+.rarity-sr .card-name{background:linear-gradient(105deg,#cedff5a3,#f4f9ffc9 45%,#b5cee8a1);border-color:#ecf9ffb3;color:#233b53;text-shadow:0 1px 3px #fff}
+.rarity-ssr .card-name{background:linear-gradient(105deg,#ae772a8a,#fff2bcc9 46%,#d19b4594);border-color:#ffe6a7c7;color:#4c3015;text-shadow:0 1px 3px #fff3dccc}
+.rarity-ur .card-name{background:linear-gradient(105deg,#101e4382,#11233eaf 50%,#12345182);border-color:#ecd99ecc;color:#fff2c4;text-shadow:0 1px 3px #071120,0 0 5px #071120;letter-spacing:.04em}
+.card-name-word{display:inline-block;white-space:nowrap}
 .card-art .card-scene{z-index:2;object-fit:cover;opacity:.76}
 .card-art.rarity-n .card-scene{opacity:.7}
 .card-art.rarity-sr .card-scene{opacity:.92}

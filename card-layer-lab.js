@@ -2,6 +2,7 @@
 // Accessible only at /p/jun/?dev=1 and never touches Firebase, gacha or collection state.
 import {CARD_LAYER_MANIFEST,RARITY_BACKGROUNDS,RARITY_VARIANT_BACKGROUNDS,RARITY_FRAME_VARIANTS,CARD_FRAME_ASSIGNMENTS,frameForCard,pickBackgroundForCard,sceneForRarity} from './card-layer-manifest.js';
 import {BY_ID} from './game-catalog.js';
+import {putCardName} from './card-details.js';
 (function(){
   const profile=document.body.dataset.profile;
   if(profile!=='jun'||!/(?:^|[?&])dev=1(?:&|$)/.test(location.search))return;
@@ -80,7 +81,7 @@ import {BY_ID} from './game-catalog.js';
     const badge=elem('span','card-rarity',data.rarity);
     stage.appendChild(badge);
     const cap=elem('figcaption','layer-lab-caption');
-    stage.appendChild(elem('strong','card-name',data.name));
+    const name=elem('strong','card-name');putCardName(name,data.name);stage.appendChild(name);
     cap.appendChild(elem('small','',descriptions[id]||(visual.fullArt?data.rarity+'｜専用フルアート・独立ホロ':'背景面のホロのみ')));
     if(!visual.character&&!visual.fullArt)cap.appendChild(elem('small','', 'キャラクター画像：未制作'));
     figure.append(stage,cap);

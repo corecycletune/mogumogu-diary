@@ -1,4 +1,4 @@
-import {openCardDetails} from './card-details.js';
+import {openCardDetails,putCardName} from './card-details.js';
 import {CATALOG,BY_ID,levelForCopies,drawCharacter} from './game-catalog.js';
 import {CARD_LAYER_MANIFEST,pickBackgroundForCard,frameForCard,sceneForRarity} from './card-layer-manifest.js';
 (function(){
@@ -160,7 +160,7 @@ function paintCard(char,entry,unknown){
     art.appendChild(glint);
   }
   const rarity=document.createElement('span');rarity.className='card-rarity';rarity.textContent=char.rarity;art.appendChild(rarity);
-  const name=document.createElement('strong');name.className='card-name';name.textContent=unknown?'未発見':char.name;
+  const name=document.createElement('strong');name.className='card-name';putCardName(name,unknown?'未発見':char.name);
   art.appendChild(name);outer.appendChild(art);
   if(entry){const meta=document.createElement('div');meta.className='card-subtitle';meta.textContent='Lv.'+levelForCopies(entry.copies)+' · '+entry.copies+'枚所持';outer.appendChild(meta);}
   return outer;
