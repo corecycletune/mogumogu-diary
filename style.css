@@ -726,7 +726,7 @@ button.collection-card{font:inherit;text-align:left;color:inherit;width:100%;cur
 .card-art.unknown-art{background:linear-gradient(145deg,#e7e7e3,#cacdc9);border:3px double #a7ada7;box-shadow:none}
 .unknown-art .card-name{color:#606b63;background:#e9eae4a8}
 .card-question{font-size:64px;font-weight:700;color:#7d877f;text-shadow:0 2px #fff8}
-.new-badge{position:absolute;z-index:12;right:12px;top:14px;padding:5px 9px;border-radius:7px;background:#bb4935;color:white;font-size:12px;font-weight:800;box-shadow:0 2px 8px #552a2344;pointer-events:none}
+.new-badge{position:absolute;z-index:12;left:12px;right:auto;top:14px;padding:5px 9px;border-radius:7px;background:#bb4935;color:white;font-size:12px;font-weight:800;box-shadow:0 2px 8px #552a2344;pointer-events:none}
 .card-details{padding:14px;overflow:auto;overscroll-behavior:contain;max-height:90dvh}
 .card-details>button{float:none;margin:0 6px 12px 0;min-height:44px}
 .card-detail-front{width:min(340px,100%);margin:auto}

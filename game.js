@@ -94,7 +94,7 @@ function paintCard(char,entry,unknown){
     const name=document.createElement('strong');name.className='card-name';name.textContent='？？？？';
     hidden.append(question,label,name);outer.append(hidden);return outer;
   }
-  outer.addEventListener('click',()=>openCardDetails(char,entry?{copies:entry.copies,level:levelForCopies(entry.copies)}:null,outer.querySelector('.card-art')));
+  outer.addEventListener('click',()=>openCardDetails(char,entry?.copies>0?{copies:entry.copies,level:levelForCopies(entry.copies)}:null,outer.querySelector('.card-art')));
   outer.className='collection-card rarity-'+char.rarity.toLowerCase();
   const art=document.createElement('div');
   art.className='card-art rarity-'+char.rarity.toLowerCase();
@@ -181,29 +181,31 @@ function paintCard(char,entry,unknown){
   const rarity=document.createElement('span');rarity.className='card-rarity';rarity.textContent=char.rarity;art.appendChild(rarity);
   const name=document.createElement('strong');name.className='card-name';putCardName(name,unknown?'未発見':char.name);
   art.appendChild(name);outer.appendChild(art);
-  if(entry){const meta=document.createElement('div');meta.className='card-subtitle';meta.textContent='Lv.'+levelForCopies(entry.copies)+' · '+entry.copies+'枚所持';outer.appendChild(meta);}
+  if(entry){const meta=document.createElement('div');meta.className='card-subtitle';meta.textContent=entry.copies>0?'Lv.'+levelForCopies(entry.copies)+' · '+entry.copies+'枚所持':'未所持（動作確認）';outer.appendChild(meta);}
   return outer;
 }
 function renderCollection(){
   const target=el('collectionGrid');target.textContent='';
-  const filter=el('collectionFilter').value;
-  // UR is not listed or counted until the individual has obtained it.
-  const visible=CATALOG.filter(card=>card.rarity!=='UR'||(state.inventory[card.id]&&state.inventory[card.id].copies>0));
+  const filter=el('collectionFilter').value,testing=isTesting();
+  const copiesFor=id=>testing?(testInventory[id]??state.inventory[id]?.copies??0):(state.inventory[id]?.copies||0);
+  // Only explicit developer testing shows unobtained artwork and hidden URs.
+  const visible=CATALOG.filter(card=>testing||card.rarity!=='UR'||copiesFor(card.id)>0);
   const filtered=visible.filter(card=>{
-    if(filter==='owned')return !!state.inventory[card.id];
-    if(filter==='missing')return !state.inventory[card.id];
+    if(filter==='owned')return copiesFor(card.id)>0;
+    if(filter==='missing')return copiesFor(card.id)===0;
     if(filter==='omurice')return card.food==='オムライス';
     if(filter==='figures')return !!card.figure;
     return true;
   });
   filtered.sort((a,b)=>rarityRank.indexOf(b.rarity)-rarityRank.indexOf(a.rarity)||a.name.localeCompare(b.name,'ja'));
   for(const card of filtered){
-    target.appendChild(paintCard(card,state.inventory[card.id]||null,!(state.inventory[card.id]?.copies>0)));
+    const copies=copiesFor(card.id);
+    target.appendChild(paintCard(card,testing?{copies}:(state.inventory[card.id]||null),!testing&&copies===0));
   }
   if(!filtered.length){const p=document.createElement('p');p.className='empty';p.textContent='ここにはまだカードがありません。';target.appendChild(p);}
   const count=visible.filter(card=>state.inventory[card.id]).length;
   const publiclyCount=CATALOG.filter(x=>x.rarity!=='UR').length;
-  el('collectionCount').textContent='コレクション '+count+' / '+(publiclyCount+visible.filter(x=>x.rarity==='UR').length)+' 種 発見';
+  el('collectionCount').textContent=testing?'🧪 動作確認 '+filtered.length+' / '+CATALOG.length+' 種（未保存）':'コレクション '+count+' / '+(publiclyCount+visible.filter(x=>x.rarity==='UR').length)+' 種 発見';
 }
 function renderHeader(){
   el('coins').textContent=ctx?String(state.coins):'--';
@@ -288,7 +290,7 @@ async function testPull(){
   testInventory[card.id]=(testInventory[card.id]||0)+1;
   testDrawCount++;
   latestDraw={id:card.id,copies:testInventory[card.id],newCard:testInventory[card.id]===1,test:true};
-  await reveal([latestDraw]);setBusy(false);
+  await reveal([latestDraw]);setBusy(false);renderCollection();
   el('gameResult').scrollIntoView({behavior:'smooth',block:'center'});
 }
 async function pull(mode){
@@ -317,6 +319,7 @@ if(devAvailable){
     el('devControls').hidden=!toggle.checked;
     // Never keep simulated cards after leaving test mode.
     testInventory={};testDrawCount=0;latestDraw=null;latestResults=[];
+    if(toggle.checked)el('collectionFilter').value='all';
     render();
     if(toggle.checked)message('テストモードです。抽選は何度でもできますが保存されません。');
   });
