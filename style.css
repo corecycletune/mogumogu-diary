@@ -514,30 +514,36 @@
 .full-art-card.foil-none .full-art-foil,.full-art-card.foil-none .full-art-glint{display:none}
 .layered-card.full-art-card.foil-ssr-prism .full-art-foil,
 .layered-card.full-art-card.foil-ssr-prism .full-art-glint{
-  mask-image:radial-gradient(ellipse 48% 27% at 51% 53%,#0002 0 55%,#0009 90%,#000 125%);
-  -webkit-mask-image:radial-gradient(ellipse 48% 27% at 51% 53%,#0002 0 55%,#0009 90%,#000 125%);
+  /* Intersect the protected characters with a travelling reflection band.
+     Outside the band both layers are transparent: the original art stays intact. */
+  mask-image:radial-gradient(ellipse 48% 27% at 51% 53%,#0001 0 45%,#0008 75%,#000 105%),linear-gradient(115deg,transparent 39%,#0004 44%,#000 48%,#000b 52%,transparent 58%);
+  -webkit-mask-image:radial-gradient(ellipse 48% 27% at 51% 53%,#0001 0 45%,#0008 75%,#000 105%),linear-gradient(115deg,transparent 39%,#0004 44%,#000 48%,#000b 52%,transparent 58%);
+  mask-size:100% 100%,300% 100%;mask-position:0 0,140% 0;mask-repeat:no-repeat;mask-composite:intersect;
+  -webkit-mask-size:100% 100%,300% 100%;-webkit-mask-position:0 0,140% 0;-webkit-mask-repeat:no-repeat;-webkit-mask-composite:source-in;
+  animation:prism-reflection-band 7.5s ease-in-out infinite;
 }
 .layered-card.full-art-card.foil-ssr-prism .full-art-foil{
-  z-index:2;opacity:var(--prism-opacity,.38);mix-blend-mode:screen;
+  z-index:2;opacity:.9;mix-blend-mode:overlay;
   background:
-    conic-gradient(from 30deg,#90f3ff 0deg 60deg,#e9b8ff 60deg 120deg,#fff3a6 120deg 180deg,#b1ffce 180deg 240deg,#a8caff 240deg 300deg,#ffbedb 300deg 360deg) 0 0/48px 42px,
-    linear-gradient(125deg,#9df5ff,#ffb4e3,#f8fcb6);
-  animation:prism-colors 8s ease-in-out infinite alternate;
+    conic-gradient(from 30deg,#06e4ff 0deg 57deg,#fff7c7 58deg 60deg,#fa36ce 60deg 120deg,#ffc820 120deg 180deg,#1af297 180deg 240deg,#4470ff 240deg 300deg,#ff6232 300deg 358deg,#fff7c7 359deg 360deg) 0 0/46px 40px;
 }
 .layered-card.full-art-card.foil-ssr-prism .full-art-glint{
-  z-index:3;opacity:.45;mix-blend-mode:screen;
+  z-index:3;opacity:.5;mix-blend-mode:screen;
   background:
-    radial-gradient(circle at 25% 35%,#fff 0 1px,transparent 3px) 0 0/43px 57px,
-    radial-gradient(circle at var(--prism-x,25%) var(--prism-y,40%),#fff9,transparent 32%),
-    linear-gradient(115deg,transparent 35%,#b6f2ff55 43%,#fff9 50%,#ffd7f366 57%,transparent 65%);
-  background-size:43px 57px,100% 100%,300% 100%;
-  animation:prism-reflection 10s ease-in-out infinite;
+    radial-gradient(circle at 25% 35%,#fff 0 .8px,transparent 2px) 0 0/37px 51px,
+    radial-gradient(ellipse 5% 7% at var(--prism-x,72%) var(--prism-y,25%),#fff8,transparent 100%);
 }
-@keyframes prism-colors{from{filter:hue-rotate(-15deg)}to{filter:hue-rotate(55deg)}}
-@keyframes prism-reflection{0%,18%{background-position:0 0,0 0,140% 0}72%,100%{background-position:0 0,0 0,-100% 0}}
+.layered-card.full-art-card.foil-ssr-prism.prism-follow-pointer .full-art-foil,
+.layered-card.full-art-card.foil-ssr-prism.prism-follow-pointer .full-art-glint{
+  animation:none;mask-position:0 0,var(--prism-band-x,50%) 0;-webkit-mask-position:0 0,var(--prism-band-x,50%) 0;
+}
+@keyframes prism-reflection-band{
+  0%,12%{mask-position:0 0,140% 0;-webkit-mask-position:0 0,140% 0}
+  68%,100%{mask-position:0 0,-100% 0;-webkit-mask-position:0 0,-100% 0}
+}
 @media(prefers-reduced-motion:reduce){
   .layered-card.full-art-card.foil-ssr-prism .full-art-foil,
-  .layered-card.full-art-card.foil-ssr-prism .full-art-glint{animation:none;filter:none}
+  .layered-card.full-art-card.foil-ssr-prism .full-art-glint{animation:none;filter:none;mask-position:0 0,56% 0;-webkit-mask-position:0 0,56% 0}
 }
 .layer-lab-card .lab-hide-character .card-full-art{display:none}
 .layered-card.full-art-card.foil-ur-cosmic .full-art-foil,

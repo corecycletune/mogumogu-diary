@@ -12,6 +12,6 @@ if(mount&&document.body.dataset.profile==='jun'&&new URLSearchParams(location.se
   const name=document.createElement('strong');name.className='card-name';putCardName(name,SSR_PRISM_TRIAL.name);art.append(name);button.append(art);mount.querySelector('.prism-trial-stage').append(button);
   button.addEventListener('click',()=>openCardDetails(SSR_PRISM_TRIAL));
   mount.querySelector('select').addEventListener('change',e=>{art.classList.remove('foil-ssr-prism','foil-ssr-vivid','foil-none');art.classList.add('foil-'+e.target.value);});
-  button.addEventListener('pointermove',e=>{const r=button.getBoundingClientRect();art.style.setProperty('--prism-x',((e.clientX-r.left)/r.width*100)+'%');art.style.setProperty('--prism-y',((e.clientY-r.top)/r.height*100)+'%');});
-  button.addEventListener('pointerleave',()=>{art.style.removeProperty('--prism-x');art.style.removeProperty('--prism-y');});
+  button.addEventListener('pointermove',e=>{const r=art.getBoundingClientRect(),x=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width)),y=Math.max(0,Math.min(1,(e.clientY-r.top)/r.height));art.classList.add('prism-follow-pointer');art.style.setProperty('--prism-x',x*100+'%');art.style.setProperty('--prism-y',y*100+'%');art.style.setProperty('--prism-band-x',(75-x*50)+'%');});
+  button.addEventListener('pointerleave',()=>{art.classList.remove('prism-follow-pointer');for(const name of ['--prism-x','--prism-y','--prism-band-x'])art.style.removeProperty(name);});
 }
