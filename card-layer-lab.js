@@ -42,6 +42,7 @@ import {putCardName} from './card-details.js';
     const node=elem(tag,cssClass);
     node.dataset.layer=key;
     if(tag==='img'){
+      node.loading='lazy';
       node.src=src;
       node.alt=alt||'';
       node.loading='lazy';
@@ -220,6 +221,7 @@ import {putCardName} from './card-details.js';
     RARITY_VARIANT_BACKGROUNDS[tier].forEach((src,i)=>{
       const figure=elem('figure','background-variant-swatch');
       const img=elem('img','');
+      img.loading='lazy';
       img.src=src;
       img.alt=tier+'背景 '+(i+1)+'番 '+labels[i];
       img.loading='lazy';
@@ -232,6 +234,7 @@ import {putCardName} from './card-details.js';
   variants.appendChild(elem('h4','','SSR 強化ホログラム背景'));
   const ssrFigure=elem('figure','background-variant-swatch background-ssr-swatch');
   const ssrImage=elem('img','');
+  ssrImage.loading='lazy';ssrImage.decoding='async';
   ssrImage.src=RARITY_BACKGROUNDS.SSR;
   ssrImage.alt='SSR 金・虹箔・微細ラメのホログラム背景';
   ssrFigure.appendChild(ssrImage);

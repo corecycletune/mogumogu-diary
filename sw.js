@@ -1,9 +1,51 @@
-const CACHE_NAME='mogumogu-static-v35';
-const ASSETS=['./assets/cards/full-art/secret_rinpa_ur.webp?v=sotatsu-ssr-v1','./multi-draw.js','./sound.js','./assets/cards/frames/top/ssr-gold-trim.svg','./progress-store.js','./card-profiles.js','./nutrition-models.js','./ssr-prism-trial.js','./assets/cards/full-art/rousseau_jungle_ssr_trial.webp','./assets/cards/frames/top/sr-premium-trim.svg','./quest-core.js','./adventure.js','./card-details.js','./assets/cards/scenes/scene-n.webp','./assets/cards/scenes/scene-r.webp','./assets/cards/scenes/scene-sr.webp','./assets/cards/full-art/secret_omurice_ur.webp?v=ur-planet-foil-v1','./assets/cards/full-art/secret_celestial_ur.webp?v=ur-planet-foil-v1','./assets/cards/full-art/omu_ichika_ssr.webp?v=ssr-full-art-v1','./assets/cards/full-art/omu_royal_ssr.webp?v=ssr-full-art-v1','./assets/cards/full-art/hokusai_wave_ssr.webp?v=ssr-full-art-v1','./assets/cards/full-art/jakuchu_veggie_ssr.webp?v=ssr-full-art-v1','./assets/cards/full-art/korin_plum_ssr.webp?v=ssr-full-art-v1','./assets/cards/full-art/taro_sun_ssr.webp?v=ssr-full-art-v1','./assets/cards/full-art/kusama_pumpkin_ssr.webp?v=ssr-full-art-v1','./assets/cards/full-art/munakata_chestnut_ssr.webp?v=ssr-full-art-v1','./assets/cards/full-art/taikan_fuji_ssr.webp?v=ssr-full-art-v1','./assets/cards/full-art/vangogh_bread_ssr.webp?v=ssr-full-art-v1','./assets/cards/full-art/klimt_honey_ssr.webp?v=ssr-full-art-v1','./assets/cards/characters/milk_n.webp','./assets/cards/characters/mushroom_n.webp','./assets/cards/characters/tomato_n.webp','./assets/cards/characters/strawberry_n.webp','./assets/cards/characters/noodle_n.webp','./assets/cards/characters/omu_mini_r.webp?v=omurice-menu-v1','./assets/cards/characters/seaweed_n.webp','./assets/cards/characters/omu_lunch_r.webp?v=omurice-menu-v1','./assets/cards/characters/omu_star_r.webp?v=omurice-menu-v1','./assets/cards/characters/omu_heart_r.webp?v=omurice-menu-v1','./assets/cards/characters/omu_cheese_r.webp?v=omurice-menu-v1','./assets/cards/characters/omu_tomato_r.webp?v=omurice-menu-v1','./assets/cards/characters/pudding_r.webp','./assets/cards/characters/ramen_r.webp','./assets/cards/characters/pizza_r.webp','./assets/cards/characters/taiyaki_r.webp','./assets/cards/characters/parfait_r.webp','./assets/cards/characters/sushi_r.webp','./assets/cards/characters/melon_r.webp','./assets/cards/characters/omu_fuwatoro_sr.webp?v=omurice-menu-v1','./assets/cards/characters/omu_demi_sr.webp?v=omurice-menu-v1','./assets/cards/characters/omu_cafe_sr.webp?v=omurice-menu-v1','./assets/cards/characters/hokusai_senbei_sr.webp','./assets/cards/characters/hiroshige_tea_sr.webp','./assets/cards/characters/okyo_dango_sr.webp','./assets/cards/characters/sesshu_udon_sr.webp','./assets/cards/characters/yumeji_candy_sr.webp','./assets/cards/characters/monet_jelly_sr.webp','./assets/cards/characters/beethoven_coffee_sr.webp','./assets/cards/characters/sharaku_taiyaki_sr.webp','./assets/cards/characters/vermeer_milk_sr.webp','./assets/cards/characters/da_vinci_pasta_sr.webp','./','./index.html','./style.css','./app.js','./firebase-sync.js','./game.js','./game-catalog.js','./card-layer-manifest.js','./card-layer-lab.js','./assets/cards/characters/omu_ichika_ssr.webp?v=omurice-menu-v1','./assets/cards/characters/hokusai_wave_ssr.webp','./assets/cards/characters/omu_ketchup_r.webp?v=omurice-menu-v1','./assets/cards/characters/rice_n.webp','./assets/cards/characters/bread_n.webp','./assets/cards/characters/mango_r.webp','./assets/cards/characters/newton_apple_sr.webp','./assets/cards/characters/omu_princess_sr.webp?v=omurice-menu-v1','./assets/cards/characters/carrot_n.webp','./assets/cards/characters/tofu_n.webp','./assets/cards/characters/egg_n.webp','./assets/cards/characters/miso_n.webp','./assets/cards/characters/corn_n.webp','./assets/cards/characters/cucumber_n.webp','./assets/cards/characters/banana_n.webp','./assets/cards/characters/potato_n.webp','./assets/cards/characters/salmon_n.webp','./assets/cards/characters/apple_n.webp','./assets/cards/backgrounds/bg_n.png','./assets/cards/backgrounds/bg_r.png','./assets/cards/backgrounds/bg_sr.png','./assets/cards/backgrounds/bg_ssr.png','./assets/cards/backgrounds/bg_ur.png','./assets/cards/backgrounds/bg_r_1.png','./assets/cards/backgrounds/bg_sr_1.png','./assets/cards/backgrounds/bg_r_2.png','./assets/cards/backgrounds/bg_sr_2.png','./assets/cards/backgrounds/bg_r_3.png','./assets/cards/backgrounds/bg_sr_3.png','./assets/cards/backgrounds/bg_r_4.png','./assets/cards/backgrounds/bg_sr_4.png','./assets/cards/backgrounds/bg_r_5.png','./assets/cards/backgrounds/bg_sr_5.png','./assets/cards/backgrounds/bg_r_6.png','./assets/cards/backgrounds/bg_sr_6.png','./assets/cards/backgrounds/bg_r_7.png','./assets/cards/backgrounds/bg_sr_7.png','./assets/cards/backgrounds/bg_ssr_holo.png','./assets/cards/frames/base/r-simple.svg','./assets/cards/frames/base/ssr-heart.svg','./assets/cards/frames/base/ssr-wave.svg','./assets/cards/frames/top/r-simple.svg','./assets/cards/frames/top/ssr-heart.svg','./assets/cards/frames/top/ssr-wave.svg','./assets/cards/frames/base/sr-scholar.svg','./assets/cards/frames/top/sr-scholar.svg','./assets/cards/frames/base/ssr-sunflower.svg','./assets/cards/frames/top/ssr-sunflower.svg','./assets/cards/frames/base/n-paper.svg','./assets/cards/frames/top/n-paper.svg','./assets/cards/frames/base/ur-gold.svg','./assets/cards/frames/top/ur-gold.svg','./assets/cards/frames/base/n-corner.svg','./assets/cards/frames/top/n-corner.svg','./assets/cards/frames/base/r-botanical.svg','./assets/cards/frames/top/r-botanical.svg','./assets/cards/frames/base/sr-silverwork.svg','./assets/cards/frames/top/sr-silverwork.svg','./assets/cards/frames/base/r-geometric.svg','./assets/cards/frames/top/r-geometric.svg','./assets/cards/frames/base/r-antique.svg','./assets/cards/frames/top/r-antique.svg','./assets/cards/frames/base/r-ribbon.svg','./assets/cards/frames/top/r-ribbon.svg','./assets/cards/frames/base/r-seal.svg','./assets/cards/frames/top/r-seal.svg','./assets/cards/frames/base/r-window.svg','./assets/cards/frames/top/r-window.svg','./assets/cards/frames/base/sr-wagara.svg','./assets/cards/frames/top/sr-wagara.svg','./assets/cards/frames/base/sr-jewel.svg','./assets/cards/frames/top/sr-jewel.svg','./assets/cards/frames/base/sr-celestial.svg','./assets/cards/frames/top/sr-celestial.svg','./assets/cards/frames/base/sr-ornament.svg','./assets/cards/frames/top/sr-ornament.svg','./assets/cards/frames/base/sr-arcane.svg','./assets/cards/frames/top/sr-arcane.svg','./sw.js','./icons/icon.svg','./p/ichika/','./p/jun/','./p/sato/','./manifest-ichika.webmanifest','./manifest-jun.webmanifest','./manifest-sato.webmanifest'];
-self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(ASSETS.map(path=>new Request(new URL(path,self.registration.scope),{cache:'reload'})))));self.skipWaiting();});
-self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(names=>Promise.all(names.filter(name=>name.startsWith('mogumogu-static-')&&name!==CACHE_NAME).map(name=>caches.delete(name)))));self.clients.claim();});
+const CACHE_NAME='mogumogu-static-v36';
+const ART_CACHE='mogumogu-art-v1';
+// Only the app shell is eagerly cached. Card art is loaded when requested.
+const ASSETS=["./multi-draw.js","./sound.js","./progress-store.js","./card-profiles.js","./nutrition-models.js","./ssr-prism-trial.js","./quest-core.js","./adventure.js","./card-details.js","./","./index.html","./style.css","./app.js","./firebase-sync.js","./game.js","./game-catalog.js","./card-layer-manifest.js","./card-layer-lab.js","./sw.js","./icons/icon.svg","./p/ichika/","./p/jun/","./p/sato/","./manifest-ichika.webmanifest","./manifest-jun.webmanifest","./manifest-sato.webmanifest"];
+self.addEventListener('install',event=>{
+ event.waitUntil((async()=>{
+  const cache=await caches.open(CACHE_NAME);
+  await cache.addAll(ASSETS.map(path=>new Request(new URL(path,self.registration.scope),{cache:'reload'})));
+  await self.skipWaiting();
+ })());
+});
+self.addEventListener('activate',event=>{
+ event.waitUntil((async()=>{
+  const names=await caches.keys();
+  const old=names.filter(name=>name.startsWith('mogumogu-static-')&&name!==CACHE_NAME)
+    .sort((a,b)=>Number(b.match(/v(\d+)$/)?.[1]||0)-Number(a.match(/v(\d+)$/)?.[1]||0));
+  // Failed installs can leave an empty cache; keep the newest usable shell.
+  let previous='';
+  for(const name of old){if((await (await caches.open(name)).keys()).length){previous=name;break;}}
+  await Promise.all(old.filter(name=>name!==previous).map(name=>caches.delete(name)));
+  await self.clients.claim();
+ })());
+});
 self.addEventListener('fetch',event=>{
- const req=event.request;
- if(req.method!=='GET'||new URL(req.url).origin!==self.location.origin)return;
- event.respondWith(fetch(req).then(response=>{if(response.ok){const copy=response.clone();caches.open(CACHE_NAME).then(cache=>cache.put(req,copy));}return response;}).catch(()=>caches.match(req)));
+ const req=event.request,url=new URL(req.url);
+ if(req.method!=='GET'||url.origin!==self.location.origin)return;
+ if(url.pathname.includes('/assets/cards/')){
+  const work=(async()=>{
+   const cache=await caches.open(ART_CACHE),hit=await cache.match(req);
+   if(hit)return {response:hit};
+   const legacy=await caches.match(req);
+   const response=legacy||await fetch(req);
+   return {response,cache,copy:response.ok?response.clone():null};
+  })();
+  event.respondWith(work.then(value=>value.response));
+  event.waitUntil(work.then(value=>value.copy?value.cache.put(req,value.copy):undefined).catch(()=>{}));
+  return;
+ }
+ const work=(async()=>{
+  const cache=await caches.open(CACHE_NAME);
+  try{
+   const response=await fetch(req);
+   return {response,cache,copy:response.ok?response.clone():null};
+  }catch{
+   const response=await cache.match(req,{ignoreSearch:req.mode==='navigate'})||await caches.match(req);
+   return {response:response||Response.error()};
+  }
+ })();
+ event.respondWith(work.then(value=>value.response));
+ event.waitUntil(work.then(value=>value.copy?value.cache.put(req,value.copy):undefined).catch(()=>{}));
 });

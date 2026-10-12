@@ -326,6 +326,7 @@ function awardLogin(){
 function changePanel(name){
   document.querySelectorAll('[data-panel]').forEach(function(n){n.hidden=n.dataset.panel!==name;});
   document.querySelectorAll('[data-target]').forEach(function(n){n.setAttribute('aria-selected',String(n.dataset.target===name));});
+  window.dispatchEvent(new CustomEvent('mogumogu:panel',{detail:{name:name}}));
 }
 window.addEventListener('mogumogu:quest',function(event){window.mogumoguQuestDays=event.detail.days||{};renderCalendar();});
 async function init(){

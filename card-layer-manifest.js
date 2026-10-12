@@ -3,11 +3,11 @@
 const root='../../assets/cards/';
 export const SSR_GOLD_FRAME=root+'frames/top/ssr-gold-trim.svg';
 export const RARITY_VARIANT_BACKGROUNDS=Object.freeze({
-  N:Object.freeze([root+'backgrounds/bg_n.png']),
-  R:Object.freeze([root+'backgrounds/bg_r_1.png',root+'backgrounds/bg_r_2.png',root+'backgrounds/bg_r_3.png',root+'backgrounds/bg_r_4.png',root+'backgrounds/bg_r_5.png',root+'backgrounds/bg_r_6.png',root+'backgrounds/bg_r_7.png']),
-  SR:Object.freeze([root+'backgrounds/bg_sr_1.png',root+'backgrounds/bg_sr_2.png',root+'backgrounds/bg_sr_3.png',root+'backgrounds/bg_sr_4.png',root+'backgrounds/bg_sr_5.png',root+'backgrounds/bg_sr_6.png',root+'backgrounds/bg_sr_7.png']),
-  SSR:Object.freeze([root+'backgrounds/bg_ssr_holo.png']),
-  UR:Object.freeze([root+'backgrounds/bg_ur.png'])
+  N:Object.freeze([root+'backgrounds/bg_n.png?v=bg-lossless-v1']),
+  R:Object.freeze([root+'backgrounds/bg_r_1.png?v=bg-lossless-v1',root+'backgrounds/bg_r_2.png?v=bg-lossless-v1',root+'backgrounds/bg_r_3.png?v=bg-lossless-v1',root+'backgrounds/bg_r_4.png?v=bg-lossless-v1',root+'backgrounds/bg_r_5.png?v=bg-lossless-v1',root+'backgrounds/bg_r_6.png?v=bg-lossless-v1',root+'backgrounds/bg_r_7.png?v=bg-lossless-v1']),
+  SR:Object.freeze([root+'backgrounds/bg_sr_1.png?v=bg-lossless-v1',root+'backgrounds/bg_sr_2.png?v=bg-lossless-v1',root+'backgrounds/bg_sr_3.png?v=bg-lossless-v1',root+'backgrounds/bg_sr_4.png?v=bg-lossless-v1',root+'backgrounds/bg_sr_5.png?v=bg-lossless-v1',root+'backgrounds/bg_sr_6.png?v=bg-lossless-v1',root+'backgrounds/bg_sr_7.png?v=bg-lossless-v1']),
+  SSR:Object.freeze([root+'backgrounds/bg_ssr_holo.png?v=bg-lossless-v1']),
+  UR:Object.freeze([root+'backgrounds/bg_ur.png?v=bg-lossless-v1'])
 });
 export const RARITY_BACKGROUNDS=Object.freeze(Object.fromEntries(
   Object.entries(RARITY_VARIANT_BACKGROUNDS).map(([rarity,options])=>[rarity,options[0]])

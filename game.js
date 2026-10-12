@@ -33,7 +33,11 @@ function testSummary(){
 window.mogumoguGameManaged=true;
 const rarityRank=['N','R','SR','SSR','UR'];
 initSound();
-let latestResults=[],celebrating=false;
+let latestResults=[],celebrating=false,collectionKey='',resultKey='';
+const cardVisibility=typeof IntersectionObserver==='function'?new IntersectionObserver(entries=>{
+  for(const entry of entries)entry.target.classList.toggle('card-in-view',entry.isIntersecting);
+},{rootMargin:'80px'}):null;
+function releaseCards(root){if(cardVisibility)for(const card of root.querySelectorAll('.card-art'))cardVisibility.unobserve(card);}
 const delay=ms=>new Promise(resolve=>setTimeout(resolve,window.matchMedia('(prefers-reduced-motion: reduce)').matches?0:ms));
 
 function message(msg){const x=el('feedback');if(x){x.textContent=msg;x.hidden=false;clearTimeout(message.t);message.t=setTimeout(()=>{x.hidden=true;},3700);}}
@@ -82,7 +86,7 @@ async function connect(context){
     return {quests:q,game:next};
   });}catch(e){gameError(e);}
 }
-function paintCard(char,entry,unknown){
+function paintCard(char,entry,unknown,priority=false){
   const outer=document.createElement('button');
   outer.type='button';
   outer.setAttribute('aria-label',unknown?'未取得の'+char.rarity+'カード':char.name+'を拡大する');
@@ -104,9 +108,10 @@ function paintCard(char,entry,unknown){
     if(!src)return null;
     const img=document.createElement('img');
     img.className='composite-layer '+cssClass;
+    img.loading=priority?'eager':'lazy';
+    img.fetchPriority=priority&&!isDecorative?'high':'auto';
     img.src=src;
     img.alt=isDecorative?'':char.name+'のキャラクターイラスト';
-    img.loading='lazy';
     img.decoding='async';
     img.draggable=false;
     // Do not substitute generated SVG art when a character image is missing or fails.
@@ -133,38 +138,33 @@ function paintCard(char,entry,unknown){
         art.appendChild(glint);
       }
     }else{
-    const under=document.createElement('div');
-    under.className='composite-layer holo-substrate';
-    under.setAttribute('aria-hidden','true');
-    art.appendChild(under);
     addLayer('card-background-image',pickBackgroundForCard(char.id,char.rarity),true);
-    const foilBase=document.createElement('div');
-    foilBase.className='composite-layer composite-foil';
-    foilBase.setAttribute('aria-hidden','true');
-    art.appendChild(foilBase);
+    if(layers.foil!=='none'){
+      const foilBase=document.createElement('div');
+      foilBase.className='composite-layer composite-foil';
+      foilBase.setAttribute('aria-hidden','true');art.appendChild(foilBase);
+    }
     addLayer('card-scene',sceneForRarity(char.rarity),true);
     addLayer('card-frame-under',layers.lowerFrame,true);
     addLayer('card-portrait',layers.character,false);
     addLayer('card-frame-over',layers.upperFrame,true);
-    const glint=document.createElement('div');
-    glint.className='composite-layer composite-glint';
-    glint.setAttribute('aria-hidden','true');
-    art.appendChild(glint);
+    if(!art.classList.contains('foil-none')){
+      const glint=document.createElement('div');
+      glint.className='composite-layer composite-glint';
+      glint.setAttribute('aria-hidden','true');art.appendChild(glint);
+    }
     }
   }else{
     // All cards receive the same approved raster background and rarity-specific
     // foil. Missing character art stays empty: no SVG or emoji fallback.
     const foilByRarity={N:'none',R:'none',SR:'pearl',SSR:'sunflower',UR:'legendary'};
     art.className+=' layered-card foil-'+(foilByRarity[char.rarity]||'none');
-    const substrate=document.createElement('div');
-    substrate.className='composite-layer holo-substrate';
-    substrate.setAttribute('aria-hidden','true');
-    art.appendChild(substrate);
     addLayer('card-background-image',pickBackgroundForCard(char.id,char.rarity),true);
-    const foil=document.createElement('div');
-    foil.className='composite-layer composite-foil';
-    foil.setAttribute('aria-hidden','true');
-    art.appendChild(foil);
+    if(!art.classList.contains('foil-none')){
+      const foil=document.createElement('div');
+      foil.className='composite-layer composite-foil';
+      foil.setAttribute('aria-hidden','true');art.appendChild(foil);
+    }
     // Every N/R/SR card, including ones without individual art assets,
     // receives its stable, themed split-SVG frame set.
     addLayer('card-scene',sceneForRarity(char.rarity),true);
@@ -181,13 +181,20 @@ function paintCard(char,entry,unknown){
   const rarity=document.createElement('span');rarity.className='card-rarity';rarity.textContent=char.rarity;art.appendChild(rarity);
   const name=document.createElement('strong');name.className='card-name';putCardName(name,unknown?'未発見':char.name);
   art.appendChild(name);outer.appendChild(art);
+  if(!art.classList.contains('foil-none')){
+    if(cardVisibility)cardVisibility.observe(art);else art.classList.add('card-in-view');
+  }
   if(entry){const meta=document.createElement('div');meta.className='card-subtitle';meta.textContent=entry.copies>0?'Lv.'+levelForCopies(entry.copies)+' · '+entry.copies+'枚所持':'未所持（動作確認）';outer.appendChild(meta);}
   return outer;
 }
 function renderCollection(){
-  const target=el('collectionGrid');target.textContent='';
+  const target=el('collectionGrid');
+  if(target.closest('[data-panel]')?.hidden)return;
   const filter=el('collectionFilter').value,testing=isTesting();
   const copiesFor=id=>testing?(testInventory[id]??state.inventory[id]?.copies??0):(state.inventory[id]?.copies||0);
+  const key=JSON.stringify([testing,filter,CATALOG.map(card=>[card.id,copiesFor(card.id)])]);
+  if(key===collectionKey)return;
+  collectionKey=key;releaseCards(target);target.replaceChildren();
   // Only explicit developer testing shows unobtained artwork and hidden URs.
   const visible=CATALOG.filter(card=>testing||card.rarity!=='UR'||copiesFor(card.id)>0);
   const filtered=visible.filter(card=>{
@@ -232,8 +239,11 @@ function renderHeader(){
 }
 function showLatestDraw(){
   if(celebrating)return;
-  const target=el('gameResult');target.replaceChildren();
+  const target=el('gameResult');
   const results=latestResults.length?latestResults:latestDraw?[latestDraw]:[];
+  const key=JSON.stringify(results);
+  if(key===resultKey)return;
+  resultKey=key;releaseCards(target);target.replaceChildren();
   if(!results.length)return;
   const head=document.createElement('h3');head.className='game-win-title';
   head.textContent=results[0].test?'🧪 テスト結果（未保存）':results.length>1?results.length+'連のごほうび！':results[0].newCard?'あたらしい仲間！':'また会えた！';
@@ -241,7 +251,7 @@ function showLatestDraw(){
   const grid=document.createElement('div');grid.className=results.length>1?'multi-result-grid':'game-reveal';
   for(const result of results){
     const card=BY_ID[result.id],tile=document.createElement('div');tile.className='draw-result reveal-'+card.rarity.toLowerCase();
-    const painted=paintCard(card,{copies:result.copies},false);
+    const painted=paintCard(card,{copies:result.copies},false,results.length===1);
     if(result.newCard){const badge=document.createElement('span');badge.className='new-badge';badge.textContent='NEW';painted.append(badge);tile.classList.add('first-discovery');}
     tile.append(painted);
     if(!result.test&&['SSR','UR'].includes(card.rarity)){
@@ -255,7 +265,7 @@ function showLatestDraw(){
 }
 async function preview(){
   celebrating=true;playSound('start');
-  const target=el('gameResult');target.replaceChildren();
+  const target=el('gameResult');resultKey='';releaseCards(target);target.replaceChildren();
   const pack=document.createElement('div');pack.className='gacha-pack';pack.textContent='✦';pack.setAttribute('aria-label','パックを開いています');
   const hint=document.createElement('p');hint.textContent='どんな仲間に会えるかな…';target.append(pack,hint);
   target.scrollIntoView({behavior:'smooth',block:'center'});await delay(650);
@@ -334,6 +344,7 @@ el('gameTicketDraw').addEventListener('click',()=>void pull('ticket'));
 el('gameTenDraw').addEventListener('click',()=>void pull('multi10'));
 el('gameHundredDraw').addEventListener('click',()=>void pull('multi100'));
 el('collectionFilter').addEventListener('change',renderCollection);
+window.addEventListener('mogumogu:panel',event=>{if(event.detail.name==='collection')renderCollection();});
 window.addEventListener('mogumogu:connected',event=>void connect(event.detail.context));
 if(bridge&&bridge.getContext())void connect(bridge.getContext());
 else void connect(localContext(profile));

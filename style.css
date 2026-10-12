@@ -770,3 +770,9 @@ button.collection-card{font:inherit;text-align:left;color:inherit;width:100%;cur
 .gacha-result .reveal-ur{animation:cosmic-reveal 1.6s ease-out}
 @media(max-width:480px){.topbar h1{font-size:clamp(16px,4.3vw,23px);line-height:1.4;overflow-wrap:anywhere}}
 @media(prefers-reduced-motion:reduce){.gacha-result .draw-result{animation:none!important}}
+
+/* Keep independent foil effects, but stop painting offscreen cards. */
+#collectionGrid .card-art:not(.card-in-view) .composite-foil,
+#collectionGrid .card-art:not(.card-in-view) .composite-glint,
+#gameResult .card-art:not(.card-in-view) .composite-foil,
+#gameResult .card-art:not(.card-in-view) .composite-glint{animation-play-state:paused!important}
