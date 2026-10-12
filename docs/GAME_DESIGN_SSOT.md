@@ -289,3 +289,36 @@
 - 背景PNG、NフレームSVG、文字UIとは別レイヤーで合成。
 - 図鑑・ガチャとも `CARD_LAYER_MANIFEST` の同一素材を使用。
 - 既存のN「おこめちゃん」「トーストこぞう」およびR/SR/SSR/UR素材は変更しない。
+
+
+### 10.11 N・R・SRの残りキャラクター32枚を実装（2026-10-12）
+
+既存キャラ16枚を維持し、未設定だったN6枚・R13枚・SR13枚に個別の透過WebPを追加。N18枚・R15枚・SR15枚、合計48枚のキャラクターレイヤーを設定した。
+
+| レア度 | 今回追加したカードID |
+|---|---|
+| N（6枚） | `milk_n`, `tomato_n`, `mushroom_n`, `strawberry_n`, `noodle_n`, `seaweed_n` |
+| R（13枚） | `omu_mini_r`, `omu_lunch_r`, `omu_heart_r`, `omu_star_r`, `omu_cheese_r`, `omu_tomato_r`, `pudding_r`, `ramen_r`, `pizza_r`, `taiyaki_r`, `parfait_r`, `sushi_r`, `melon_r` |
+| SR（13枚） | `omu_fuwatoro_sr`, `omu_demi_sr`, `omu_cafe_sr`, `hokusai_senbei_sr`, `hiroshige_tea_sr`, `okyo_dango_sr`, `sesshu_udon_sr`, `yumeji_candy_sr`, `monet_jelly_sr`, `beethoven_coffee_sr`, `sharaku_taiyaki_sr`, `vermeer_milk_sr`, `da_vinci_pasta_sr` |
+
+- N6枚とRのmini/lunch/heart/starの4枚は、ユーザーが提示した[生成済み10枚の共有ページ](https://chatgpt.com/s/m_6acc93b4a7b8819184d9a23eea6f50a0)から取得した個別透過PNGをWebP化した。以前の `/mnt/data/mogumogu_next10_webp/` は今回のWindows環境に存在しないため、同じ生成済み素材を共有ページから回収。新規に描き直していない。
+- 残りのR9枚とSR13枚は、画像生成ツールで1キャラずつ独立制作し、透過を維持してWebP化。SVGキャラ、SVGをラスタ化した代用品、一覧画像の切り出しは使用しない。
+- 画像は `assets/cards/characters/<card_id>.webp`。`CARD_LAYER_MANIFEST` に32件の画像参照を追加。通常の図鑑・ガチャ・開発用抽選は既存の `paintCard()` で同じ素材を合成する。
+- `pickBackgroundForCard()` と `frameForCard()` の既存割当をそのまま使用。背景・上下フレームのファイル、既存キャラ画像・既存カードのレイヤー設定、SSR/URは変更しない。新規画像の表示位置は共通の基本レイアウトを使用。
+- カードマスタ、ガチャ排出率、コイン、所持データ、保存処理、Firestoreルールは変更しない。
+- `sw.js` の静的キャッシュを `mogumogu-static-v22` に更新し、32枚のWebPを事前キャッシュへ追加。
+- これは個別キャラ画像と表示の実装記録。端末上での最終美術品質をユーザー承認済みとするものではない。
+
+### 10.12 枚数指定によるカード素材追加の標準運用
+
+ユーザーが「カードを10枚追加して」「残りのN～SRを実装して」等と指示した場合は、必要な素材制作からサイトへの反映・検証までを一連の作業として行う。
+
+1. 現在のGitHub `main`、カードマスタ、画像設定、既存素材を取得し、対象ID・レア度・未実装数を確認する。素材の追加と抽選対象カードの新設を区別し、既存ID・所持データを維持する。
+2. 指定された生成済み素材があれば優先して取得する。未制作キャラは画像生成ツールで1キャラごとに独立した透過画像として制作する。**SVGでキャラを作らない。SVGをWebP変換して代用しない。一覧画像の切り出しもしない。**
+3. 透過を保持したWebPへ変換し、`assets/cards/characters/<card_id>.webp` に保存する。既存キャラを無断で上書きしない。
+4. `card-layer-manifest.js` へ対象IDのキャラ参照を追加する。背景とフレームは既存のものを使い、現在のカード別割当を維持する。図鑑とガチャの両方で同じ画像を使う。
+5. `sw.js` のキャッシュ世代と素材参照を更新し、SSOTへ実装範囲・素材の出所・未完了事項があればその事実を記録する。
+6. ファイル存在、透過、WebP形式、カードIDと参照、JS構文、キャッシュ参照、図鑑・ガチャの表示を検証する。保護対象の背景・フレーム・既存キャラ・排出率・データ保存処理の不変も確認する。
+7. 指示されたブランチ（今回のように明示された場合は `main`）へpushする。GitHubから再取得して素材の存在と一致、参照、JS構文、キャッシュを検証し、コミットSHAを報告する。生成だけで完了扱いしない。
+
+取得不能な指定素材や実際の操作エラーは事実として報告し、未実装を実装済みと称しない。素材取得・制作・実装・検証を途中の任意の確認質問で分断しない。
