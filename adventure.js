@@ -83,7 +83,13 @@ if(mount){
       const at=item.createdAt?.toDate?.();
       row.append(text('small',(names[item.sender]||'家族')+(at?' · '+at.toLocaleString('ja-JP'):' · 送信中')),text('p',item.text));
       if(item.cardId&&BY_ID[item.cardId])row.append(text('strong',BY_ID[item.cardId].rarity+' · '+BY_ID[item.cardId].name));
-      list.append(row);
+      const group=chatCtx,liked=(item.likes||[]).includes(profile);
+      const like=text('button','♥ '+(item.likes||[]).length,'message-like');like.type='button';like.setAttribute('aria-label','いいね '+(item.likes||[]).length+'件');like.setAttribute('aria-pressed',String(liked));like.disabled=liked||!group?.likeMessage;
+      like.addEventListener('click',async()=>{
+        like.disabled=true;
+        try{await group.likeMessage(item.id);if(chatCtx===group)el('messageStatus').textContent='いいねしました。';}
+        catch(e){like.disabled=false;if(chatCtx===group)el('messageStatus').textContent='いいねを保存できませんでした。もう一度お試しください。';}
+      });row.append(like);list.append(row);
     }
     if(!items.length)list.append(text('p','家族に「できた！」を伝えてみよう。','small'));
   }
@@ -95,7 +101,7 @@ if(mount){
     finally{chatWorking=false;render();}
   }
   el('messageForm').addEventListener('submit',e=>{e.preventDefault();const value=el('messageText').value.trim();if(value&&value.length<=500)void send(value);});
-  window.addEventListener('mogumogu:share-card',e=>{const card=BY_ID[e.detail.id];if(card)void send(card.name+'（'+card.rarity+'）をゲットしたよ！',card.id);});
+  window.addEventListener('mogumogu:share-card',e=>{const card=BY_ID[e.detail.id];if(card&&['SSR','UR'].includes(card.rarity))void send(card.name+'（'+card.rarity+'）をゲットしたよ！',card.id);});
   function groupList(){try{const value=JSON.parse(localStorage.getItem('mogumogu:groups:'+profile)||'[]');return Array.isArray(value)?value.filter(g=>typeof g.name==='string'&&/^[A-Za-z0-9_-]{24}$/.test(g.id)):[];}catch(e){return [];}}
   function refreshGroups(){
     const select=el('chatGroupSelect');select.replaceChildren();

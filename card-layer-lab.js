@@ -1,6 +1,6 @@
 // On-page five-layer card construction lab, using only existing artwork.
 // Accessible only at /p/jun/?dev=1 and never touches Firebase, gacha or collection state.
-import {CARD_LAYER_MANIFEST,RARITY_BACKGROUNDS,RARITY_VARIANT_BACKGROUNDS,RARITY_FRAME_VARIANTS,CARD_FRAME_ASSIGNMENTS,frameForCard,pickBackgroundForCard,sceneForRarity,SR_PREMIUM_TRIM} from './card-layer-manifest.js';
+import {CARD_LAYER_MANIFEST,RARITY_BACKGROUNDS,RARITY_VARIANT_BACKGROUNDS,RARITY_FRAME_VARIANTS,CARD_FRAME_ASSIGNMENTS,frameForCard,pickBackgroundForCard,sceneForRarity,SR_PREMIUM_TRIM,SSR_GOLD_FRAME} from './card-layer-manifest.js';
 import {BY_ID} from './game-catalog.js';
 import {putCardName} from './card-details.js';
 (function(){
@@ -78,6 +78,7 @@ import {putCardName} from './card-details.js';
     layer(stage,'over','composite-layer card-frame-over','img',visual.upperFrame,'');
     if(visual.foil!=='none')layer(stage,'glint','composite-layer composite-glint','div');
     }
+    if(data.rarity==='SSR')layer(stage,'over','composite-layer card-ssr-gold','img',SSR_GOLD_FRAME,'');
     if(data.rarity==='SR')layer(stage,'over','composite-layer card-sr-premium','img',SR_PREMIUM_TRIM,'');
     const badge=elem('span','card-rarity',data.rarity);
     stage.appendChild(badge);

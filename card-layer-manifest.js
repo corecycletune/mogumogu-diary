@@ -1,6 +1,7 @@
 // Five-layer cards use raster PNG rarity backgrounds and independent SVG frames. No SVG backgrounds.
 // Every path is relative to /p/<profile>/; shared assets are under /assets/cards/.
 const root='../../assets/cards/';
+export const SSR_GOLD_FRAME=root+'frames/top/ssr-gold-trim.svg';
 export const RARITY_VARIANT_BACKGROUNDS=Object.freeze({
   N:Object.freeze([root+'backgrounds/bg_n.png']),
   R:Object.freeze([root+'backgrounds/bg_r_1.png',root+'backgrounds/bg_r_2.png',root+'backgrounds/bg_r_3.png',root+'backgrounds/bg_r_4.png',root+'backgrounds/bg_r_5.png',root+'backgrounds/bg_r_6.png',root+'backgrounds/bg_r_7.png']),
@@ -511,11 +512,11 @@ export const CARD_LAYER_MANIFEST=Object.freeze({
   }),
   secret_rinpa_ur:Object.freeze({
     character:null,
-    background:RARITY_BACKGROUNDS.UR,
-    lowerFrame:root+'frames/base/ur-gold.svg',
-    upperFrame:root+'frames/top/ur-gold.svg',
-    foil:'legendary',
-    layout:'legendary'
+    background:RARITY_BACKGROUNDS.SSR,
+    lowerFrame:null,
+    upperFrame:null,
+    foil:'sunflower',
+    layout:'ssr'
   }),
   mango_r:Object.freeze({
     character:root+'characters/mango_r.webp',

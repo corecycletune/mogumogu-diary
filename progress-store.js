@@ -1,3 +1,4 @@
+import {grantMultiRewards} from './multi-draw.js';
 import {emptyQuests,localDay} from './quest-core.js';
 export function freshGame(profile){return {profile,version:1,coins:0,tickets:0,drawCount:0,lastFreeDay:'',lastLoginDay:'',loginDays:0,inventory:{},history:[],mealRewardDays:{},streakRewardKeys:[],updatedAt:new Date().toISOString()};}
 export function mergeLocalProgress(remoteQuests,remoteGame,bundle,profile){
@@ -16,6 +17,7 @@ export function mergeLocalProgress(remoteQuests,remoteGame,bundle,profile){
   for(const [key,value] of Object.entries(local.rewards))if(!(key in q.rewards))q.rewards[key]=value;
   const earned=bundle.game;
   if(earned){
+    g.streakRewardKeys=[...new Set([...(g.streakRewardKeys||[]),...(earned.streakRewardKeys||[])])];
     g.coins+=earned.coins;g.tickets+=earned.tickets;g.drawCount+=earned.drawCount;
     for(const [id,item] of Object.entries(earned.inventory)){
       const old=g.inventory[id];g.inventory[id]={...item,...old,copies:(old?.copies||0)+item.copies,firstObtainedAt:old?.firstObtainedAt||item.firstObtainedAt,lastObtainedAt:[old?.lastObtainedAt||'',item.lastObtainedAt||''].sort().at(-1)};
@@ -25,6 +27,7 @@ export function mergeLocalProgress(remoteQuests,remoteGame,bundle,profile){
     if(g.lastLoginDay===earned.lastLoginDay&&earned.lastLoginDay)g.coins=Math.max(0,g.coins-10);
     g.lastLoginDay=[g.lastLoginDay,earned.lastLoginDay].sort().at(-1);g.loginDays=Math.max(g.loginDays,earned.loginDays);
   }
+  grantMultiRewards(g,q.days);
   q.rewards[marker]=1;q.updatedAt=g.updatedAt=new Date().toISOString();return {quests:q,game:g};
 }
 const contexts=new Map(),pendingImports=new WeakMap();

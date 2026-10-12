@@ -1,3 +1,4 @@
+import {SSR_GOLD_FRAME} from './card-layer-manifest.js';
 import {putCardName,openCardDetails} from './card-details.js';
 export const SSR_PRISM_TRIAL=Object.freeze({id:'rousseau_jungle_ssr_trial',name:'ルソーの密林フルーツ',rarity:'SSR',food:'マンゴー',figure:'アンリ・ルソー',lore:'葉っぱのマントで密林を歩くマンゴーの探検家。迷子の星の実を家へ送っているが、みんな違う木を指すので毎晩フルーツ会議になる。'});
 const mount=document.getElementById('ssrPrismTrial');
@@ -8,9 +9,10 @@ if(mount&&document.body.dataset.profile==='jun'&&new URLSearchParams(location.se
   const art=document.createElement('div');art.className='card-art rarity-ssr layered-card full-art-card foil-ssr-prism';
   const img=document.createElement('img');img.className='composite-layer card-full-art';img.src='../../assets/cards/full-art/rousseau_jungle_ssr_trial.webp';img.alt=SSR_PRISM_TRIAL.name;img.draggable=false;art.append(img);
   for(const cls of ['full-art-foil composite-foil','full-art-glint composite-glint']){const layer=document.createElement('div');layer.className='composite-layer '+cls;layer.setAttribute('aria-hidden','true');art.append(layer);}
+  const frame=document.createElement('img');frame.className='composite-layer card-ssr-gold';frame.src=SSR_GOLD_FRAME;frame.alt='';art.append(frame);
   const rarity=document.createElement('span');rarity.className='card-rarity';rarity.textContent='SSR';art.append(rarity);
   const name=document.createElement('strong');name.className='card-name';putCardName(name,SSR_PRISM_TRIAL.name);art.append(name);button.append(art);mount.querySelector('.prism-trial-stage').append(button);
-  button.addEventListener('click',()=>openCardDetails(SSR_PRISM_TRIAL));
+  button.addEventListener('click',()=>openCardDetails(SSR_PRISM_TRIAL,null,art));
   mount.querySelector('select').addEventListener('change',e=>{art.classList.remove('foil-ssr-prism','foil-ssr-vivid','foil-none');art.classList.add('foil-'+e.target.value);});
   button.addEventListener('pointermove',e=>{const r=art.getBoundingClientRect(),x=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width)),y=Math.max(0,Math.min(1,(e.clientY-r.top)/r.height));art.classList.add('prism-follow-pointer');art.style.setProperty('--prism-x',x*100+'%');art.style.setProperty('--prism-y',y*100+'%');art.style.setProperty('--prism-band-x',(75-x*50)+'%');});
   button.addEventListener('pointerleave',()=>{art.classList.remove('prism-follow-pointer');for(const name of ['--prism-x','--prism-y','--prism-band-x'])art.style.removeProperty(name);});

@@ -1,3 +1,4 @@
+import {grantMultiRewards} from './multi-draw.js';
 // Reward arithmetic is independent of rendering and Firebase transaction retries.
 export const QUEST_BALANCE=Object.freeze({drawCost:100,dailyExtraCap:40,overall:{3:5,7:10,14:15,30:25},individual:{3:10,7:20,14:30,30:50}});
 export function localDay(date=new Date()){
@@ -44,6 +45,7 @@ export function completeQuest(quests,game,taskId,day,at=new Date().toISOString()
     const key=kind+':'+(id||'any')+':'+day+':'+streak;
     if(reward&&!q.rewards[key]){coins+=reward;q.rewards[key]=reward;}
   }
+  grantMultiRewards(g,q.days);
   g.coins+=coins;g.tickets+=tickets;g.updatedAt=at;q.updatedAt=at;
   // Retain over one year's daily streak history; archived task identities stay stable.
   const cutoff=new Date(Date.parse(day+'T00:00:00Z')-399*86400000).toISOString().slice(0,10);

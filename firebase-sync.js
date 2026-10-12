@@ -2,7 +2,7 @@
 // This app deliberately never includes service-account credentials.
 import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js";
-import { getFirestore, collection, doc, setDoc, getDoc, deleteDoc, onSnapshot, runTransaction, serverTimestamp, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js";
+import { getFirestore, collection, doc, setDoc, getDoc, getDocs, documentId, where, startAfter, deleteDoc, onSnapshot, runTransaction, serverTimestamp, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js";
 
 const config = {
   apiKey: "AIzaSyA6yTBzzI8WrVrkX1ubJ1HsptS1S1ieelA",
@@ -34,6 +34,37 @@ const familyRef = familyId => doc(db, "families", familyId);
 const memberRef = (familyId, uid) => doc(db, "families", familyId, "members", uid);
 const mealRef = (familyId, id) => doc(db, "families", familyId, "meals", id);
 const gameRef = (familyId, profile) => doc(db, "families", familyId, "games", profile);
+const reactionText='__mogumogu_like_v1__';
+const likeId=(id,profile)=>'_like_'+id+'_'+profile;
+const isLike=item=>/^_like_[A-Za-z0-9]{20}_(jun|ichika|sato)$/.test(item.id)&&item.text===reactionText;
+function watchFamilyMessages(familyId,onValue,onError){
+  const messages=collection(db,'families',familyId,'messages');let active=true,revision=0;
+  const stop=onSnapshot(query(messages,orderBy('createdAt','desc'),limit(100)),async snapshot=>{
+    const current=++revision;
+    try{
+      let page=snapshot.docs,visible=[];
+      // Likes are append-only records in the existing message schema. Fetch more
+      // pages so reactions never consume the 100 visible conversation slots.
+      while(page.length){
+        visible.push(...page.map(item=>({ ...item.data(),id:item.id })).filter(item=>!isLike(item)));
+        if(visible.length>=100||page.length<100)break;
+        const next=await getDocs(query(messages,orderBy('createdAt','desc'),startAfter(page.at(-1)),limit(100)));page=next.docs;
+        if(!active||current!==revision)return;
+      }
+      visible=visible.slice(0,100);
+      const ids=visible.flatMap(item=>users.map(name=>likeId(item.id,name))),likes=new Map();
+      // Batched ID reads use only built-in Firestore indexes and existing rules.
+      await Promise.all(Array.from({length:Math.ceil(ids.length/30)},async(_,i)=>{
+        const result=await getDocs(query(messages,where(documentId(),'in',ids.slice(i*30,i*30+30)),limit(30)));
+        for(const item of result.docs){const data={...item.data(),id:item.id};if(isLike(data))likes.set(item.id,data.sender);}
+      }));
+      if(!active||current!==revision)return;
+      for(const item of visible)item.likes=users.filter(name=>likes.get(likeId(item.id,name))===name);
+      onValue(visible.reverse());
+    }catch(error){if(active&&current===revision)onError?.(error);}
+  },onError);
+  return ()=>{active=false;revision++;stop();};
+}
 function context(familyId, profile) {
   return {
     familyId,
@@ -49,7 +80,15 @@ function context(familyId, profile) {
       if(next.game)transaction.set(gref,next.game);
       return next;
     }),
-    watchMessages: (onValue,onError) => onSnapshot(query(collection(db,'families',familyId,'messages'),orderBy('createdAt','desc'),limit(100)),snapshot=>onValue(snapshot.docs.map(item=>item.data()).reverse()),onError),
+    watchMessages: (onValue,onError) => watchFamilyMessages(familyId,onValue,onError),
+    likeMessage: id => runTransaction(db,async transaction=>{
+      if(!/^[A-Za-z0-9]{20}$/.test(id))throw new Error('message-id');
+      const ref=doc(db,'families',familyId,'messages',likeId(id,profile));
+      const target=await transaction.get(doc(db,'families',familyId,'messages',id)),old=await transaction.get(ref);
+      if(!target.exists()||isLike({...target.data(),id}))throw new Error('message-missing');
+      if(old.exists())return false;
+      transaction.set(ref,{sender:profile,text:reactionText,cardId:'',createdAt:serverTimestamp()});return true;
+    }),
     sendMessage: (text,cardId='') => setDoc(doc(collection(db,'families',familyId,'messages')),{sender:profile,text,cardId,createdAt:serverTimestamp()}),
     saveMeal: entry => setDoc(mealRef(familyId, entry.id), entry),
     deleteMeal: id => deleteDoc(mealRef(familyId, id)),

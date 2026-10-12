@@ -717,3 +717,56 @@ button.collection-card{font:inherit;text-align:left;color:inherit;width:100%;cur
 .tabs .tab{flex:1 0 29%;padding:10px 4px;font-size:12px;white-space:nowrap}
 @media(max-width:340px){.tabs .tab{flex-basis:44%}}
 [role="status"]:empty,.small:empty{display:none}
+
+/* Daily quest card interaction: art, metadata and effects remain independent. */
+.layered-card .card-ssr-gold{z-index:7;object-fit:fill;pointer-events:none;filter:drop-shadow(0 1px 1px #4c301566)}
+.collection-card{position:relative}
+.card-subtitle{position:static;padding:7px 2px 2px;font-size:13px;background:none}
+.unknown-card:disabled{opacity:1;cursor:default}
+.card-art.unknown-art{background:linear-gradient(145deg,#e7e7e3,#cacdc9);border:3px double #a7ada7;box-shadow:none}
+.unknown-art .card-name{color:#606b63;background:#e9eae4a8}
+.card-question{font-size:64px;font-weight:700;color:#7d877f;text-shadow:0 2px #fff8}
+.new-badge{position:absolute;z-index:12;right:12px;top:14px;padding:5px 9px;border-radius:7px;background:#bb4935;color:white;font-size:12px;font-weight:800;box-shadow:0 2px 8px #552a2344;pointer-events:none}
+.card-details{padding:14px;overflow:auto;overscroll-behavior:contain;max-height:90dvh}
+.card-details>button{float:none;margin:0 6px 12px 0;min-height:44px}
+.card-detail-front{width:min(340px,100%);margin:auto}
+.card-detail-front .card-art{width:100%}
+.card-detail-back{padding:12px;border:3px double #c7ad78;border-radius:13px;background:repeating-linear-gradient(0deg,#fff9ed,#fff9ed 3px,#fbf4e5 4px)}
+.card-detail-front[hidden],.card-detail-back[hidden]{display:none}
+.visually-hidden{position:absolute!important;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.multi-result-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
+.draw-result .collection-card{width:100%;padding:6px}
+.draw-result .share-card{width:100%;font-size:12px;margin-top:8px;min-height:44px}
+.sound-controls{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
+.sound-controls .btn{min-height:44px}
+.multi-draw-actions{margin-top:12px}
+.reward-available{background:#fff0ba!important;border-color:#c19036!important;box-shadow:0 0 12px #e5bd6180}
+.gacha-pack{width:110px;height:145px;border:3px double #c4a768;border-radius:12px;margin:25px auto 15px;display:grid;place-items:center;font-size:42px;color:#b58b38;background:linear-gradient(150deg,#fff8df,#e7ecd8);animation:pack-ready .65s ease-in-out}
+.gacha-result{text-align:center}
+.gacha-result .draw-result{animation:game-pop .4s ease-out}
+.result-r .draw-result{animation:reward-glow .6s ease-out}
+.result-sr .draw-result{animation:reward-glow .85s ease-out}
+.result-ssr{background:radial-gradient(ellipse at top,#ffdf8b80,transparent 70%);border-radius:18px;padding-top:12px}
+.result-ssr .draw-result{animation:gold-reveal 1.15s ease-out}
+.result-ur{background:radial-gradient(circle at 20% 20%,#e3d0ff55,transparent 30%),radial-gradient(ellipse at top,#18264b,#33486880 55%,transparent 90%);border-radius:18px;padding-top:12px}
+.result-ur .game-win-title{color:#fff0c3;text-shadow:0 1px 5px #17253c}
+.result-ur .draw-result{animation:cosmic-reveal 1.6s ease-out}
+.first-discovery .new-badge{animation:new-arrival .85s ease-out}
+.message-like{min-height:44px;padding:6px 12px;border:1px solid #b5c6af;border-radius:20px;background:#fff9ed;color:#50684d;cursor:pointer}
+.message-like[aria-pressed="true"]{color:#9c443a;background:#ffe9de;border-color:#d5a28f}
+@keyframes pack-ready{0%{transform:translateY(8px) rotate(-3deg)}50%{transform:translateY(-8px) rotate(3deg)}100%{transform:none}}
+@keyframes reward-glow{0%{filter:brightness(1.35);transform:scale(.95)}100%{filter:none;transform:none}}
+@keyframes gold-reveal{0%{filter:brightness(1.6) drop-shadow(0 0 20px #f4ce70);transform:scale(.92)}100%{filter:none;transform:none}}
+@keyframes cosmic-reveal{0%{opacity:0;transform:translateY(15px) scale(.96)}100%{opacity:1;transform:none}}
+@keyframes new-arrival{0%{transform:scale(.5) rotate(-12deg)}60%{transform:scale(1.15)}100%{transform:none}}
+@media(min-width:700px){.multi-result-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:480px){h1{font-size:clamp(17px,4.8vw,23px)}.multi-draw-actions{grid-template-columns:1fr}.card-details{width:calc(100% - 18px);max-height:92dvh}.card-detail-back{padding:10px}.card-detail-front{max-width:calc((100dvh - 145px)*.8)}.card-back-hero{padding:12px}.card-back-hero h2{font-size:20px}}
+@media(prefers-reduced-motion:reduce){.gacha-pack,.gacha-result .draw-result,.first-discovery .new-badge{animation:none!important}.card-details *{scroll-behavior:auto}}
+.topbar>div{min-width:0}.topbar .settings-button{flex-shrink:0}
+.gacha-result .reveal-n{animation:game-pop .25s ease-out}
+.gacha-result .reveal-r{animation:reward-glow .6s ease-out}
+.gacha-result .reveal-sr{animation:reward-glow .9s ease-out}
+.gacha-result .reveal-ssr{animation:gold-reveal 1.15s ease-out}
+.gacha-result .reveal-ur{animation:cosmic-reveal 1.6s ease-out}
+@media(max-width:480px){.topbar h1{font-size:clamp(16px,4.3vw,23px);line-height:1.4;overflow-wrap:anywhere}}
+@media(prefers-reduced-motion:reduce){.gacha-result .draw-result{animation:none!important}}

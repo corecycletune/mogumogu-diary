@@ -74,7 +74,7 @@ const rows=[
   ['klimt_honey_ssr','クリムトの金色はちみつ','SSR','🍯','はちみつ','グスタフ・クリムト','inspired','金色のきらめきをイメージした創作はちみつ。','food','royal'],
   // UR: HIDDEN; never list before owning.
   ["secret_omurice_ur","土星の環ドーナツ","UR","🪐","ドーナツ","","secret","土星の環とドーナツ、カッシーニ探査機を重ねた、金箔の宇宙探検家。※創作キャラ","person","legend"],
-  ['secret_rinpa_ur','宗達の千年黄金おこめ','UR','✨','ごはん','俵屋宗達','inspired','絵巻物に宿るような、不思議なおこめの守り神。※創作','food','legend'],
+  ['secret_rinpa_ur','宗達の千年黄金おこめ','SSR','✨','ごはん','俵屋宗達','inspired','絵巻物に宿るような、不思議なおこめの守り神。※創作','food','legend'],
   ["secret_celestial_ur","海王星の蒼ゼリー","UR","🔵","ゼリー","","secret","海王星の青とゼリー、ボイジャー2号を重ねた、白金箔の星海探検家。※創作キャラ","person","cosmos"]
 ];
 // Backgrounds are determined only by rarity via RARITY_BACKGROUNDS.

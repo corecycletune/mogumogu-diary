@@ -44,14 +44,22 @@ export function detailsForCard(card){
   return {food:model.food,pfc:model.ratios,nutrition:model,nutrients:model.nutrients,story:CARD_PROFILES[card.id]?.story||card.lore,figure:card.figure?people[card.figure]:null,
     motif:card.id==='secret_omurice_ur'?'カッシーニは土星とその環・衛星を調べた探査機。環の道をめぐる小さな相棒だ。':card.id==='secret_celestial_ur'?'ボイジャー2号は海王星を近くから観測した探査機。星の海で進む方向を照らしてくれる。':null};
 }
-export function openCardDetails(card,entry){
+export function openCardDetails(card,entry,art){
   let dialog=document.getElementById('cardDetails');
   if(!dialog){dialog=document.createElement('dialog');dialog.id='cardDetails';dialog.className='card-details';document.body.append(dialog);dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close();});}
   dialog.replaceChildren();dialog.dataset.rarity=card.rarity.toLowerCase();
-  const add=(tag,value,parent=dialog)=>{const node=document.createElement(tag);node.textContent=value;parent.append(node);return node;};
+  let content=dialog;
+  const add=(tag,value,parent=content)=>{const node=document.createElement(tag);node.textContent=value;parent.append(node);return node;};
   const close=add('button','閉じる ×');close.className='btn secondary';close.addEventListener('click',()=>dialog.close());
+  const flip=add('button','裏返す');flip.className='btn primary card-flip';flip.type='button';flip.setAttribute('aria-pressed','false');
+  const front=add('div','');front.className='card-detail-front';
+  if(art)front.append(art.cloneNode(true));
+  const frontTitle=add('h2',card.name,front);frontTitle.className='visually-hidden';frontTitle.id='cardFrontTitle';
+  const back=add('div','');back.className='card-detail-back';back.hidden=true;content=back;
+  flip.addEventListener('click',()=>{const showBack=back.hidden;back.hidden=!showBack;front.hidden=showBack;flip.textContent=showBack?'表を見る':'裏返す';flip.setAttribute('aria-pressed',String(showBack));dialog.setAttribute('aria-labelledby',showBack?'cardDetailTitle':'cardFrontTitle');dialog.scrollTop=0;});
   const data=detailsForCard(card),hero=add('div','');hero.className='card-back-hero';
   const heading=add('h2',card.name,hero);heading.id='cardDetailTitle';dialog.setAttribute('aria-labelledby',heading.id);
+  add('p',card.rarity+' · '+(entry?'Lv.'+entry.level+' · '+entry.copies+'枚所持':'展示カード'),hero);
   add('p',data.story,hero);
   add('h3','PFCバランス');
   if(data.pfc){
@@ -67,6 +75,7 @@ export function openCardDetails(card,entry){
   if(data.nutrients){add('h3','体へのはたらき');add('p',data.nutrients);}
   if(data.figure){add('h3',card.figure);add('p',data.figure);}
   if(data.motif){add('h3','星の相棒');add('p',data.motif);}
-  if(entry)add('p','Lv.'+entry.level+' · '+entry.copies+'枚所持').className='small';
+  dialog.setAttribute('aria-labelledby','cardFrontTitle');
+  if(dialog.open)dialog.close();
   dialog.showModal();
 }

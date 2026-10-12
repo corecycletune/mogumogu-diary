@@ -1,7 +1,9 @@
+import {applyDraw,multiStatus,grantMultiRewards} from './multi-draw.js';
+import {initSound,playSound} from './sound.js';
 import {localContext,prepareCloudContext,freshGame} from './progress-store.js';
 import {openCardDetails,putCardName} from './card-details.js';
 import {CATALOG,BY_ID,levelForCopies,drawCharacter} from './game-catalog.js';
-import {CARD_LAYER_MANIFEST,pickBackgroundForCard,frameForCard,sceneForRarity,SR_PREMIUM_TRIM} from './card-layer-manifest.js';
+import {CARD_LAYER_MANIFEST,pickBackgroundForCard,frameForCard,sceneForRarity,SR_PREMIUM_TRIM,SSR_GOLD_FRAME} from './card-layer-manifest.js';
 (function(){
 'use strict';
 const profile=document.body.dataset.profile;
@@ -30,6 +32,9 @@ function testSummary(){
 }
 window.mogumoguGameManaged=true;
 const rarityRank=['N','R','SR','SSR','UR'];
+initSound();
+let latestResults=[],celebrating=false;
+const delay=ms=>new Promise(resolve=>setTimeout(resolve,window.matchMedia('(prefers-reduced-motion: reduce)').matches?0:ms));
 
 function message(msg){const x=el('feedback');if(x){x.textContent=msg;x.hidden=false;clearTimeout(message.t);message.t=setTimeout(()=>{x.hidden=true;},3700);}}
 function status(msg,error){statusError=error?msg:'';el('gameStatus').textContent=msg;el('gameStatus').classList.toggle('game-error',!!error);}
@@ -58,7 +63,7 @@ async function connect(context){
   try{context=await prepareCloudContext(context);}catch(e){if(seq!==connectionSeq)return;message('家族の記録を読み込めませんでした。あとで設定から試してください。');if(!context.isLocal)void connect(localContext(profile));return;}
   if(seq!==connectionSeq)return;
   if(unsubscribe)unsubscribe();
-  ctx=context;ready=false;statusError='';lastMealSignature='';latestDraw=null;
+  ctx=context;ready=false;statusError='';lastMealSignature='';latestDraw=null;latestResults=[];
   state=fresh();render();
   status('');
   unsubscribe=ctx.watchGame((value,meta)=>{
@@ -71,12 +76,25 @@ async function connect(context){
     if(ready)window.dispatchEvent(new CustomEvent('mogumogu:game-ready'));
   },err=>{if(seq!==connectionSeq)return;ready=false;gameError(err);render();});
   await awardLogin();
+  try{await ctx.updateAdventure((q,g)=>{
+    if(!q||!g)return null;
+    const next=clone(g);if(!grantMultiRewards(next,q.days))return null;
+    return {quests:q,game:next};
+  });}catch(e){gameError(e);}
 }
 function paintCard(char,entry,unknown){
   const outer=document.createElement('button');
   outer.type='button';
-  outer.setAttribute('aria-label',char.name+'の説明を読む');
-  outer.addEventListener('click',()=>openCardDetails(char,entry?{copies:entry.copies,level:levelForCopies(entry.copies)}:null));
+  outer.setAttribute('aria-label',unknown?'未取得の'+char.rarity+'カード':char.name+'を拡大する');
+  if(unknown){
+    outer.className='collection-card unknown-card';outer.disabled=true;
+    const hidden=document.createElement('div');hidden.className='card-art unknown-art';
+    const question=document.createElement('span');question.className='card-question';question.textContent='？';
+    const label=document.createElement('span');label.className='card-rarity';label.textContent=char.rarity;
+    const name=document.createElement('strong');name.className='card-name';name.textContent='？？？？';
+    hidden.append(question,label,name);outer.append(hidden);return outer;
+  }
+  outer.addEventListener('click',()=>openCardDetails(char,entry?{copies:entry.copies,level:levelForCopies(entry.copies)}:null,outer.querySelector('.card-art')));
   outer.className='collection-card rarity-'+char.rarity.toLowerCase();
   const art=document.createElement('div');
   art.className='card-art rarity-'+char.rarity.toLowerCase();
@@ -158,6 +176,7 @@ function paintCard(char,entry,unknown){
     glint.setAttribute('aria-hidden','true');
     art.appendChild(glint);
   }
+  if(char.rarity==='SSR')addLayer('card-ssr-gold',SSR_GOLD_FRAME,true);
   if(char.rarity==='SR')addLayer('card-sr-premium',SR_PREMIUM_TRIM,true);
   const rarity=document.createElement('span');rarity.className='card-rarity';rarity.textContent=char.rarity;art.appendChild(rarity);
   const name=document.createElement('strong');name.className='card-name';putCardName(name,unknown?'未発見':char.name);
@@ -179,7 +198,7 @@ function renderCollection(){
   });
   filtered.sort((a,b)=>rarityRank.indexOf(b.rarity)-rarityRank.indexOf(a.rarity)||a.name.localeCompare(b.name,'ja'));
   for(const card of filtered){
-    target.appendChild(paintCard(card,state.inventory[card.id]||null,false));
+    target.appendChild(paintCard(card,state.inventory[card.id]||null,!(state.inventory[card.id]?.copies>0)));
   }
   if(!filtered.length){const p=document.createElement('p');p.className='empty';p.textContent='ここにはまだカードがありません。';target.appendChild(p);}
   const count=visible.filter(card=>state.inventory[card.id]).length;
@@ -201,37 +220,57 @@ function renderHeader(){
   el('gameTicketDraw').disabled=busy||testing||!ready||state.tickets<1;
   el('gameCoinDraw').textContent='100コインで引く（残高 '+state.coins+'）';
   el('gameTicketDraw').textContent='ガチャ券で引く（'+state.tickets+'枚）';
+  for(const size of [10,100]){
+    const button=el(size===10?'gameTenDraw':'gameHundredDraw'),value=multiStatus(state,size);
+    button.disabled=busy||testing||!ready||value!=='available';
+    button.classList.toggle('reward-available',value==='available');
+    button.textContent=value==='available'?'🎁 '+size+'連を引く（権利1回分）':value==='used'?'✓ '+size+'連のごほうびは使用済み':'🔒 '+size+'日連続で'+size+'連';
+  }
   testSummary();
 }
 function showLatestDraw(){
-  const target=el('gameResult');target.textContent='';
-  if(!latestDraw)return;
-  const head=document.createElement('div');head.className='game-win-title';
-  head.textContent=latestDraw.test?'🧪 テスト結果（未保存）'
-    :latestDraw.newCard?'あたらしい仲間！':'また会えた！ レベルアップに一歩近づいた！';
-  target.appendChild(head);
-  const stage=document.createElement('div');stage.className='game-reveal';
-  const card=BY_ID[latestDraw.id];
-  stage.appendChild(paintCard(card,{copies:latestDraw.copies},false));
-  target.appendChild(stage);
-  const caption=document.createElement('p');caption.className='small';
-  caption.textContent=(latestDraw.test?'テスト表示：':'獲得：')+card.name+'（'+card.rarity+'） · '+(latestDraw.test?'仮の重複':'累計')+latestDraw.copies+'枚 / Lv.'+levelForCopies(latestDraw.copies);
-  if(latestDraw.test){
-    const label=document.createElement('p');
-    label.className='game-test-warning';
-    label.textContent='練習ガチャです。コインやコレクションは変わりません。';
-    target.appendChild(label);
+  if(celebrating)return;
+  const target=el('gameResult');target.replaceChildren();
+  const results=latestResults.length?latestResults:latestDraw?[latestDraw]:[];
+  if(!results.length)return;
+  const head=document.createElement('h3');head.className='game-win-title';
+  head.textContent=results[0].test?'🧪 テスト結果（未保存）':results.length>1?results.length+'連のごほうび！':results[0].newCard?'あたらしい仲間！':'また会えた！';
+  target.append(head);
+  const grid=document.createElement('div');grid.className=results.length>1?'multi-result-grid':'game-reveal';
+  for(const result of results){
+    const card=BY_ID[result.id],tile=document.createElement('div');tile.className='draw-result reveal-'+card.rarity.toLowerCase();
+    const painted=paintCard(card,{copies:result.copies},false);
+    if(result.newCard){const badge=document.createElement('span');badge.className='new-badge';badge.textContent='NEW';painted.append(badge);tile.classList.add('first-discovery');}
+    tile.append(painted);
+    if(!result.test&&['SSR','UR'].includes(card.rarity)){
+      const share=document.createElement('button');share.type='button';share.className='btn secondary share-card';share.textContent='家族にゲットを報告';
+      share.addEventListener('click',()=>window.dispatchEvent(new CustomEvent('mogumogu:share-card',{detail:{id:card.id}})));tile.append(share);
+    }
+    grid.append(tile);
   }
-  target.appendChild(caption);
-  if(!latestDraw.test){const share=document.createElement('button');share.type='button';share.className='btn secondary';share.textContent='家族にゲットを報告';share.addEventListener('click',()=>window.dispatchEvent(new CustomEvent('mogumogu:share-card',{detail:{id:card.id}})));target.appendChild(share);}
-  if(card.rarity==='UR'){
-    const secret=document.createElement('p');secret.className='secret-discovery';secret.textContent='✨ ひみつのカードを発見しました！ ✨';target.insertBefore(secret,head);
-  }
+  target.append(grid);
+  if(results.some(r=>r.test)){const hint=document.createElement('p');hint.className='game-test-warning';hint.textContent='練習ガチャです。コインやコレクションは変わりません。';target.append(hint);}
+}
+async function preview(){
+  celebrating=true;playSound('start');
+  const target=el('gameResult');target.replaceChildren();
+  const pack=document.createElement('div');pack.className='gacha-pack';pack.textContent='✦';pack.setAttribute('aria-label','パックを開いています');
+  const hint=document.createElement('p');hint.textContent='どんな仲間に会えるかな…';target.append(pack,hint);
+  target.scrollIntoView({behavior:'smooth',block:'center'});await delay(650);
+}
+async function reveal(results){
+  const rank=Math.max(...results.map(r=>rarityRank.indexOf(BY_ID[r.id].rarity))),rarity=rarityRank[rank];
+  el('gameResult').className='gacha-result result-'+rarity.toLowerCase();
+  if(rarity==='UR')await delay(400);
+  celebrating=false;latestResults=results;latestDraw=results[0];showLatestDraw();
+  playSound('reveal',rarity);
+  await delay([180,280,420,650,850][rank]);
+  if(results.some(r=>r.newCard))playSound('new');
 }
 function render(){
   renderHeader();renderCollection();showLatestDraw();
 }
-function testPull(){
+async function testPull(){
   if(!isTesting()||busy)return;
   const choice=el('devRarity').value;
   const chosenId=el('devCharacter').value;
@@ -245,60 +284,52 @@ function testPull(){
     crypto.getRandomValues(random);
     card=pool[random[0]%pool.length];
   }
+  setBusy(true);await preview();
   testInventory[card.id]=(testInventory[card.id]||0)+1;
   testDrawCount++;
   latestDraw={id:card.id,copies:testInventory[card.id],newCard:testInventory[card.id]===1,test:true};
-  renderHeader();
-  showLatestDraw();
+  await reveal([latestDraw]);setBusy(false);
   el('gameResult').scrollIntoView({behavior:'smooth',block:'center'});
 }
 async function pull(mode){
-  if(mode==='free'&&isTesting()){testPull();return;}
+  if(mode==='free'&&isTesting()){void testPull();return;}
   if(busy||!ctx||!ready){message('まだ準備中です。もう一度お試しください。');return;}
-  const character=drawCharacter();
-  const d=today(),at=new Date().toISOString();
-  setBusy(true);
-  let chosen=null;
+  const count=mode==='multi10'?10:mode==='multi100'?100:1;
+  // Draw once outside the transaction: retries must keep the same random outcomes.
+  const characters=Array.from({length:count},()=>drawCharacter());
+  const d=today(),at=new Date().toISOString(),activeContext=ctx,seq=connectionSeq;
+  setBusy(true);let displayed=false;
   try{
-    const saved=await ctx.updateGame(current=>{
-      const st=clone(current);
-      if(mode==='free'){if(st.lastFreeDay===d)return null;st.lastFreeDay=d;}
-      else if(mode==='coin'){if(st.coins<100)return null;st.coins-=100;}
-      else if(mode==='ticket'){if(st.tickets<1)return null;st.tickets-=1;}
-      else return null;
-      const previous=st.inventory[character.id]||{copies:0};
-      const copies=previous.copies+1;
-      st.inventory[character.id]={copies,firstObtainedAt:previous.firstObtainedAt||at,lastObtainedAt:at};
-      st.drawCount+=1;
-      st.history=[{id:character.id,rarity:character.rarity,mode,at},...st.history].slice(0,25);
-      st.updatedAt=at;return st;
+    await preview();let chosen;
+    const saved=await activeContext.updateGame(current=>{
+      const result=applyDraw(clone(current),characters,mode,d,at);
+      chosen=result?.results;return result?.state||null;
     });
-    if(!saved){message('この無料枠・コイン・ガチャ券は既に使われました。');return;}
-    state=saved;
-    chosen={id:character.id,copies:saved.inventory[character.id].copies,newCard:saved.inventory[character.id].copies===1};
-    latestDraw=chosen;
-    render();
-    el('gameResult').scrollIntoView({behavior:'smooth',block:'center'});
+    if(seq!==connectionSeq)return;
+    if(!saved){message('この無料枠・コイン・ガチャ券・連続記録の権利は既に使われました。');return;}
+    state=saved;await reveal(chosen);displayed=true;renderHeader();renderCollection();
   }catch(e){gameError(e);}
-  finally{setBusy(false);}
+  finally{celebrating=false;setBusy(false);if(!displayed)showLatestDraw();}
 }
 if(devAvailable){
   const toggle=el('devModeToggle');
   toggle.addEventListener('change',()=>{
     el('devControls').hidden=!toggle.checked;
     // Never keep simulated cards after leaving test mode.
-    testInventory={};testDrawCount=0;latestDraw=null;
+    testInventory={};testDrawCount=0;latestDraw=null;latestResults=[];
     render();
     if(toggle.checked)message('テストモードです。抽選は何度でもできますが保存されません。');
   });
   el('devReset').addEventListener('click',()=>{
-    testDrawCount=0;testInventory={};latestDraw=null;render();
+    testDrawCount=0;testInventory={};latestDraw=null;latestResults=[];render();
     message('テスト結果をリセットしました。');
   });
 }
 el('gameFreeDraw').addEventListener('click',()=>void pull('free'));
 el('gameCoinDraw').addEventListener('click',()=>void pull('coin'));
 el('gameTicketDraw').addEventListener('click',()=>void pull('ticket'));
+el('gameTenDraw').addEventListener('click',()=>void pull('multi10'));
+el('gameHundredDraw').addEventListener('click',()=>void pull('multi100'));
 el('collectionFilter').addEventListener('change',renderCollection);
 window.addEventListener('mogumogu:connected',event=>void connect(event.detail.context));
 if(bridge&&bridge.getContext())void connect(bridge.getContext());
