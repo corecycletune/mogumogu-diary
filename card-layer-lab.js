@@ -82,8 +82,8 @@ import {BY_ID} from './game-catalog.js';
 
   // Prototype frames only. Not used for real cards until design approval.
   const framePreview=elem('section','frame-prototype-section');
-  framePreview.appendChild(elem('h3','', '🖼 新フレーム3案｜背景との実物合成'));
-  framePreview.appendChild(elem('p','small','N：角飾り／R：植物／SR：銀細工。上下2枚の新しいSVGを実際のPNG背景と合成しています。キャラは未挿入で、すべて試作・未承認です。RとSRは下の選択欄で7色を切り替えられます。'));
+  framePreview.appendChild(elem('h3','', '🖼 N・R・SR採用フレーム｜背景との実物合成'));
+  framePreview.appendChild(elem('p','small','N：角飾り／R：植物／SR：銀細工。上下2枚の新しいSVGを実際のPNG背景と合成しています。キャラは未挿入です。3種類は通常の図鑑・ガチャへ適用済みで、ここでは背景7色との組み合わせを比較できます。'));
   const frameGrid=elem('div','frame-prototype-grid');
   const root='../../assets/cards/';
   const prototypes=[
@@ -136,7 +136,7 @@ import {BY_ID} from './game-catalog.js';
     frameGrid.appendChild(comparison);
   }
   framePreview.appendChild(frameGrid);
-  framePreview.appendChild(elem('p','small','※ このコーナーは開発専用です。実際の図鑑・ガチャ・所持データには変更を加えません。新フレーム3案は品質承認後に通常カードへ採用します。'));
+  framePreview.appendChild(elem('p','small','※ このコーナーは開発専用の背景色比較です。N・R・SRの新フレームは通常の図鑑・ガチャへ適用済みです。ここでの選択操作は所持データ・抽選結果に影響しません。'));
   mount.appendChild(framePreview);
   // Background-only comparison: preserves the existing SR illustration and
   // exposes all seven colorways without any placeholder characters.

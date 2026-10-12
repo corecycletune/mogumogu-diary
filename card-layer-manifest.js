@@ -18,12 +18,24 @@ export function pickBackgroundForCard(cardId,rarity){
   for(const c of String(cardId||rarity)){hash^=c.charCodeAt(0);hash=Math.imul(hash,16777619)>>>0;}
   return options[hash%options.length];
 }
+
+// Reusable frame sets. Initial rollout uses one themed set per N/R/SR rarity;
+// future approved themes can extend selection without changing card data.
+export const RARITY_FRAME_TEMPLATES=Object.freeze({
+  N:Object.freeze({id:'n-corner',lowerFrame:root+'frames/base/n-corner.svg',upperFrame:root+'frames/top/n-corner.svg'}),
+  R:Object.freeze({id:'r-botanical',lowerFrame:root+'frames/base/r-botanical.svg',upperFrame:root+'frames/top/r-botanical.svg'}),
+  SR:Object.freeze({id:'sr-silverwork',lowerFrame:root+'frames/base/sr-silverwork.svg',upperFrame:root+'frames/top/sr-silverwork.svg'})
+});
+export function frameForCard(cardId,rarity){
+  return RARITY_FRAME_TEMPLATES[rarity]||null;
+}
+
 export const CARD_LAYER_MANIFEST=Object.freeze({
   rice_n:Object.freeze({
     character:null,
     background:RARITY_BACKGROUNDS.N,
-    lowerFrame:root+'frames/base/n-paper.svg',
-    upperFrame:root+'frames/top/n-paper.svg',
+    lowerFrame:RARITY_FRAME_TEMPLATES.N.lowerFrame,
+    upperFrame:RARITY_FRAME_TEMPLATES.N.upperFrame,
     foil:'none',
     layout:'basic-n'
   }),
@@ -54,16 +66,16 @@ export const CARD_LAYER_MANIFEST=Object.freeze({
   mango_r:Object.freeze({
     character:null,
     background:pickBackgroundForCard('mango_r','R'),
-    lowerFrame:root+'frames/base/r-simple.svg',
-    upperFrame:root+'frames/top/r-simple.svg',
+    lowerFrame:RARITY_FRAME_TEMPLATES.R.lowerFrame,
+    upperFrame:RARITY_FRAME_TEMPLATES.R.upperFrame,
     foil:'none',
     layout:'mango'
   }),
   newton_apple_sr:Object.freeze({
     character:null,
     background:pickBackgroundForCard('newton_apple_sr','SR'),
-    lowerFrame:root+'frames/base/sr-scholar.svg',
-    upperFrame:root+'frames/top/sr-scholar.svg',
+    lowerFrame:RARITY_FRAME_TEMPLATES.SR.lowerFrame,
+    upperFrame:RARITY_FRAME_TEMPLATES.SR.upperFrame,
     foil:'pearl',
     layout:'scholar'
   }),
@@ -78,8 +90,8 @@ export const CARD_LAYER_MANIFEST=Object.freeze({
   omu_ketchup_r:Object.freeze({
     character:root+'characters/omu_ketchup_r.webp',
     background:pickBackgroundForCard('omu_ketchup_r','R'), // Colorway fixed by character ID.
-    lowerFrame:root+'frames/base/r-simple.svg',
-    upperFrame:root+'frames/top/r-simple.svg',
+    lowerFrame:RARITY_FRAME_TEMPLATES.R.lowerFrame,
+    upperFrame:RARITY_FRAME_TEMPLATES.R.upperFrame,
     foil:'none',
     layout:'adventurer'
   })

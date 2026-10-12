@@ -1,5 +1,5 @@
 import {CATALOG,BY_ID,levelForCopies,drawCharacter} from './game-catalog.js';
-import {CARD_LAYER_MANIFEST,RARITY_BACKGROUNDS,pickBackgroundForCard} from './card-layer-manifest.js';
+import {CARD_LAYER_MANIFEST,pickBackgroundForCard,frameForCard} from './card-layer-manifest.js';
 (function(){
 'use strict';
 const profile=document.body.dataset.profile;
@@ -182,6 +182,11 @@ function paintCard(char,entry,unknown){
     foil.className='composite-layer composite-foil';
     foil.setAttribute('aria-hidden','true');
     art.appendChild(foil);
+    // Every N/R/SR card, including ones without individual art assets,
+    // receives the same approved reusable split-SVG frame set.
+    const frame=frameForCard(char.id,char.rarity);
+    if(frame)addLayer('card-frame-under',frame.lowerFrame,true);
+    if(frame)addLayer('card-frame-over',frame.upperFrame,true);
     const glint=document.createElement('div');
     glint.className='composite-layer composite-glint';
     glint.setAttribute('aria-hidden','true');

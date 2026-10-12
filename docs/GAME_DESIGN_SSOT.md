@@ -231,16 +231,16 @@
 5. **ユーザー承認までは完成・量産済みとしない。** 今回確定したのは設計方針と初期制作目標であり、SVG新規作成やカード実装変更は別工程。
 
 
-### 10.7 代表フレームの実装状態（2026-10-12：試作・品質未承認）
+### 10.7 代表フレームの実装状態（2026-10-12：全N/R/SRに初期適用）
 
-初期代表3テーマに、上下2枚ずつ計6点のSVG素材を追加。透明フレームであり、背景・文字・キャラクターは含まない。既存14件のフレームは維持する。
+初期代表3テーマの上下2枚、計6点の透明SVGフレームを**N18枚・R15枚・SR15枚の全48カード**に割り当て、通常の図鑑・ガチャ・開発用抽選へ適用した。背景・文字・キャラクターはSVGフレームに含まない。既存14件のフレーム素材も残す。
 
 | レア度 | テーマID | 下フレーム | 上フレーム | 状態 |
 |---|---|---|---|---|
-| N | `n-corner` | `assets/cards/frames/base/n-corner.svg` | `assets/cards/frames/top/n-corner.svg` | 試作・未承認 |
-| R | `r-botanical` | `assets/cards/frames/base/r-botanical.svg` | `assets/cards/frames/top/r-botanical.svg` | 試作・未承認 |
-| SR | `sr-silverwork` | `assets/cards/frames/base/sr-silverwork.svg` | `assets/cards/frames/top/sr-silverwork.svg` | 試作・未承認 |
+| N | `n-corner` | `assets/cards/frames/base/n-corner.svg` | `assets/cards/frames/top/n-corner.svg` | N18枚に暫定採用 |
+| R | `r-botanical` | `assets/cards/frames/base/r-botanical.svg` | `assets/cards/frames/top/r-botanical.svg` | R15枚に暫定採用 |
+| SR | `sr-silverwork` | `assets/cards/frames/base/sr-silverwork.svg` | `assets/cards/frames/top/sr-silverwork.svg` | SR15枚に暫定採用 |
 
 - `/p/jun/?dev=1` の「ごほうび」→「動作確認モード」で、背景＋下SVG＋上SVGを実際に合成した表示を確認する。R/SRは7色を手動選択でき、既存SSR試作と同時比較できる。
-- **本番ガチャと図鑑には未適用。** `CARD_LAYER_MANIFEST` の既存参照、ゲームデータ、所持データに変更を加えない。
-- 実機・画面での視覚品質を承認するまでは、量産フレーム完成としない。
+- **本番ガチャと図鑑に適用済み。** `card-layer-manifest.js` にレアリティ別のフレームセットを定義し、個別イラスト指定カード・未指定カードの両方で同じN/R/SRフレームを表示する。SSR/URのフレーム、ガチャ率、ゲームデータ、所持データは変更しない。
+- **この適用は初期の横展開**であり、8テーマ全体の素材量産完了を意味しない。既存背景の7色選択はカードIDに基づく固定のまま。ユーザーによる実機・画面での視覚品質確認を続ける。
