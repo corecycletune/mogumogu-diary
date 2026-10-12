@@ -721,7 +721,7 @@ button.collection-card{font:inherit;text-align:left;color:inherit;width:100%;cur
 /* Daily quest card interaction: art, metadata and effects remain independent. */
 .layered-card .card-ssr-gold{z-index:7;object-fit:fill;pointer-events:none;filter:drop-shadow(0 1px 1px #4c301566)}
 .collection-card{position:relative}
-.card-subtitle{position:static;padding:7px 2px 2px;font-size:13px;background:none}
+.card-subtitle{position:static;padding:7px 2px 2px;font-size:13px;background:none;text-align:right}
 .unknown-card:disabled{opacity:1;cursor:default}
 .card-art.unknown-art{background:linear-gradient(145deg,#e7e7e3,#cacdc9);border:3px double #a7ada7;box-shadow:none}
 .unknown-art .card-name{color:#606b63;background:#e9eae4a8}
