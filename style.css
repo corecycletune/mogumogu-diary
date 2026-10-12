@@ -509,9 +509,50 @@
   72%,100%{background-position:-100% 0}
 }
 .layer-lab-card .lab-hide-character .card-full-art{display:none}
+.layered-card.full-art-card.foil-ur-cosmic .full-art-foil,
+.layered-card.full-art-card.foil-ur-cosmic .full-art-glint{
+  mask-image:radial-gradient(ellipse 43% 43% at 50% 49%,transparent 0 88%,#0002 106%,#000 135%);
+  -webkit-mask-image:radial-gradient(ellipse 43% 43% at 50% 49%,transparent 0 88%,#0002 106%,#000 135%);
+}
+.layered-card.full-art-card.foil-ur-cosmic .full-art-foil{
+  z-index:2;opacity:.46;mix-blend-mode:screen;
+  background:
+    radial-gradient(circle at 7% 17%,#e0fdffff 0 1px,#bcf9ff30 2px,transparent 6px),
+    radial-gradient(circle at 91% 72%,#fff0dfff 0 1.1px,#f6ecff30 2px,transparent 6px),
+    radial-gradient(ellipse at 2% 43%,#b2ddff52,transparent 43%),
+    radial-gradient(ellipse at 98% 81%,#d8c3ff47,transparent 39%),
+    linear-gradient(127deg,transparent 13%,#bfefff24 31%,#fff9e736 39%,transparent 47%,#d2bfff24 69%,transparent 82%);
+  animation:ur-cosmic-foil 11s ease-in-out infinite alternate;
+}
+.layered-card.full-art-card.foil-ur-cosmic .full-art-glint{
+  z-index:3;opacity:.36;mix-blend-mode:screen;
+  background:linear-gradient(118deg,transparent 44%,#c4f5ff1f 47%,#f4faffb8 50%,#d9c5ff26 53%,transparent 57%);
+  background-size:350% 100%;background-position:140% 0;
+  animation:ssr-full-art-reflection 13s ease-in-out infinite;
+}
+.layered-card.full-art-card.foil-ur-cosmic .card-rarity{
+  color:#edfaff;background:#07172de8;border:1px solid #d4f5ffba;
+  box-shadow:0 0 7px #a5e8ff55;letter-spacing:.10em;
+}
+.layered-card.full-art-card.foil-ur-cosmic{
+  box-shadow:0 0 0 1px #c3e9ff90,0 3px 16px #07172d70;
+}
+@keyframes ur-cosmic-foil{
+  from{filter:brightness(.94)}
+  to{filter:brightness(1.17)}
+}
+.all-rarity-comparison .layer-lab-grid{grid-template-columns:repeat(6,minmax(0,1fr))}
+@media(max-width:940px){
+  .all-rarity-comparison .layer-lab-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:620px){
+  .all-rarity-comparison .layer-lab-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
 @media(prefers-reduced-motion:reduce){
   .layered-card.full-art-card.foil-ssr-vivid .full-art-foil,
-  .layered-card.full-art-card.foil-ssr-vivid .full-art-glint{animation:none;filter:none}
+  .layered-card.full-art-card.foil-ssr-vivid .full-art-glint,
+  .layered-card.full-art-card.foil-ur-cosmic .full-art-foil,
+  .layered-card.full-art-card.foil-ur-cosmic .full-art-glint{animation:none;filter:none}
 }
 
 /* APPROVED BACKGROUND PIPELINE (2026-10-11): five raster PNG tiers; SVG is for frames only.

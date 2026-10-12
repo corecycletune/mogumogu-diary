@@ -9,7 +9,7 @@ import {BY_ID} from './game-catalog.js';
   const toggle=document.getElementById('devModeToggle');
   if(!mount||!toggle)return;
 
-  const examples=['rice_n','bread_n','mango_r','omu_ketchup_r','newton_apple_sr','omu_princess_sr','vangogh_bread_ssr','secret_rinpa_ur'];
+  const examples=['rice_n','bread_n','mango_r','omu_ketchup_r','newton_apple_sr','omu_princess_sr','vangogh_bread_ssr','secret_omurice_ur','secret_celestial_ur'];
   const layerOrder=[
     {key:'substrate',text:'① ホロ下地'},
     {key:'background',text:'② 背景'},
@@ -28,7 +28,8 @@ import {BY_ID} from './game-catalog.js';
     newton_apple_sr:'SR｜新キャラ試作・銀細工フレーム、弱いパール反射',
     omu_princess_sr:'SR｜麻婆オムライス・既存フレーム、弱いパール反射',
     vangogh_bread_ssr:'SSR｜豪華な金枠・高密度の虹色ホログラム',
-    secret_rinpa_ur:'UR｜開発画面限定・専用の金虹箔・伝説級の背景'
+    secret_omurice_ur:'UR試作｜土星×ドーナツ×カッシーニ・同じシリーズの擬人化と金箔',
+    secret_celestial_ur:'UR試作｜海王星×青いゼリー×ボイジャー2号・同じシリーズの擬人化と白金箔'
   };
   function elem(tag,className,text){
     const element=document.createElement(tag);
@@ -79,7 +80,7 @@ import {BY_ID} from './game-catalog.js';
     stage.appendChild(badge);
     const cap=elem('figcaption','layer-lab-caption');
     cap.appendChild(elem('strong','',data.name));
-    cap.appendChild(elem('small','',descriptions[id]||(visual.fullArt?'SSR｜専用フルアート・独立ホロ':'背景面のホロのみ')));
+    cap.appendChild(elem('small','',descriptions[id]||(visual.fullArt?data.rarity+'｜専用フルアート・独立ホロ':'背景面のホロのみ')));
     if(!visual.character&&!visual.fullArt)cap.appendChild(elem('small','', 'キャラクター画像：未制作'));
     figure.append(stage,cap);
     stageList.push({stage,foil});
@@ -87,9 +88,19 @@ import {BY_ID} from './game-catalog.js';
   }
 
   const intro=elem('div','layer-lab-intro');
-  intro.appendChild(elem('h3','', '🧩 N → UR：レア度5段階・実装比較'));
-  intro.appendChild(elem('p','small','N～SRは独立したキャラ画像と背景・枠を合成。SSRは各カード固有の1枚絵に、独立したホロを重ねています。画像未制作のカードは空欄です。'));
+  intro.appendChild(elem('h3','', '🧩 N → UR：全レア段階の雰囲気を比較'));
+  intro.appendChild(elem('p','small','N～SRは独立したキャラ画像と背景・枠を合成。SSRとURは各カード固有の1枚絵に、独立したホロを重ねています。URは惑星×食べ物×探査機を擬人化した2枚試作です。'));
   mount.appendChild(intro);
+
+  const tierComparison=elem('section','all-rarity-comparison');
+  tierComparison.appendChild(elem('h3','','全レア度の雰囲気｜N・R・SR・SSR・UR試作2枚'));
+  tierComparison.appendChild(elem('p','small','SSRは極彩色と豊かな装飾。URは宇宙の余白と精密な輝き。並べて全体の差を確認してください。'));
+  const tierGrid=elem('div','layer-lab-grid');
+  ['rice_n','omu_ketchup_r','omu_demi_sr','klimt_honey_ssr','secret_omurice_ur','secret_celestial_ur'].forEach(id=>{
+    const sample=card(id);if(sample)tierGrid.appendChild(sample);
+  });
+  tierComparison.appendChild(tierGrid);
+  mount.appendChild(tierComparison);
 
   // Prototype frames only. Not used for real cards until design approval.
   const framePreview=elem('section','frame-prototype-section');
@@ -256,11 +267,11 @@ import {BY_ID} from './game-catalog.js';
     sliderValue.textContent=slider.value+'%';
     stageList.forEach(({stage,foil})=>{
       if(stage.classList.contains('foil-none'))return;
-      const max=stage.classList.contains('foil-ssr-vivid') ? .42 : stage.classList.contains('foil-legendary') ? 1 :
+      const max=stage.classList.contains('foil-ur-cosmic') ? .50 : stage.classList.contains('foil-ssr-vivid') ? .42 : stage.classList.contains('foil-legendary') ? 1 :
         stage.classList.contains('foil-sunflower') ? .98 :
         stage.classList.contains('foil-pearl') ? .30 : .75;
       foil.style.opacity=String(max*Number(slider.value)/100);
-      stage.style.setProperty('--lab-grain-opacity',String(Number(slider.value)/100*(stage.classList.contains('foil-ssr-vivid') ? .42 : stage.classList.contains('foil-legendary') ? 1 : .92)));
+      stage.style.setProperty('--lab-grain-opacity',String(Number(slider.value)/100*(stage.classList.contains('foil-ur-cosmic') ? .50 : stage.classList.contains('foil-ssr-vivid') ? .42 : stage.classList.contains('foil-legendary') ? 1 : .92)));
       stage.style.setProperty('--lab-glint-opacity',String(Number(slider.value)/100*(stage.classList.contains('foil-legendary') ? .78 : .48)));
     });
   };

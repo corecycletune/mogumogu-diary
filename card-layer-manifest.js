@@ -92,6 +92,16 @@ export function frameForCard(cardId,rarity){
 }
 
 export const CARD_LAYER_MANIFEST=Object.freeze({
+  secret_omurice_ur:Object.freeze({
+    fullArt:root+'full-art/secret_omurice_ur.webp?v=ur-planet-foil-v1',
+    foil:'ur-cosmic',
+    layout:'full-art'
+  }),
+  secret_celestial_ur:Object.freeze({
+    fullArt:root+'full-art/secret_celestial_ur.webp?v=ur-planet-foil-v1',
+    foil:'ur-cosmic',
+    layout:'full-art'
+  }),
   omu_ichika_ssr:Object.freeze({
     fullArt:root+'full-art/omu_ichika_ssr.webp?v=ssr-full-art-v1',
     foil:'ssr-vivid',
