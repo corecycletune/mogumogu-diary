@@ -1,6 +1,6 @@
 // On-page five-layer card construction lab, using only existing artwork.
 // Accessible only at /p/jun/?dev=1 and never touches Firebase, gacha or collection state.
-import {CARD_LAYER_MANIFEST,RARITY_BACKGROUNDS,RARITY_VARIANT_BACKGROUNDS} from './card-layer-manifest.js';
+import {CARD_LAYER_MANIFEST,RARITY_BACKGROUNDS,RARITY_VARIANT_BACKGROUNDS,RARITY_FRAME_VARIANTS,CARD_FRAME_ASSIGNMENTS,frameForCard,pickBackgroundForCard} from './card-layer-manifest.js';
 import {BY_ID} from './game-catalog.js';
 (function(){
   const profile=document.body.dataset.profile;
@@ -138,6 +138,49 @@ import {BY_ID} from './game-catalog.js';
   framePreview.appendChild(frameGrid);
   framePreview.appendChild(elem('p','small','※ このコーナーは開発専用の背景色比較です。N・R・SRの新フレームは通常の図鑑・ガチャへ適用済みです。ここでの選択操作は所持データ・抽選結果に影響しません。'));
   mount.appendChild(framePreview);
+
+  // In-app gallery of every reusable R/SR frame variant.
+  // The preview does not write to inventory or change card assignments.
+  const variantsGallery=elem('section','frame-variants-section');
+  variantsGallery.appendChild(elem('h3','', '🖼 R・SR フレーム全12パターン'));
+  variantsGallery.appendChild(elem('p','small','各レア度6パターン（既存1＋追加5）。背景と上下SVGを合成した実表示です。図鑑・ガチャへの割当はキャラクターのテーマに基づき固定済み。'));
+  const variantNames={
+    'r-botanical':'植物','r-geometric':'幾何学','r-antique':'アンティーク',
+    'r-ribbon':'リボン','r-seal':'スタンプ','r-window':'窓枠',
+    'sr-silverwork':'銀細工','sr-wagara':'和柄','sr-jewel':'小粒宝飾',
+    'sr-celestial':'天文','sr-ornament':'彫金','sr-arcane':'幻想紋様'
+  };
+  const frameRoot='../../assets/cards/frames/';
+  for(const tier of ['R','SR']){
+    const group=elem('div','frame-variants-group');
+    group.appendChild(elem('h4','',tier+'｜6種類'));
+    const galleryGrid=elem('div','frame-variants-grid');
+    for(const [i,variant] of RARITY_FRAME_VARIANTS[tier].entries()){
+      const figure=elem('figure','frame-variant-item');
+      const stage=elem('div','card-art layered-card rarity-'+tier.toLowerCase()+' foil-'+(tier==='SR'?'pearl':'none'));
+      stage.setAttribute('role','img');
+      stage.setAttribute('aria-label',tier+' '+(variantNames[variant.id]||variant.id)+' のフレーム');
+      layer(stage,'substrate','composite-layer holo-substrate','div');
+      const bgSrc=RARITY_VARIANT_BACKGROUNDS[tier][i%RARITY_VARIANT_BACKGROUNDS[tier].length];
+      layer(stage,'background','composite-layer card-background-image','img',bgSrc,'');
+      const foil=layer(stage,'foil','composite-layer composite-foil','div');
+      layer(stage,'under','composite-layer card-frame-under','img',variant.lowerFrame,'');
+      layer(stage,'over','composite-layer card-frame-over','img',variant.upperFrame,'');
+      if(tier==='SR')layer(stage,'glint','composite-layer composite-glint','div');
+      stage.appendChild(elem('span','card-rarity',tier));
+      figure.appendChild(stage);
+      const cap=elem('figcaption','frame-variant-caption');
+      cap.appendChild(elem('strong','',variantNames[variant.id]||variant.id));
+      cap.appendChild(elem('small','',variant.id));
+      figure.appendChild(cap);
+      galleryGrid.appendChild(figure);
+      stageList.push({stage,foil});
+    }
+    group.appendChild(galleryGrid);
+    variantsGallery.appendChild(group);
+  }
+  mount.appendChild(variantsGallery);
+
   // Background-only comparison: preserves the existing SR illustration and
   // exposes all seven colorways without any placeholder characters.
   const variants=elem('div','background-variant-gallery');

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 525" preserveAspectRatio="none">
+<!-- R r-geometric top: vector frame only; no background or character. -->
+<g><path d="M18 103 L18 49 49 18 103 18 M30 96 V57 L57 30 H96" fill="none" stroke="#567d87" stroke-width="3"/><path d="M58 32 L76 51 58 70 40 51 Z M32 78 L43 89 32 100 21 89Z" fill="#d5e8e5" stroke="#597f89" stroke-width="2"/><path d="M78 78 L92 64 L106 78 L92 92Z" fill="none" stroke="#b6a17b" stroke-width="2"/></g>
+<g transform="translate(420 0) scale(-1 1)"><path d="M18 103 L18 49 49 18 103 18 M30 96 V57 L57 30 H96" fill="none" stroke="#567d87" stroke-width="3"/><path d="M58 32 L76 51 58 70 40 51 Z M32 78 L43 89 32 100 21 89Z" fill="#d5e8e5" stroke="#597f89" stroke-width="2"/><path d="M78 78 L92 64 L106 78 L92 92Z" fill="none" stroke="#b6a17b" stroke-width="2"/></g>
+<g transform="translate(0 525) scale(1 -1)"><path d="M18 103 L18 49 49 18 103 18 M30 96 V57 L57 30 H96" fill="none" stroke="#567d87" stroke-width="3"/><path d="M58 32 L76 51 58 70 40 51 Z M32 78 L43 89 32 100 21 89Z" fill="#d5e8e5" stroke="#597f89" stroke-width="2"/><path d="M78 78 L92 64 L106 78 L92 92Z" fill="none" stroke="#b6a17b" stroke-width="2"/></g>
+<g transform="translate(420 525) scale(-1 -1)"><path d="M18 103 L18 49 49 18 103 18 M30 96 V57 L57 30 H96" fill="none" stroke="#567d87" stroke-width="3"/><path d="M58 32 L76 51 58 70 40 51 Z M32 78 L43 89 32 100 21 89Z" fill="#d5e8e5" stroke="#597f89" stroke-width="2"/><path d="M78 78 L92 64 L106 78 L92 92Z" fill="none" stroke="#b6a17b" stroke-width="2"/></g>
+<path d="M190 22l20-12 20 12-20 12zM190 503l20-12 20 12-20 12z" fill="#e9e3d2" stroke="#587e89" stroke-width="2"/>
+</svg>

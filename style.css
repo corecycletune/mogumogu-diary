@@ -550,3 +550,16 @@
 .frame-prototype-reference .layer-lab-caption{min-height:95px;}
 @media(max-width:700px){.frame-prototype-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
 @media(max-width:420px){.frame-prototype-grid{gap:8px;}.frame-prototype-section{padding:9px;}.frame-prototype-item{padding:5px;}}
+
+/* R/SR split-frame gallery in Jun's development mode; no production UI changes. */
+.frame-variants-section{border:1px solid #c9d5d0;background:#fbfcf9;border-radius:14px;margin:18px 0;padding:12px;}
+.frame-variants-section h3{margin:2px 0 8px;font-size:16px;}
+.frame-variants-group h4{margin:12px 0 8px;font-size:14px;}
+.frame-variants-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px;}
+.frame-variant-item{min-width:0;margin:0;padding:5px;background:#fff;border:1px solid #dfe3dd;border-radius:9px;}
+.frame-variant-item .card-art{width:100%;aspect-ratio:4/5;}
+.frame-variant-caption{display:flex;flex-direction:column;gap:3px;padding-top:5px;text-align:center;}
+.frame-variant-caption strong{font-size:12px;}
+.frame-variant-caption small{font-size:10px;color:#62766f;overflow-wrap:anywhere;}
+@media(max-width:700px){.frame-variants-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
+@media(max-width:390px){.frame-variants-section{padding:7px;}.frame-variants-grid{gap:5px;}.frame-variant-item{padding:3px;}}

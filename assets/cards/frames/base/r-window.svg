@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 525" preserveAspectRatio="none">
+<!-- R r-window base: vector frame only; no background or character. -->
+<rect x="7" y="7" width="406" height="511" rx="12" stroke="#55777c" stroke-width="10" fill="none"/><rect x="18" y="18" width="384" height="489" rx="6" stroke="#eae0c9" stroke-width="3.5" fill="none"/>
+<path d="M27 127h366M27 398h366" stroke="#8ba9b7" stroke-width="2" opacity=".6"/>
+</svg>

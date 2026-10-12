@@ -183,7 +183,7 @@ function paintCard(char,entry,unknown){
     foil.setAttribute('aria-hidden','true');
     art.appendChild(foil);
     // Every N/R/SR card, including ones without individual art assets,
-    // receives the same approved reusable split-SVG frame set.
+    // receives its stable, themed split-SVG frame set.
     const frame=frameForCard(char.id,char.rarity);
     if(frame)addLayer('card-frame-under',frame.lowerFrame,true);
     if(frame)addLayer('card-frame-over',frame.upperFrame,true);

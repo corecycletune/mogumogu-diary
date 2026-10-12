@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 525" preserveAspectRatio="none">
+<!-- SR sr-ornament base: vector frame only; no background or character. -->
+<rect x="6" y="6" width="408" height="513" rx="23" stroke="#456484" stroke-width="10" fill="none"/><rect x="15" y="15" width="390" height="495" rx="13" stroke="#e7f1fa" stroke-width="4" fill="none"/><rect x="24" y="24" width="372" height="477" rx="8" stroke="#95b2ca" stroke-width="1.5" fill="none" opacity=".8"/>
+<path d="M28 117h364M28 408h364" stroke="#d6e3ef" stroke-width="1.7" opacity=".7"/>
+</svg>
