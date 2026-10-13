@@ -17,6 +17,8 @@ if(mount){
     const next=nextMilestone(quests.days,null,day);el('questNextReward').textContent=next&&next.remaining<=2?'あと'+next.remaining+'日で '+next.coins+'コイン！':'';el('questNextReward').hidden=!el('questNextReward').textContent;
     mount.replaceChildren();
     const list=[['meal',{name:'ごはんを1回記録する'}],...Object.entries(quests.tasks).filter(([,v])=>!v.archived)];
+    const activeDone=list.filter(([id])=>done.includes(id)).length;
+    if(el('homeQuestProgress')){el('homeQuestProgress').max=list.length;el('homeQuestProgress').value=activeDone;el('homeQuestProgress').textContent=activeDone+' / '+list.length;el('homeQuestCount').textContent=activeDone+' / '+list.length;el('homeStreak').textContent=streakFor(quests.days,null,day)+'日';}
     for(const [id,task] of list){
       const row=text('div','', 'quest-row');
       const label=text('div','');label.append(text('strong',task.name),text('small','個別の連続記録 '+streakFor(quests.days,id,day)+'日'));

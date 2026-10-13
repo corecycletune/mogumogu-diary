@@ -33,7 +33,7 @@ function testSummary(){
 window.mogumoguGameManaged=true;
 const rarityRank=['N','R','SR','SSR','UR'];
 initSound();
-let latestResults=[],celebrating=false,collectionKey='',resultKey='';
+let latestResults=[],celebrating=false,collectionKey='',resultKey='',homeKey='';
 const cardVisibility=typeof IntersectionObserver==='function'?new IntersectionObserver(entries=>{
   for(const entry of entries)entry.target.classList.toggle('card-in-view',entry.isIntersecting);
 },{rootMargin:'80px'}):null;
@@ -214,6 +214,15 @@ function renderCollection(){
   const publiclyCount=CATALOG.filter(x=>x.rarity!=='UR').length;
   el('collectionCount').textContent=testing?'🧪 動作確認 '+filtered.length+' / '+CATALOG.length+' 種（未保存）':'コレクション '+count+' / '+(publiclyCount+visible.filter(x=>x.rarity==='UR').length)+' 種 発見';
 }
+function renderHome(){
+  const target=el('homeCards');if(!target||target.closest('[data-panel]').hidden)return;
+  const owned=CATALOG.filter(card=>state.inventory[card.id]?.copies>0);
+  el('homeCardCount').textContent=owned.length+'種の仲間に出会いました';
+  const preview=owned.slice(-4),key=JSON.stringify(preview.map(card=>[card.id,state.inventory[card.id].copies]));
+  if(key===homeKey&&target.childNodes.length)return;homeKey=key;releaseCards(target);target.replaceChildren();
+  for(const card of preview)target.append(paintCard(card,state.inventory[card.id]));
+  if(!preview.length){const empty=document.createElement('p');empty.className='card-empty';empty.textContent='？　はじめての仲間に会いにいこう';target.append(empty);}
+}
 function renderHeader(){
   el('coins').textContent=ctx?String(state.coins):'--';
   el('gameCoinCount').textContent=ctx?String(state.coins):'--';
@@ -235,6 +244,7 @@ function renderHeader(){
     button.classList.toggle('reward-available',value==='available');
     button.textContent=value==='available'?'🎁 '+size+'連を引く（権利1回分）':value==='used'?'✓ '+size+'連のごほうびは使用済み':'🔒 '+size+'日連続で'+size+'連';
   }
+  if(el('headerCoins')){el('headerCoins').textContent=ready?String(state.coins):'—';el('homeTickets').textContent=state.tickets+'枚';el('homeFree').textContent=!ready?'準備中':already?'達成済み':'1回無料';el('homeMulti').textContent=[10,100].map(size=>size+'連：'+({available:'権利1回分あり',used:'使用済み',locked:size+'日連続で解放'}[multiStatus(state,size)]||size+'日連続で解放')).join(' ／ ');renderHome();}
   testSummary();
 }
 function showLatestDraw(){
@@ -344,7 +354,7 @@ el('gameTicketDraw').addEventListener('click',()=>void pull('ticket'));
 el('gameTenDraw').addEventListener('click',()=>void pull('multi10'));
 el('gameHundredDraw').addEventListener('click',()=>void pull('multi100'));
 el('collectionFilter').addEventListener('change',renderCollection);
-window.addEventListener('mogumogu:panel',event=>{if(event.detail.name==='collection')renderCollection();});
+window.addEventListener('mogumogu:panel',event=>{if(event.detail.name==='collection')renderCollection();if(event.detail.name==='home')renderHome();});
 window.addEventListener('mogumogu:connected',event=>void connect(event.detail.context));
 if(bridge&&bridge.getContext())void connect(bridge.getContext());
 else void connect(localContext(profile));

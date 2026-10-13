@@ -325,8 +325,9 @@ function awardLogin(){
 }
 function changePanel(name){
   document.querySelectorAll('[data-panel]').forEach(function(n){n.hidden=n.dataset.panel!==name;});
-  document.querySelectorAll('[data-target]').forEach(function(n){n.setAttribute('aria-selected',String(n.dataset.target===name));});
+  document.querySelectorAll('[data-target]').forEach(function(n){var target=n.dataset.target;var selected=target===name||(n.closest('.game-nav')&&((target==='home'&&name==='timer')||(target==='menu'&&['history','calendar','family'].includes(name))));n.setAttribute('aria-selected',String(!!selected));if(n.closest('.game-nav')){if(selected)n.setAttribute('aria-current','page');else n.removeAttribute('aria-current');}});
   window.dispatchEvent(new CustomEvent('mogumogu:panel',{detail:{name:name}}));
+  window.scrollTo({top:0,behavior:'auto'});
 }
 window.addEventListener('mogumogu:quest',function(event){window.mogumoguQuestDays=event.detail.days||{};renderCalendar();});
 async function init(){

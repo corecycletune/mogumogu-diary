@@ -1,7 +1,7 @@
-const CACHE_NAME='mogumogu-static-v36';
+const CACHE_NAME='mogumogu-static-v37';
 const ART_CACHE='mogumogu-art-v1';
 // Only the app shell is eagerly cached. Card art is loaded when requested.
-const ASSETS=["./multi-draw.js","./sound.js","./progress-store.js","./card-profiles.js","./nutrition-models.js","./ssr-prism-trial.js","./quest-core.js","./adventure.js","./card-details.js","./","./index.html","./style.css","./app.js","./firebase-sync.js","./game.js","./game-catalog.js","./card-layer-manifest.js","./card-layer-lab.js","./sw.js","./icons/icon.svg","./p/ichika/","./p/jun/","./p/sato/","./manifest-ichika.webmanifest","./manifest-jun.webmanifest","./manifest-sato.webmanifest"];
+const ASSETS=["./design.css","./room-view.js","./multi-draw.js","./sound.js","./progress-store.js","./card-profiles.js","./nutrition-models.js","./ssr-prism-trial.js","./quest-core.js","./adventure.js","./card-details.js","./","./index.html","./style.css","./app.js","./firebase-sync.js","./game.js","./game-catalog.js","./card-layer-manifest.js","./card-layer-lab.js","./sw.js","./icons/icon.svg","./p/ichika/","./p/jun/","./p/sato/","./manifest-ichika.webmanifest","./manifest-jun.webmanifest","./manifest-sato.webmanifest"];
 self.addEventListener('install',event=>{
  event.waitUntil((async()=>{
   const cache=await caches.open(CACHE_NAME);
@@ -24,7 +24,7 @@ self.addEventListener('activate',event=>{
 self.addEventListener('fetch',event=>{
  const req=event.request,url=new URL(req.url);
  if(req.method!=='GET'||url.origin!==self.location.origin)return;
- if(url.pathname.includes('/assets/cards/')){
+ if(url.pathname.includes('/assets/cards/')||url.pathname.includes('/assets/ui/')){
   const work=(async()=>{
    const cache=await caches.open(ART_CACHE),hit=await cache.match(req);
    if(hit)return {response:hit};

@@ -5,23 +5,36 @@
 <meta name="apple-mobile-web-app-title" content="モグモグクエスト・じゅんちゃん">
 <meta name="description" content="毎日の食事時間をたのしく記録する">
 <link rel="manifest" href="../../manifest-jun.webmanifest">
-<link rel="icon" type="image/svg+xml" href="../../icons/icon.svg"><link rel="stylesheet" href="../../style.css">
+<link rel="icon" type="image/svg+xml" href="../../icons/icon.svg"><link rel="stylesheet" href="../../style.css"><link rel="stylesheet" href="../../design.css">
 <title>モグモグデイリークエスト | じゅんちゃん</title></head>
 <body data-profile="jun">
 <main class="shell">
-  <header class="topbar">
+  <header class="topbar game-header">
     <div><span class="greeting">🍞 じゅんちゃんの毎日</span><h1>モグモグデイリークエスト</h1></div>
-    <button class="settings-button" type="button" data-target="history" aria-label="設定" aria-selected="false">⚙️</button>
+    <div class="header-tools"><span class="coin-pill" aria-label="所持コイン">🪙 <strong id="headerCoins">—</strong><span>コイン</span></span><button class="settings-button" type="button" data-target="history" aria-label="設定" aria-selected="false">⚙️</button></div>
   </header>
-  <nav class="tabs" aria-label="メニュー">
-    <button class="tab" data-target="timer" aria-selected="true">⏱ ごはん</button>
-    <button class="tab" data-target="collection" aria-selected="false">📚 コレクション</button>
-    <button class="tab" data-target="bonus" aria-selected="false">🎁 ガチャ</button>
-    <button class="tab" data-target="calendar" aria-selected="false">📅 スタンプカード</button>
-    <button class="tab" data-target="quests" aria-selected="false">🌱 クエスト</button>
-    <button class="tab" data-target="family" aria-selected="false">💬 家族</button>
+  <nav class="tabs game-nav" aria-label="メインナビゲーション">
+    <button class="tab" data-target="home" aria-selected="true" aria-current="page"><span aria-hidden="true">⌂</span>ホーム</button>
+    <button class="tab" data-target="collection" aria-selected="false"><span aria-hidden="true">▱</span>カード</button>
+    <button class="tab" data-target="bonus" aria-selected="false"><span aria-hidden="true">🎁</span>ガチャ</button>
+    <button class="tab" data-target="menu" aria-selected="false"><span aria-hidden="true">☰</span>メニュー</button>
   </nav>
-  <section data-panel="timer">
+  <section data-panel="home" class="home-layout">
+    <room-view class="home-room" aria-label="おへや"></room-view>
+    <div class="card home-quests"><h2 class="section-title">📋 デイリークエスト</h2>
+      <p id="questStatus" class="small" role="status">今日も、自分のペースでひとつずつ。</p>
+      <div class="quest-progress"><label for="homeQuestProgress">今日の達成 <strong id="homeQuestCount">0 / 1</strong></label><progress id="homeQuestProgress" max="1" value="0">0 / 1</progress></div><div class="metrics"><div class="metric"><strong id="questStreak">0日</strong><span>どれかできた連続記録</span></div><div class="metric"><strong id="questDone">0件</strong><span>今日できたこと</span></div></div>
+      <p id="questNextReward" class="milestone-hint" hidden></p><div id="questList"></div>
+      <details class="habit-manager"><summary>習慣を管理する</summary><details><summary>お休み中の習慣</summary><div id="questArchived"></div></details>
+      <form id="questForm"><label class="label" for="questName">続けたい習慣（10件まで）</label><div class="input-row"><input id="questName" class="field" maxlength="60" required placeholder="例：歯をみがく・本を読む"><button id="questAdd" class="btn secondary" type="submit" disabled>登録 ＋</button></div></form></details>
+
+    </div>
+    <article class="card home-meal"><div class="meal-banner"><span class="meal-icon" aria-hidden="true">🍚</span><div><h2>ごはんを記録する</h2><p>今日もおいしく、自分のペースで。</p></div></div><button class="btn primary meal-action" type="button" data-target="timer">ごはんを記録する <span aria-hidden="true">›</span></button></article>
+    <article class="card home-rewards"><div class="panel-heading"><h2>🎁 もらえるごほうび</h2><button type="button" class="link-button" data-target="bonus">ガチャへ ›</button></div><div class="reward-strip"><div><span aria-hidden="true">🎫</span><strong id="homeTickets">0枚</strong><small>所持ガチャ券</small></div><div><span aria-hidden="true">🎁</span><strong id="homeFree">準備中</strong><small>今日の無料ガチャ</small></div><div><span aria-hidden="true">🌱</span><strong id="homeStreak">0日</strong><small>クエスト連続記録</small></div></div><p class="small">今日最初のクエスト達成で、ガチャ券を1枚。</p><p id="homeMulti" class="small"></p><button class="link-button" type="button" data-target="calendar">📅 スタンプカードを見る ›</button></article>
+    <article class="card home-cards"><div class="panel-heading"><h2>📚 あつめたカード</h2><button type="button" class="link-button" data-target="collection">もっと見る ›</button></div><p id="homeCardCount" class="small">仲間を集めよう。</p><div id="homeCards" class="home-card-grid"></div></article>
+  </section>
+  <section data-panel="menu" hidden><div class="card"><h2 class="section-title">☰ メニュー</h2><div class="menu-grid"><button class="btn secondary" data-target="timer" type="button">🍚 ごはんの記録</button><button class="btn secondary" data-target="home" type="button">🌱 デイリークエスト</button><button class="btn secondary" data-target="calendar" type="button">📅 スタンプカード</button><button class="btn secondary" data-target="family" type="button">💬 家族のおしゃべり</button><button class="btn secondary" data-target="history" type="button">⚙️ 設定・食事の履歴</button><a class="btn secondary" href="../../">🍀 使う人を選ぶ</a></div></div></section>
+  <section data-panel="timer" hidden>
     <div class="card">
       <h2 class="section-title">いまから計測 <span id="timerStatus" class="badge">待機中</span></h2>
       <label class="label" for="timerMeal">ごはんの種類</label>
@@ -82,16 +95,6 @@
         </select>
       </div>
       <div id="collectionGrid" class="collection-grid" aria-live="polite"></div>
-
-    </div>
-  </section>
-  <section data-panel="quests" hidden>
-    <div class="card"><h2 class="section-title">🌱 今日のクエスト</h2>
-      <p id="questStatus" class="small" role="status">今日も、自分のペースでひとつずつ。</p>
-      <div class="metrics"><div class="metric"><strong id="questStreak">0日</strong><span>どれかできた連続記録</span></div><div class="metric"><strong id="questDone">0件</strong><span>今日できたこと</span></div></div>
-      <p id="questNextReward" class="milestone-hint" hidden></p><div id="questList"></div>
-      <details><summary>お休み中の習慣</summary><div id="questArchived"></div></details>
-      <form id="questForm"><label class="label" for="questName">続けたい習慣（10件まで）</label><div class="input-row"><input id="questName" class="field" maxlength="60" required placeholder="例：歯をみがく・本を読む"><button id="questAdd" class="btn secondary" type="submit" disabled>登録 ＋</button></div></form>
 
     </div>
   </section>
@@ -200,6 +203,7 @@
   <p class="warning" id="offlineNotice" hidden></p>
   <p class="footer subtle">毎日の小さな積み重ねが、あなたの力になります。</p>
 </main><div class="toast" id="feedback" role="status" hidden></div>
+<script src="../../room-view.js" type="module"></script>
 <script src="../../app.js" defer></script>
 <script src="../../game.js" type="module"></script>
 <script src="../../adventure.js" type="module"></script>
