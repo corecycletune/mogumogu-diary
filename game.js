@@ -12,7 +12,6 @@ const el=id=>document.getElementById(id);
 const bridge=window.MogumoguGameBridge;
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
 const fresh=()=>freshGame(profile);
-const newBrowser=!localStorage.getItem('mogumogu:progress:'+profile)&&!localStorage.getItem('mogumogu:family:'+profile);
 const clone=state=>state?JSON.parse(JSON.stringify(state)):fresh();
 let ctx=null,unsubscribe=null,unwatchDailyQuests=null,dailyQuestDays={},dailyQuestsReady=false,state=fresh(),ready=false,busy=false,lastMealSignature='',statusError='',latestDraw=null,connectionSeq=0;
 let testDrawCount=0,testInventory={};
@@ -250,7 +249,6 @@ function renderHeader(){
     button.textContent=value==='available'?'🎁 '+size+'連を引く（権利1回分）':value==='used'?'✓ '+size+'連のごほうびは使用済み':'🔒 '+size+'日連続で'+size+'連';
   }
   if(el('headerCoins')){el('headerCoins').textContent=ready?String(state.coins):'—';el('homeTickets').textContent=ready?state.tickets+'枚':'—';el('homeQuestReward').textContent=!ready||!dailyQuestsReady?'準備中':already?'使用済み':questCleared?'1回引ける':'解放待ち';el('homeMulti').textContent=[10,100].map(size=>size+'連：'+({available:'権利1回分あり',used:'使用済み',locked:size+'日連続で解放'}[multiStatus(state,size)]||size+'日連続で解放')).join(' ／ ');renderHome();}
-  const transferNotice=el('storageTransferNotice');if(transferNotice)transferNotice.hidden=!ready||!ctx?.isLocal||!newBrowser;
   testSummary();
 }
 function showLatestDraw(){
