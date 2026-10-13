@@ -1,11 +1,12 @@
+import {isDevModeEnabled} from './developer-access.js';
 // On-page five-layer card construction lab, using only existing artwork.
-// Accessible only at /p/jun/?dev=1 and never touches Firebase, gacha or collection state.
+// Accessible only to the signed-in developer with ?dev=1; never changes game progress.
 import {CARD_LAYER_MANIFEST,RARITY_BACKGROUNDS,RARITY_VARIANT_BACKGROUNDS,RARITY_FRAME_VARIANTS,CARD_FRAME_ASSIGNMENTS,frameForCard,pickBackgroundForCard,sceneForRarity,SR_PREMIUM_TRIM,SSR_GOLD_FRAME} from './card-layer-manifest.js';
 import {BY_ID} from './game-catalog.js';
 import {putCardName} from './card-details.js';
 (function(){
   const profile=document.body.dataset.profile;
-  if(profile!=='jun'||!/(?:^|[?&])dev=1(?:&|$)/.test(location.search))return;
+  if(!isDevModeEnabled(profile,window.MogumoguAccount?.id,location.search))return;
   const mount=document.getElementById('layerLab');
   const toggle=document.getElementById('devModeToggle');
   if(!mount||!toggle)return;
