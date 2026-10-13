@@ -41,6 +41,7 @@
       <label class="label" for="timerMeal">ごはんの種類</label>
       <select class="field" id="timerMeal"><option value="breakfast">朝ごはん</option><option value="lunch">昼ごはん</option><option value="dinner">夜ごはん</option><option value="snack">おやつ（時間は測らない）</option></select>
       <p class="small">夕食だけでも大丈夫。今日のごはんをひとつ記録しよう。</p>
+      <label class="label" for="timerFoodNote">食べたもの（任意）</label><input id="timerFoodNote" class="field" type="text" maxlength="200" placeholder="例：ごはん、焼き魚、みそ汁" autocomplete="off">
       <div id="snackQuick" hidden><button id="snackNow" class="btn primary" type="button" style="width:100%">🍪 おやつを記録する</button></div>
       <div id="timerControls">
       <div class="clock" id="clock">00:00</div>
@@ -58,6 +59,8 @@
       <form id="manualForm">
         <div class="input-row"><div><label class="label" for="manualDate">日にち</label><input id="manualDate" class="field" type="date" required></div>
         <div><label class="label" for="manualMeal">どのごはん？</label><select class="field" id="manualMeal"><option value="breakfast">朝</option><option value="lunch" selected>昼</option><option value="dinner">夜</option><option value="snack">おやつ</option></select></div></div>
+        <label class="label" for="manualTime">食べた時刻</label><input id="manualTime" class="field" type="time" required>
+        <label class="label" for="manualFoodNote">食べたもの（任意）</label><input id="manualFoodNote" class="field" type="text" maxlength="200" placeholder="例：ごはん、焼き魚、みそ汁" autocomplete="off">
         <div id="manualDurationWrap"><label class="label" for="manualMinutes">かかった時間（分）</label>
         <input id="manualMinutes" class="field" type="number" min="1" max="240" step="1" placeholder="例：20" required inputmode="numeric">
         <p class="small">正確でなくても大丈夫。わかる範囲で記録しよう。</p></div>

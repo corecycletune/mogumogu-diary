@@ -35,40 +35,46 @@ const memberRef = (familyId, uid) => doc(db, "families", familyId, "members", ui
 const mealRef = (familyId, id) => doc(db, "families", familyId, "meals", id);
 const gameRef = (familyId, profile) => doc(db, "families", familyId, "games", profile);
 const reactionText='__mogumogu_like_v1__';
-const likeId=(id,profile)=>'_like_'+id+'_'+profile;
-const isLike=item=>/^_like_[A-Za-z0-9]{20}_(jun|ichika|sato)$/.test(item.id)&&item.text===reactionText;
+const likeId=(id,identity)=>'_like_'+id+'_'+identity;
+const isLike=item=>/^_like_[A-Za-z0-9]{20}_[A-Za-z0-9]{20,128}$/.test(item.id)&&item.text===reactionText ||
+  /^_like_[A-Za-z0-9]{20}_(jun|ichika|sato)$/.test(item.id)&&item.text===reactionText;
 function watchFamilyMessages(familyId,onValue,onError){
   const messages=collection(db,'families',familyId,'messages');let active=true,revision=0;
   const stop=onSnapshot(query(messages,orderBy('createdAt','desc'),limit(100)),async snapshot=>{
     const current=++revision;
     try{
-      let page=snapshot.docs,visible=[];
-      // Likes are append-only records in the existing message schema. Fetch more
-      // pages so reactions never consume the 100 visible conversation slots.
+      let page=snapshot.docs,visible=[],likes=new Map();
+      // Reactions and messages share the existing collection. Read a page once
+      // and collect both, including the old profile-scoped reaction records.
       while(page.length){
-        visible.push(...page.map(item=>({ ...item.data(),id:item.id })).filter(item=>!isLike(item)));
+        for(const docItem of page){
+          const item={...docItem.data(),id:docItem.id};
+          if(isLike(item)){
+            const target=item.id.match(/^_like_([A-Za-z0-9]{20})_/)[1];
+            if(!likes.has(target))likes.set(target,[]);
+            likes.get(target).push(item.senderUid||'legacy:'+item.sender);
+          }else visible.push(item);
+        }
         if(visible.length>=100||page.length<100)break;
         const next=await getDocs(query(messages,orderBy('createdAt','desc'),startAfter(page.at(-1)),limit(100)));page=next.docs;
         if(!active||current!==revision)return;
       }
       visible=visible.slice(0,100);
-      const ids=visible.flatMap(item=>users.map(name=>likeId(item.id,name))),likes=new Map();
-      // Batched ID reads use only built-in Firestore indexes and existing rules.
-      await Promise.all(Array.from({length:Math.ceil(ids.length/30)},async(_,i)=>{
-        const result=await getDocs(query(messages,where(documentId(),'in',ids.slice(i*30,i*30+30)),limit(30)));
-        for(const item of result.docs){const data={...item.data(),id:item.id};if(isLike(data))likes.set(item.id,data.sender);}
-      }));
       if(!active||current!==revision)return;
-      for(const item of visible)item.likes=users.filter(name=>likes.get(likeId(item.id,name))===name);
+      for(const item of visible)item.likes=likes.get(item.id)||[];
       onValue(visible.reverse());
     }catch(error){if(active&&current===revision)onError?.(error);}
   },onError);
   return ()=>{active=false;revision++;stop();};
 }
 function context(familyId, profile) {
+  const identity=auth.currentUser?.uid||profile;
+  const account=auth.currentUser&&!auth.currentUser.isAnonymous;
+  const senderInfo=()=>account?{senderUid:identity,senderId:auth.currentUser.email.split('@')[0]}:{};
   return {
     familyId,
     profile,
+    uid:identity,
     watchQuests: (onValue,onError) => onSnapshot(doc(db,'families',familyId,'adventures',profile), {includeMetadataChanges:true},
       snapshot=>onValue(snapshot.exists()?snapshot.data():null,{fromCache:snapshot.metadata.fromCache,hasPendingWrites:snapshot.metadata.hasPendingWrites}),onError),
     updateAdventure: callback => runTransaction(db,async transaction=>{
@@ -83,13 +89,13 @@ function context(familyId, profile) {
     watchMessages: (onValue,onError) => watchFamilyMessages(familyId,onValue,onError),
     likeMessage: id => runTransaction(db,async transaction=>{
       if(!/^[A-Za-z0-9]{20}$/.test(id))throw new Error('message-id');
-      const ref=doc(db,'families',familyId,'messages',likeId(id,profile));
+      const ref=doc(db,'families',familyId,'messages',likeId(id,identity));
       const target=await transaction.get(doc(db,'families',familyId,'messages',id)),old=await transaction.get(ref);
       if(!target.exists()||isLike({...target.data(),id}))throw new Error('message-missing');
       if(old.exists())return false;
-      transaction.set(ref,{sender:profile,text:reactionText,cardId:'',createdAt:serverTimestamp()});return true;
+      transaction.set(ref,{sender:profile,text:reactionText,cardId:'',createdAt:serverTimestamp(),...senderInfo()});return true;
     }),
-    sendMessage: (text,cardId='') => setDoc(doc(collection(db,'families',familyId,'messages')),{sender:profile,text,cardId,createdAt:serverTimestamp()}),
+    sendMessage: (text,cardId='') => setDoc(doc(collection(db,'families',familyId,'messages')),{sender:profile,text,cardId,createdAt:serverTimestamp(),...senderInfo()}),
     saveMeal: entry => setDoc(mealRef(familyId, entry.id), entry),
     deleteMeal: id => deleteDoc(mealRef(familyId, id)),
     watchGame: (onValue,onError) => onSnapshot(gameRef(familyId, profile), {includeMetadataChanges:true},

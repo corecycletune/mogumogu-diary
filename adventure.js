@@ -111,11 +111,12 @@ if(mount){
   function messages(items){
     const list=el('familyMessages');list.replaceChildren();
     for(const item of items){
-      const row=text('article','',item.sender===profile?'family-message own':'family-message');
+      const mine=item.senderUid?item.senderUid===window.MogumoguAccount?.uid:item.sender===profile&&!window.MogumoguAccount;
+      const row=text('article','',mine?'family-message own':'family-message');
       const at=item.createdAt?.toDate?.();
-      row.append(text('small',(names[item.sender]||'グループ')+(at?' · '+at.toLocaleString('ja-JP'):' · 送信中')),text('p',item.text));
+      row.append(text('small',(item.senderId||names[item.sender]||'グループ')+(at?' · '+at.toLocaleString('ja-JP'):' · 送信中')),text('p',item.text));
       if(item.cardId&&BY_ID[item.cardId])row.append(text('strong',BY_ID[item.cardId].rarity+' · '+BY_ID[item.cardId].name));
-      const group=chatCtx,liked=(item.likes||[]).includes(profile);
+      const group=chatCtx,liked=(item.likes||[]).includes(group?.uid||profile)||(item.likes||[]).includes('legacy:'+profile)&&!window.MogumoguAccount;
       const like=text('button','♥ '+(item.likes||[]).length,'message-like');like.type='button';like.setAttribute('aria-label','いいね '+(item.likes||[]).length+'件');like.setAttribute('aria-pressed',String(liked));like.disabled=liked||!group?.likeMessage;
       like.addEventListener('click',async()=>{
         like.disabled=true;
