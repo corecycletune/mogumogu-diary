@@ -150,6 +150,9 @@ async function cloudPair(action,code){
 }
 function el(id){return document.getElementById(id);}
 function localDate(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function localClock(d){return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+function validMealTime(value){return typeof value==='string'&&/^([01][0-9]|2[0-3]):[0-5][0-9]$/.test(value);}
+function mealDetails(note,time){return {foodNote:note.trim().slice(0,200),mealTime:time};}
 function readJSON(k,def){try{var d=JSON.parse(localStorage.getItem(k));return d===null?def:d;}catch(e){return def;}}
 function writeJSON(k,v){localStorage.setItem(k,JSON.stringify(v));}
 function note(msg){var f=el('feedback');f.textContent=msg;f.hidden=false;clearTimeout(note.t);note.t=setTimeout(function(){f.hidden=true;},3000);}
@@ -202,8 +205,9 @@ async function stopTimer(){
   if(!timer)return;
   var secs=Math.round(currentMs()/1000);
   if(secs<1){note('1秒以上計測してください');return;}
-  var item={id:randomId(),profile:profile,mealType:timer.mealType,date:localDate(new Date(timer.firstStartedAt)),durationSec:secs,source:'timer',startAt:timer.firstStartedAt,endAt:new Date().toISOString(),createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
-  try{await storeEntry(item);timer=null;saveTimer();}catch(e){note('保存に失敗しました。もう一度試してください。');}
+  var started=new Date(timer.firstStartedAt);
+  var item={id:randomId(),profile:profile,mealType:timer.mealType,date:localDate(started),durationSec:secs,source:'timer',startAt:timer.firstStartedAt,endAt:new Date().toISOString(),createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),...mealDetails(el('timerFoodNote').value,localClock(started))};
+  try{await storeEntry(item);timer=null;el('timerFoodNote').value='';saveTimer();}catch(e){note('保存に失敗しました。もう一度試してください。');}
 }
 async function storeEntry(entry){
   if(cloudContext?.isAccount)await cloudContext.saveMeal(entry);
@@ -215,12 +219,15 @@ async function storeEntry(entry){
   el('recentList').scrollIntoView({behavior:'smooth',block:'center'});
   void flushCloudPending();
 }
-async function recordSnack(date){
+async function recordSnack(date,time,noteText){
   if(date>localDate(new Date())||!/^\d{4}-\d{2}-\d{2}$/.test(date)){note('日付を確認してください');return;}
+  if(!validMealTime(time)){note('食べた時刻を確認してください');return;}
+  if(date===localDate(new Date())&&time>localClock(new Date())){note('未来の時刻は記録できません');return;}
   var t=new Date().toISOString();
   try{
-    await storeEntry({id:randomId(),profile:profile,mealType:'snack',date:date,durationSec:0,source:'manual',startAt:null,endAt:null,createdAt:t,updatedAt:t});
-  }catch(e){note('おやつを保存できませんでした');}
+    await storeEntry({id:randomId(),profile:profile,mealType:'snack',date:date,durationSec:0,source:'manual',startAt:null,endAt:null,createdAt:t,updatedAt:t,...mealDetails(noteText,time)});
+    return true;
+  }catch(e){note('おやつを保存できませんでした');return false;}
 }
 function mealOnly(){return allMeals.filter(function(r){return r.mealType!=='snack';});}
 function dailyDates(){return new Set(mealOnly().map(function(r){return r.date;}));}
@@ -270,8 +277,8 @@ function addRecordRow(target,r,canDelete){
   var item=document.createElement('div');item.className='history-item';
   if(r.id===lastSavedId)item.classList.add('latest-saved');
   var left=document.createElement('div'),title=document.createElement('div');
-  title.className='date';title.textContent=r.date+'　'+mealLabels[r.mealType];left.appendChild(title);
-  var meta=document.createElement('div');meta.className='meta';meta.textContent=r.mealType==='snack'?'おやつ':'';left.appendChild(meta);
+  title.className='date';title.textContent=r.date+(r.mealTime?' '+r.mealTime:'')+'　'+mealLabels[r.mealType];left.appendChild(title);
+  if(r.foodNote){var meta=document.createElement('div');meta.className='meta';meta.textContent=r.foodNote;left.appendChild(meta);}
   var right=document.createElement('div');right.className='right';
   var val=document.createElement('strong');val.textContent=r.mealType==='snack'&&r.durationSec===0?'時間なし':fmtTime(r.durationSec);right.appendChild(val);
   if(canDelete){
@@ -305,7 +312,11 @@ function validateRecord(r){
   return r&&typeof r.id==='string'&&r.id.length<150&&r.profile===profile&&
   /^\d{4}-\d{2}-\d{2}$/.test(r.date)&&Object.prototype.hasOwnProperty.call(mealLabels,r.mealType)&&
   Number.isFinite(r.durationSec)&&r.durationSec>=0&&r.durationSec<=86400&&(r.mealType==='snack'||r.durationSec>0)&&
-  typeof r.createdAt==='string'&&typeof r.updatedAt==='string';
+  typeof r.createdAt==='string'&&typeof r.updatedAt==='string'&&validMealDetails(r);
+}
+function validMealDetails(r){
+  return (r.foodNote===undefined||(typeof r.foodNote==='string'&&r.foodNote.length<=200))&&
+    (r.mealTime===undefined||validMealTime(r.mealTime));
 }
 async function importData(file){
   if(file.size>2000000){note('ファイルが大きすぎます');return;}
@@ -337,7 +348,7 @@ window.addEventListener('mogumogu:quest',function(event){window.mogumoguQuestDay
 async function init(){
   el('timerMeal').value='dinner';
   el('manualMeal').value='dinner';
-  el('manualDate').value=todayDate;el('manualDate').max=todayDate;
+  el('manualDate').value=todayDate;el('manualDate').max=todayDate;el('manualTime').value=localClock(new Date());
   el('timerMeal').addEventListener('change',function(){timerMealWasEdited=true;setSnackMode();});
   document.addEventListener('visibilitychange',function(){
     if(!document.hidden&&!timer&&!timerMealWasEdited){
@@ -345,7 +356,7 @@ async function init(){
     }
   });
   el('manualMeal').addEventListener('change',setSnackMode);
-  el('snackNow').addEventListener('click',function(){void recordSnack(localDate(new Date()));});
+  el('snackNow').addEventListener('click',function(){void recordSnack(localDate(new Date()),localClock(new Date()),el('timerFoodNote').value).then(function(saved){if(saved)el('timerFoodNote').value='';});});
   el('viewFullHistory').addEventListener('click',function(){changePanel('history');});
   setSnackMode();
   if(profile==='jun'&&location.hash==='#developer'){changePanel('history');el('devPanel').open=true;window.addEventListener('load',function(){el('devPanel').scrollIntoView({block:'center'});},{once:true});}
@@ -364,13 +375,15 @@ async function init(){
   el('timerStop').addEventListener('click',stopTimer);
   el('manualForm').addEventListener('submit',async function(e){
     e.preventDefault();var day=el('manualDate').value,kind=el('manualMeal').value;
-    if(kind==='snack'){await recordSnack(day);return;}
+    var time=el('manualTime').value,foodNote=el('manualFoodNote').value;
+    if(!validMealTime(time)||day===localDate(new Date())&&time>localClock(new Date())){note('食べた時刻を確認してください');return;}
+    if(kind==='snack'){if(await recordSnack(day,time,foodNote))el('manualFoodNote').value='';return;}
     var min=Number(el('manualMinutes').value);
     if(!/^\d{4}-\d{2}-\d{2}$/.test(day)||day>localDate(new Date())||!mealLabels[kind]||!Number.isInteger(min)||min<1||min>240){note('日にちと時間を確認してください');return;}
     var t=new Date().toISOString();
     try{
-      var entry={id:randomId(),profile:profile,mealType:kind,date:day,durationSec:min*60,source:'manual',startAt:null,endAt:null,createdAt:t,updatedAt:t};
-      await storeEntry(entry);el('manualMinutes').value='';
+      var entry={id:randomId(),profile:profile,mealType:kind,date:day,durationSec:min*60,source:'manual',startAt:null,endAt:null,createdAt:t,updatedAt:t,...mealDetails(foodNote,time)};
+      await storeEntry(entry);el('manualMinutes').value='';el('manualFoodNote').value='';
     }catch(err){note('保存できませんでした');}
   });
   el('prevMonth').addEventListener('click',function(){month.setMonth(month.getMonth()-1);renderCalendar();});
