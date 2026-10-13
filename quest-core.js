@@ -32,10 +32,9 @@ export function completeQuest(quests,game,taskId,day,at=new Date().toISOString()
   const done=q.days[day]||[];
   if(done.includes(taskId))return null;
   q.days[day]=[...done,taskId];
-  let coins=0,tickets=0;
-  // One daily quest ticket plus the existing daily free draw gives a gentle baseline of two.
-  if(!done.length)tickets=1;
-  else{
+  let coins=0,tickets=1;
+  // Each newly completed quest earns one draw; the same quest/day cannot pay twice.
+  if(done.length){
     const used=q.rewards['extra:'+day]||0;
     coins=Math.min(done.length===1?20:5,QUEST_BALANCE.dailyExtraCap-used);
     q.rewards['extra:'+day]=used+coins;

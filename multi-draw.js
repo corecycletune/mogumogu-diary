@@ -16,8 +16,9 @@ export function grantMultiRewards(game,days){
 }
 export function applyDraw(current,characters,mode,day,at){
   const st=structuredClone(current),size=characters.length;
-  if(mode==='free'){if(st.lastFreeDay===day||size!==1)return null;st.lastFreeDay=day;}
-  else if(mode==='coin'){if(st.coins<100||size!==1)return null;st.coins-=100;}
+  // Daily login draws are retired. Keep legacy lastFreeDay data unchanged.
+  if(mode==='free')return null;
+  if(mode==='coin'){if(st.coins<100||size!==1)return null;st.coins-=100;}
   else if(mode==='ticket'){if(st.tickets<1||size!==1)return null;st.tickets-=1;}
   else if(mode==='multi10'||mode==='multi100'){
     const expected=Number(mode.slice(5));

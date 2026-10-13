@@ -31,3 +31,10 @@ const simultaneous=await Promise.all([1,2].map(()=>ctx.updateGame(value=>applyDr
 assert.equal(simultaneous.filter(Boolean).length,1);assert.equal(ctx.snapshot().game.drawCount,10);
 assert.equal(BY_ID.secret_rinpa_ur.rarity,'SSR');
 console.log('PASS: 9/10/100-day thresholds, gaps, durable one-time rights, duplicate NEW in bulk, 100-card atomic inventory, retries, concurrent spending, migration and SSR downgrade');
+
+// Login must never create a draw; existing tickets remain usable and spend once.
+assert.equal(applyDraw(freshGame('jun'),[BY_ID.rice_n],'free','2026-10-13',at),null);
+const withTicket=freshGame('jun');withTicket.tickets=1;withTicket.lastFreeDay='2026-10-12';
+const ticketDraw=applyDraw(withTicket,[BY_ID.rice_n],'ticket','2026-10-13',at);
+assert.equal(ticketDraw.state.tickets,0);assert.equal(ticketDraw.state.lastFreeDay,'2026-10-12');
+assert.equal(applyDraw(ticketDraw.state,[BY_ID.rice_n],'ticket','2026-10-13',at),null);

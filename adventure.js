@@ -10,6 +10,36 @@ if(mount){
   const names={jun:'じゅんちゃん',ichika:'いちかちゃん',sato:'ばぁば'};
   function text(tag,value,className){const e=document.createElement(tag);e.textContent=value;if(className)e.className=className;return e;}
   function notice(value){el('questStatus').textContent=value;}
+  const completionDialog=text('dialog','','quest-confirm');
+  completionDialog.id='questConfirm';
+  completionDialog.setAttribute('aria-labelledby','questConfirmTitle');
+  completionDialog.setAttribute('aria-describedby','questConfirmText');
+  const confirmationTitle=text('h2','クエストを完了しますか？');confirmationTitle.id='questConfirmTitle';
+  const confirmationText=text('p','');confirmationText.id='questConfirmText';
+  const confirmationActions=text('div','','button-row');
+  const cancelCompletion=text('button','キャンセル','btn secondary');cancelCompletion.type='button';cancelCompletion.autofocus=true;
+  const saveCompletion=text('button','完了する','btn primary');saveCompletion.type='button';
+  confirmationActions.append(cancelCompletion,saveCompletion);
+  completionDialog.append(confirmationTitle,confirmationText,confirmationActions);document.body.append(completionDialog);
+  let pendingCompletion=null;
+  cancelCompletion.addEventListener('click',()=>{pendingCompletion=null;completionDialog.close();});
+  completionDialog.addEventListener('cancel',()=>{pendingCompletion=null;});
+  saveCompletion.addEventListener('click',()=>{
+    if(!completionDialog.open)return;
+    const pending=pendingCompletion;pendingCompletion=null;completionDialog.close();
+    if(!pending)return;
+    if(pending.context!==ctx||pending.sequence!==connectionSeq||pending.day!==localDay()){
+      notice('記録する日や接続が変わりました。もう一度「できた！」を押してください。');return;
+    }
+    if(!quests.tasks[pending.id]||quests.tasks[pending.id].archived)return;
+    void finish(pending.id);
+  });
+  function confirmCompletion(id,name){
+    if(!ctx||!confirmed||working||completionDialog.open)return;
+    pendingCompletion={id,context:ctx,sequence:connectionSeq,day:localDay()};
+    confirmationText.textContent='「'+name+'」を今日の達成として記録します。';
+    completionDialog.returnValue='';completionDialog.showModal();cancelCompletion.focus();
+  }
   function render(){
     const day=localDay(),done=quests.days[day]||[];
     el('questStreak').textContent=streakFor(quests.days,null,day)+'日';
@@ -25,7 +55,7 @@ if(mount){
       const nextTask=nextMilestone(quests.days,id,day);if(nextTask&&nextTask.remaining<=2)label.append(text('small','あと'+nextTask.remaining+'日で '+nextTask.coins+'コイン！','milestone-hint'));
       const button=text('button',done.includes(id)?'✓ できた':id==='meal'?'ごはんへ':'できた！','btn '+(done.includes(id)?'secondary':'primary'));
       button.type='button';button.disabled=working||(!confirmed&&id!=='meal')||done.includes(id);
-      button.addEventListener('click',()=>id==='meal'?document.querySelector('[data-target="timer"]').click():void finish(id));
+      button.addEventListener('click',()=>id==='meal'?document.querySelector('[data-target="timer"]').click():confirmCompletion(id,task.name));
       row.append(label,button);
       if(id!=='meal'){
         const archive=text('button','お休みにする','link-button');archive.type='button';archive.disabled=!confirmed||working;

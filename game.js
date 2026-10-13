@@ -228,11 +228,10 @@ function renderHeader(){
   el('gameCoinCount').textContent=ctx?String(state.coins):'--';
   el('gameTickets').textContent=String(state.tickets);
   el('gamePullCount').textContent=String(state.drawCount);
-  const already=state.lastFreeDay===today();
   const testing=isTesting();
-  el('gameFreeDraw').disabled=busy||(!testing&&(!ready||already));
-  el('gameFreeDraw').textContent=testing?'🧪 テストガチャを引く（回数制限なし）'
-    :already?'今日の無料ガチャは引きました':'🎁 今日の無料ガチャを引く';
+  el('gameFreeDraw').hidden=!testing;
+  el('gameFreeDraw').disabled=busy||!testing;
+  el('gameFreeDraw').textContent='🧪 テストガチャを引く（回数制限なし）';
   // Prevent actual currency or tickets from being spent in testing mode.
   el('gameCoinDraw').disabled=busy||testing||!ready||state.coins<100;
   el('gameTicketDraw').disabled=busy||testing||!ready||state.tickets<1;
@@ -244,7 +243,7 @@ function renderHeader(){
     button.classList.toggle('reward-available',value==='available');
     button.textContent=value==='available'?'🎁 '+size+'連を引く（権利1回分）':value==='used'?'✓ '+size+'連のごほうびは使用済み':'🔒 '+size+'日連続で'+size+'連';
   }
-  if(el('headerCoins')){el('headerCoins').textContent=ready?String(state.coins):'—';el('homeTickets').textContent=state.tickets+'枚';el('homeFree').textContent=!ready?'準備中':already?'達成済み':'1回無料';el('homeMulti').textContent=[10,100].map(size=>size+'連：'+({available:'権利1回分あり',used:'使用済み',locked:size+'日連続で解放'}[multiStatus(state,size)]||size+'日連続で解放')).join(' ／ ');renderHome();}
+  if(el('headerCoins')){el('headerCoins').textContent=ready?String(state.coins):'—';el('homeTickets').textContent=state.tickets+'枚';el('homeQuestReward').textContent='券1枚';el('homeMulti').textContent=[10,100].map(size=>size+'連：'+({available:'権利1回分あり',used:'使用済み',locked:size+'日連続で解放'}[multiStatus(state,size)]||size+'日連続で解放')).join(' ／ ');renderHome();}
   testSummary();
 }
 function showLatestDraw(){
@@ -314,7 +313,7 @@ async function testPull(){
   el('gameResult').scrollIntoView({behavior:'smooth',block:'center'});
 }
 async function pull(mode){
-  if(mode==='free'&&isTesting()){void testPull();return;}
+  if(mode==='free'){if(isTesting())void testPull();return;}
   if(busy||!ctx||!ready){message('まだ準備中です。もう一度お試しください。');return;}
   const count=mode==='multi10'?10:mode==='multi100'?100:1;
   // Draw once outside the transaction: retries must keep the same random outcomes.
@@ -328,7 +327,7 @@ async function pull(mode){
       chosen=result?.results;return result?.state||null;
     });
     if(seq!==connectionSeq)return;
-    if(!saved){message('この無料枠・コイン・ガチャ券・連続記録の権利は既に使われました。');return;}
+    if(!saved){message('このコイン・ガチャ券・連続記録の権利は既に使われました。');return;}
     state=saved;await reveal(chosen);displayed=true;renderHeader();renderCollection();
   }catch(e){gameError(e);}
   finally{celebrating=false;setBusy(false);if(!displayed)showLatestDraw();}
