@@ -257,7 +257,7 @@ function renderCalendar(){
     var iso=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
     var stamped=dates.has(iso);
     var stamp=stamped&&window.MogumoguStampForDay?window.MogumoguStampForDay(stampDays,iso):null;
-    html+='<div class="day'+(stamped?' marked stamp-'+(stamp?stamp.type:'ordinary'):'')+'" aria-label="'+iso+(stamped?' '+(stamp?stamp.label:'今日できた'):'')+'">'+d+(stamped?'<span class="stamp-symbol" aria-hidden="true">'+(stamp?stamp.symbol:'●')+'</span>':'')+'</div>';
+    html+='<div class="day'+(stamped?' marked stamp-'+(stamp?stamp.type:'ordinary'):'')+'" aria-label="'+iso+(stamped?' '+(stamp?stamp.label:'今日できた'):'')+'">'+d+(stamped?'<span class="stamp-symbol" aria-hidden="true">'+(window.MogumoguStampArt?window.MogumoguStampArt(stamp?stamp.type:'ordinary'):(stamp?stamp.symbol:'●'))+'</span>':'')+'</div>';
   }
   el('calendarGrid').innerHTML=html;
   el('nextMonth').disabled=(y>=new Date().getFullYear()&&m>=new Date().getMonth());
@@ -325,7 +325,7 @@ function awardLogin(){
 }
 function changePanel(name){
   document.querySelectorAll('[data-panel]').forEach(function(n){n.hidden=n.dataset.panel!==name;});
-  document.querySelectorAll('[data-target]').forEach(function(n){var target=n.dataset.target;var selected=target===name||(n.closest('.game-nav')&&((target==='home'&&name==='timer')||(target==='menu'&&['history','calendar','family'].includes(name))));n.setAttribute('aria-selected',String(!!selected));if(n.closest('.game-nav')){if(selected)n.setAttribute('aria-current','page');else n.removeAttribute('aria-current');}});
+  document.querySelectorAll('[data-target]').forEach(function(n){var target=n.dataset.target;var selected=target===name||(n.closest('.game-nav')&&((target==='home'&&name==='timer')||(target==='menu'&&['history','family'].includes(name))));n.setAttribute('aria-selected',String(!!selected));if(n.closest('.game-nav')){if(selected)n.setAttribute('aria-current','page');else n.removeAttribute('aria-current');}});
   window.dispatchEvent(new CustomEvent('mogumogu:panel',{detail:{name:name}}));
   window.scrollTo({top:0,behavior:'auto'});
 }
@@ -344,6 +344,7 @@ async function init(){
   el('snackNow').addEventListener('click',function(){void recordSnack(localDate(new Date()));});
   el('viewFullHistory').addEventListener('click',function(){changePanel('history');});
   setSnackMode();
+  if(profile==='jun'&&location.hash==='#developer'){changePanel('history');el('devPanel').open=true;window.addEventListener('load',function(){el('devPanel').scrollIntoView({block:'center'});},{once:true});}
   document.querySelectorAll('[data-target]').forEach(function(btn){btn.addEventListener('click',function(){changePanel(btn.dataset.target);});});
   if(profile==='jun'&&new URLSearchParams(location.search).get('dev')==='1'&&location.hash==='#ssrPrismTrial'){
     changePanel('history');window.addEventListener('load',function(){el('ssrPrismTrial')?.scrollIntoView({block:'start'});},{once:true});

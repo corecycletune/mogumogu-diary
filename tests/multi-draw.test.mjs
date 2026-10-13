@@ -38,3 +38,19 @@ const withTicket=freshGame('jun');withTicket.tickets=1;withTicket.lastFreeDay='2
 const ticketDraw=applyDraw(withTicket,[BY_ID.rice_n],'ticket','2026-10-13',at);
 assert.equal(ticketDraw.state.tickets,0);assert.equal(ticketDraw.state.lastFreeDay,'2026-10-12');
 assert.equal(applyDraw(ticketDraw.state,[BY_ID.rice_n],'ticket','2026-10-13',at),null);
+
+// The daily quest reward neither consumes nor grants banked tickets/coins.
+const dailyGame=freshGame('jun');dailyGame.coins=250;dailyGame.tickets=3;
+const clearedDays={'2026-10-13':['meal','read']};
+const dailyDraw=applyDraw(dailyGame,[BY_ID.rice_n],'free','2026-10-13',at,clearedDays);
+assert.equal(dailyDraw.state.coins,250);assert.equal(dailyDraw.state.tickets,3);
+assert.equal(dailyDraw.state.lastFreeDay,'2026-10-13');
+assert.equal(applyDraw(dailyDraw.state,[BY_ID.rice_n],'free','2026-10-13',at,clearedDays),null);
+assert.equal(applyDraw(dailyDraw.state,[BY_ID.rice_n],'free','2026-10-14',at,clearedDays),null);
+assert.ok(applyDraw(dailyDraw.state,[BY_ID.rice_n],'free','2026-10-14',at,{'2026-10-14':['meal']}));
+assert.equal(applyDraw(dailyGame,cards,'free','2026-10-13',at,clearedDays),null);
+const dailyCtx=localContext('ichika');
+await dailyCtx.updateAdventure(()=>({quests:{...emptyQuests('ichika'),days:clearedDays},game:freshGame('ichika')}));
+const concurrentDaily=await Promise.all([1,2].map(()=>dailyCtx.updateAdventure((q,g)=>{const result=applyDraw(g,[BY_ID.rice_n],'free','2026-10-13',at,q.days);return result?{quests:q,game:result.state}:null;})));
+assert.equal(concurrentDaily.filter(Boolean).length,1);assert.equal(dailyCtx.snapshot().game.drawCount,1);
+console.log('PASS: quest-required daily reward, one draw per day, no carryover, wallet preserved, concurrent consumption once');

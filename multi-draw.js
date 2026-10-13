@@ -14,11 +14,11 @@ export function grantMultiRewards(game,days){
   const changed=keys.size!==(game.streakRewardKeys||[]).length;
   game.streakRewardKeys=[...keys];return changed;
 }
-export function applyDraw(current,characters,mode,day,at){
+export function applyDraw(current,characters,mode,day,at,questDays={}){
   const st=structuredClone(current),size=characters.length;
-  // Daily login draws are retired. Keep legacy lastFreeDay data unchanged.
-  if(mode==='free')return null;
-  if(mode==='coin'){if(st.coins<100||size!==1)return null;st.coins-=100;}
+  // A reward draw requires a quest completed today and can be consumed only once.
+  if(mode==='free'){if(!questDays[day]?.length||st.lastFreeDay===day||size!==1)return null;st.lastFreeDay=day;}
+  else if(mode==='coin'){if(st.coins<100||size!==1)return null;st.coins-=100;}
   else if(mode==='ticket'){if(st.tickets<1||size!==1)return null;st.tickets-=1;}
   else if(mode==='multi10'||mode==='multi100'){
     const expected=Number(mode.slice(5));
