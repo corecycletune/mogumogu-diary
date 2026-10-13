@@ -64,7 +64,7 @@ async function connect(context){
   if(!context||!context.watchGame)return;
   const seq=++connectionSeq;
   ready=false;renderHeader();
-  try{context=await prepareCloudContext(context);}catch(e){if(seq!==connectionSeq)return;message('家族の記録を読み込めませんでした。あとで設定から試してください。');if(!context.isLocal)void connect(localContext(profile));return;}
+  try{context=await prepareCloudContext(context);}catch(e){if(seq!==connectionSeq)return;message('グループの記録を読み込めませんでした。あとで設定から試してください。');if(!context.isLocal&&!context.isAccount)void connect(localContext(profile));return;}
   if(seq!==connectionSeq)return;
   if(unsubscribe)unsubscribe();
   unwatchDailyQuests?.();dailyQuestDays={};dailyQuestsReady=false;
@@ -269,7 +269,7 @@ function showLatestDraw(){
     if(result.newCard){const badge=document.createElement('span');badge.className='new-badge';badge.textContent='NEW';painted.append(badge);tile.classList.add('first-discovery');}
     tile.append(painted);
     if(!result.test&&['SSR','UR'].includes(card.rarity)){
-      const share=document.createElement('button');share.type='button';share.className='btn secondary share-card';share.textContent='家族にゲットを報告';
+      const share=document.createElement('button');share.type='button';share.className='btn secondary share-card';share.textContent='グループにゲットを報告';
       share.addEventListener('click',()=>window.dispatchEvent(new CustomEvent('mogumogu:share-card',{detail:{id:card.id}})));tile.append(share);
     }
     grid.append(tile);

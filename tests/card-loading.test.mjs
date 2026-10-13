@@ -24,7 +24,7 @@ const reused=scope+'assets/cards/full-art/reused.webp?v=1';await bucket(legacy).
 vm.runInNewContext(source,{URL,Request,Response,caches:cacheApi,fetch:fetchMock,self:{registration:{scope},location:{origin},addEventListener:(name,fn)=>listeners[name]=fn,skipWaiting:async()=>{},clients:{claim:async()=>{}}}});
 async function lifecycle(name){const tasks=[];listeners[name]({waitUntil:promise=>tasks.push(promise)});await Promise.all(tasks);}
 async function request(url,navigate=false){let response;const tasks=[];const req=new Request(url);if(navigate)Object.defineProperty(req,'mode',{value:'navigate'});listeners.fetch({request:req,respondWith:promise=>response=promise,waitUntil:promise=>tasks.push(promise)});const result=await response;await Promise.all(tasks);return result;}
-await lifecycle('install');assert.ok(network.length>0);assert.ok(network.every(url=>!url.includes('/assets/cards/')));assert.ok(network.length<=30);
+await lifecycle('install');assert.ok(network.length>0);assert.ok(network.every(url=>!url.includes('/assets/cards/')));assert.ok(network.length<=34); // 30 existing shell files + 4 account entry modules; no raster preload
 await lifecycle('activate');assert.ok(buckets.has(legacy));assert.ok(!buckets.has(older));
 const before=network.length;assert.equal(await (await request(reused)).text(),'legacy-art');assert.equal(network.length,before);
 const image=scope+'assets/cards/full-art/new.webp?v=2';await request(image);assert.equal(network.length,before+1);await request(image);assert.equal(network.length,before+1);

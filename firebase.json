@@ -1,1 +1,22 @@
-{"firestore":{"rules":"firestore.rules"},"emulators":{"firestore":{"port":8085},"ui":{"enabled":false}}}
+{
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "emulators": {
+    "firestore": {
+      "port": 8085
+    },
+    "ui": {
+      "enabled": false
+    },
+    "auth": {
+      "port": 9099
+    }
+  },
+  "auth": {
+    "providers": {
+      "anonymous": true,
+      "emailPassword": true
+    }
+  }
+}

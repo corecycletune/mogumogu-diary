@@ -57,7 +57,7 @@ export function localContext(profile){
   contexts.set(profile,ctx);return ctx;
 }
 export function prepareCloudContext(ctx){
-  if(ctx.isLocal)return Promise.resolve(ctx);
+  if(ctx.isLocal||ctx.isAccount)return Promise.resolve(ctx);
   if(pendingImports.has(ctx))return pendingImports.get(ctx);
   const promise=(async()=>{
     const local=localContext(ctx.profile),b=local.snapshot();

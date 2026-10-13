@@ -32,10 +32,10 @@ service cloud.firestore {
       request.resource.data.durationSec <= 86400 &&
       (request.resource.data.mealType == 'snack' || request.resource.data.durationSec > 0) &&
       request.resource.data.source in ['timer', 'manual'] &&
-      (request.resource.data.startAt == null || request.resource.data.startAt is string) &&
-      (request.resource.data.endAt == null || request.resource.data.endAt is string) &&
-      request.resource.data.createdAt is string &&
-      request.resource.data.updatedAt is string;
+      (request.resource.data.startAt == null || request.resource.data.startAt is string && request.resource.data.startAt.size() <= 40) &&
+      (request.resource.data.endAt == null || request.resource.data.endAt is string && request.resource.data.endAt.size() <= 40) &&
+      request.resource.data.createdAt is string && request.resource.data.createdAt.size() <= 40 &&
+      request.resource.data.updatedAt is string && request.resource.data.updatedAt.size() <= 40;
     }
 
 
@@ -48,7 +48,97 @@ service cloud.firestore {
         d.profile == gameProfile && d.version == 1 &&
         d.tasks is map && d.tasks.size() <= 50 &&
         d.days is map && d.days.size() <= 400 &&
-        d.rewards is map && d.rewards.size() <= 5000 && d.updatedAt is string;
+        d.rewards is map && d.rewards.size() <= 5000 && d.updatedAt is string && d.updatedAt.size() <= 40;
+    }
+    function validGame(gameProfile) {
+      return request.resource.data.keys().hasAll([
+            'profile','version','coins','tickets','drawCount',
+            'lastFreeDay','lastLoginDay','loginDays','inventory','history',
+            'mealRewardDays','streakRewardKeys','updatedAt'
+          ]) &&
+          request.resource.data.keys().hasOnly([
+            'profile','version','coins','tickets','drawCount',
+            'lastFreeDay','lastLoginDay','loginDays','inventory','history',
+            'mealRewardDays','streakRewardKeys','updatedAt'
+          ]) &&
+          request.resource.data.profile == gameProfile &&
+          request.resource.data.version == 1 &&
+          request.resource.data.coins is int &&
+          request.resource.data.coins >= 0 && request.resource.data.coins <= 2147483647 &&
+          request.resource.data.tickets is int &&
+          request.resource.data.tickets >= 0 && request.resource.data.tickets <= 2147483647 &&
+          request.resource.data.drawCount is int &&
+          request.resource.data.drawCount >= 0 && request.resource.data.drawCount <= 2147483647 &&
+          request.resource.data.lastFreeDay is string && request.resource.data.lastFreeDay.size() <= 10 &&
+          request.resource.data.lastLoginDay is string && request.resource.data.lastLoginDay.size() <= 10 &&
+          request.resource.data.loginDays is int &&
+          request.resource.data.loginDays >= 0 &&
+          request.resource.data.inventory is map && request.resource.data.inventory.size() <= 100 &&
+          request.resource.data.history is list &&
+          request.resource.data.history.size() <= 30 &&
+          request.resource.data.mealRewardDays is map && request.resource.data.mealRewardDays.size() <= 5000 &&
+          request.resource.data.streakRewardKeys is list && request.resource.data.streakRewardKeys.size() <= 5000 &&
+          request.resource.data.updatedAt is string && request.resource.data.updatedAt.size() <= 40;
+    }
+    // users/{uid} is private account metadata. progress/game and progress/quests
+    // preserve the existing game schema; imports are an insert-only retry ledger.
+    function accountOwner(uid) {
+      return signedIn() && request.auth.uid == uid &&
+        request.auth.token.email is string &&
+        request.auth.token.email.matches('^[a-z0-9_]{3,24}@id[.]mogumogu[.]invalid$');
+    }
+    function accountProfile(uid) {
+      return get(/databases/$(database)/documents/users/$(uid)).data.profile;
+    }
+    function hasAccount(uid) {
+      return accountOwner(uid) && exists(/databases/$(database)/documents/users/$(uid));
+    }
+    match /users/{uid} {
+      allow get: if accountOwner(uid);
+      allow list, update, delete: if false;
+      allow create: if accountOwner(uid) &&
+        request.resource.data.keys().hasAll(['profile','accountId','createdAt']) &&
+        request.resource.data.keys().hasOnly(['profile','accountId','createdAt']) &&
+        request.resource.data.profile in ['jun','ichika','sato'] &&
+        request.resource.data.accountId is string &&
+        request.resource.data.accountId.matches('^[a-z0-9_]{3,24}$') &&
+        request.auth.token.email == request.resource.data.accountId + '@id.mogumogu.invalid' &&
+        request.resource.data.createdAt == request.time;
+      match /progress/{name} {
+        allow get: if hasAccount(uid) && name in ['game','quests'];
+        allow list, delete: if false;
+        allow create, update: if hasAccount(uid) &&
+          ((name == 'game' && validGame(accountProfile(uid))) ||
+           (name == 'quests' && validAdventure(accountProfile(uid))));
+      }
+      match /meals/{mealId} {
+        allow get, list: if hasAccount(uid);
+        allow create: if hasAccount(uid) && validMeal(mealId) &&
+          request.resource.data.profile == accountProfile(uid);
+        allow update: if hasAccount(uid) && validMeal(mealId) &&
+          request.resource.data.profile == accountProfile(uid) &&
+          request.resource.data.profile == resource.data.profile &&
+          request.resource.data.createdAt == resource.data.createdAt;
+        allow delete: if hasAccount(uid);
+      }
+      match /groups/{fid} {
+        allow get, list: if hasAccount(uid);
+        allow create, update: if hasAccount(uid) &&
+          fid.matches('^[A-Za-z0-9_-]{24}$') && isMember(fid) &&
+          request.resource.data.keys().hasAll(['name']) &&
+          request.resource.data.keys().hasOnly(['name']) &&
+          request.resource.data.name is string && request.resource.data.name.size() > 0 &&
+          request.resource.data.name.size() <= 30;
+        allow delete: if false;
+      }
+      match /imports/{sourceId} {
+        allow get: if hasAccount(uid);
+        allow create: if hasAccount(uid) && sourceId.size() <= 100 &&
+          request.resource.data.keys().hasAll(['completedAt']) &&
+          request.resource.data.keys().hasOnly(['completedAt']) &&
+          request.resource.data.completedAt == request.time;
+        allow list, update, delete: if false;
+      }
     }
     function validMessage(fid) {
       let d=request.resource.data;
@@ -61,7 +151,11 @@ service cloud.firestore {
         (d.cardId == '' ||
           (exists(/databases/$(database)/documents/families/$(fid)/games/$(d.sender)) &&
            d.cardId in get(/databases/$(database)/documents/families/$(fid)/games/$(d.sender)).data.inventory &&
-           get(/databases/$(database)/documents/families/$(fid)/games/$(d.sender)).data.inventory[d.cardId].copies > 0));
+           get(/databases/$(database)/documents/families/$(fid)/games/$(d.sender)).data.inventory[d.cardId].copies > 0) ||
+          (hasAccount(request.auth.uid) &&
+           exists(/databases/$(database)/documents/users/$(request.auth.uid)/progress/game) &&
+           d.cardId in get(/databases/$(database)/documents/users/$(request.auth.uid)/progress/game).data.inventory &&
+           get(/databases/$(database)/documents/users/$(request.auth.uid)/progress/game).data.inventory[d.cardId].copies > 0));
     }
 
     match /families/{fid} {
@@ -94,34 +188,7 @@ service cloud.firestore {
         allow list, delete: if false;
         allow create, update: if isMember(fid) &&
           gameProfile == myProfile(fid) &&
-          request.resource.data.keys().hasAll([
-            'profile','version','coins','tickets','drawCount',
-            'lastFreeDay','lastLoginDay','loginDays','inventory','history',
-            'mealRewardDays','streakRewardKeys','updatedAt'
-          ]) &&
-          request.resource.data.keys().hasOnly([
-            'profile','version','coins','tickets','drawCount',
-            'lastFreeDay','lastLoginDay','loginDays','inventory','history',
-            'mealRewardDays','streakRewardKeys','updatedAt'
-          ]) &&
-          request.resource.data.profile == gameProfile &&
-          request.resource.data.version == 1 &&
-          request.resource.data.coins is int &&
-          request.resource.data.coins >= 0 &&
-          request.resource.data.tickets is int &&
-          request.resource.data.tickets >= 0 &&
-          request.resource.data.drawCount is int &&
-          request.resource.data.drawCount >= 0 &&
-          request.resource.data.lastFreeDay is string &&
-          request.resource.data.lastLoginDay is string &&
-          request.resource.data.loginDays is int &&
-          request.resource.data.loginDays >= 0 &&
-          request.resource.data.inventory is map &&
-          request.resource.data.history is list &&
-          request.resource.data.history.size() <= 30 &&
-          request.resource.data.mealRewardDays is map &&
-          request.resource.data.streakRewardKeys is list &&
-          request.resource.data.updatedAt is string;
+validGame(gameProfile);
       }
 
       match /adventures/{gameProfile} {

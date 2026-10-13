@@ -58,3 +58,6 @@ summary{min-height:44px;align-content:center;cursor:pointer;font-weight:700}deta
 @media(max-width:540px){.game-nav .tab{font-size:11px;gap:4px}.calendar{gap:4px}.calendar .day{min-height:60px;font-size:11px;border-radius:12px}.stamp-symbol{width:32px;height:32px}}
 .calendar-header .btn{min-width:44px;min-height:44px}
 @media(max-width:540px){.calendar .day{font-size:13px}}
+
+/* Account entry uses the same cream panels and coral actions as the game. */
+.account-shell{max-width:520px}.account-mascot{display:block;margin:0 auto 12px}.account-shell h1{font-size:clamp(1.3rem,4.5vw,1.9rem)}.account-shell .card{text-align:left}.account-shell input{margin-bottom:12px}.account-shell button{min-height:44px}.account-shell #accountSubmit{width:100%;margin-top:12px}.account-import{display:flex;gap:10px;align-items:center;min-height:44px;margin-top:8px}.account-import input{width:20px;height:20px;margin:0;flex-shrink:0}.account-loading{position:fixed;inset:0;z-index:1000;margin:0;background:#fff8ee;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;color:var(--ink,#593f2c)}

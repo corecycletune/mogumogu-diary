@@ -9,13 +9,13 @@ var dbPromise;
 var allMeals=[];
 var month=new Date();month.setDate(1);
 var todayDate=localDate(new Date());
-var timerKey='mogumogu:timer:'+profile;
+var timerKey='mogumogu:timer:'+(window.MogumoguAccount?.uid||profile);
 var bonusKey='mogumogu:login:'+profile;
 var timer=readJSON(timerKey,null);
 var timerTimer;
 var timerMealWasEdited=false;
 
-var cloudContext=null;
+var cloudContext=window.MogumoguAccount?.context||null;
 var cloudUnsubscribe=null;
 var cloudSyncing=false;
 var latestFamilyMeals=[];
@@ -28,6 +28,7 @@ window.MogumoguGameBridge={
   confirmedMeals:function(){return lastCloudMealsConfirmed;}
 };
 var lastSavedId=null;
+var personalMealChain=Promise.resolve();
 function pendingKey(type){return 'mogumogu:cloud:'+type+':'+profile;}
 function pendingList(type){
   var ids=readJSON(pendingKey(type),[]);
@@ -42,6 +43,7 @@ function clearPending(type,id){
 }
 function cloudStatus(message,badge){
   el('cloudStatus').textContent=message;
+  if(cloudContext?.isAccount&&el('personalSaveStatus'))el('personalSaveStatus').textContent=message;
   el('cloudBadge').textContent=badge||'確認中';
 }
 function updateSavedViews(){
@@ -63,7 +65,7 @@ function renderCoop(records){
   out.textContent='今週の協力スタンプ '+seen.size+' / 10 個（3人の記録日数の合計）。';
 }
 async function flushCloudPending(){
-  if(!cloudContext||cloudSyncing)return;
+  if(!cloudContext||cloudContext.isAccount||cloudSyncing)return;
   cloudSyncing=true;
   var errors=0;
   try{
@@ -155,7 +157,7 @@ function openDb(){
   if(dbPromise)return dbPromise;
   dbPromise=new Promise(function(resolve,reject){
     if(!window.indexedDB){reject(new Error('IndexedDBが利用できません'));return;}
-    var req=indexedDB.open('mogumogu-diary',1);
+    var req=indexedDB.open(window.MogumoguAccount?'mogumogu-account-'+window.MogumoguAccount.uid:'mogumogu-diary',1);
     req.onupgradeneeded=function(){var d=req.result;if(!d.objectStoreNames.contains('meals')){d.createObjectStore('meals',{keyPath:'id'});}};
     req.onsuccess=function(){resolve(req.result);};
     req.onerror=function(){reject(req.error);};
@@ -204,8 +206,9 @@ async function stopTimer(){
   try{await storeEntry(item);timer=null;saveTimer();}catch(e){note('保存に失敗しました。もう一度試してください。');}
 }
 async function storeEntry(entry){
+  if(cloudContext?.isAccount)await cloudContext.saveMeal(entry);
   await putMeal(entry);
-  addPending('writes',entry.id);
+  if(!cloudContext?.isAccount)addPending('writes',entry.id);
   lastSavedId=entry.id;
   await refresh();
   note('今日のごはんを記録しました。');
@@ -276,7 +279,8 @@ function addRecordRow(target,r,canDelete){
     del.addEventListener('click',async function(){
       if(!confirm('この記録を削除しますか？'))return;
       try{
-        await deleteMeal(r.id);clearPending('writes',r.id);addPending('deletes',r.id);
+        if(cloudContext?.isAccount)await cloudContext.deleteMeal(r.id);
+        await deleteMeal(r.id);clearPending('writes',r.id);if(!cloudContext?.isAccount)addPending('deletes',r.id);
         cloudConfirmedIds.delete(r.id);await refresh();void flushCloudPending();note('記録を削除しました');
       }catch(e){note('削除できませんでした');}
     });
@@ -308,7 +312,7 @@ async function importData(file){
   try{
     var obj=JSON.parse(await file.text());
     if(obj.schemaVersion!==1||obj.profile!==profile||!Array.isArray(obj.meals)||obj.meals.length>5000||!obj.meals.every(validateRecord)){note('この人のバックアップではありません／形式が違います');return;}
-    for(var i=0;i<obj.meals.length;i++){await putMeal(obj.meals[i]);addPending('writes',obj.meals[i].id);}void flushCloudPending();
+    for(var i=0;i<obj.meals.length;i++){if(cloudContext?.isAccount)await cloudContext.saveMeal(obj.meals[i]);await putMeal(obj.meals[i]);if(!cloudContext?.isAccount)addPending('writes',obj.meals[i].id);}void flushCloudPending();
     await refresh();note(obj.meals.length+'件を読み込みました');
   }catch(e){note('バックアップを読み込めませんでした');}
 }
@@ -376,7 +380,18 @@ async function init(){
   if(timer && (!Number.isFinite(timer.accumulatedMs)||!Object.prototype.hasOwnProperty.call(mealLabels,timer.mealType))){timer=null;saveTimer();}
   if(timer)el('timerMeal').value=timer.mealType;
   renderTimer();timerTimer=setInterval(renderTimer,1000);
-  try{await openDb();awardLogin();await refresh();var remembered=localStorage.getItem('mogumogu:family:'+profile);if(remembered)void cloudPair('resume');}catch(e){el('offlineNotice').hidden=false;el('offlineNotice').textContent='記録を保存できませんでした。ブラウザの設定を確認してください。';note('記録を保存できませんでした');}
+  try{await openDb();awardLogin();await refresh();if(cloudContext?.isAccount){
+    cloudUnsubscribe=cloudContext.watch(function(records,metadata){
+      personalMealChain=personalMealChain.then(async function(){
+      latestFamilyMeals=records;lastCloudMealsConfirmed=!!metadata&&!metadata.fromCache;cloudConfirmedIds=new Set(metadata?.confirmedIds||[]);
+      if(!lastCloudMealsConfirmed)return;
+      var incoming=records.filter(validateRecord),existing=await listAll();
+      for(var entry of incoming)await putMeal(entry);
+      for(var old of existing)if(!incoming.some(function(x){return x.id===old.id;}))await deleteMeal(old.id);
+      await refresh();cloudStatus('DBに保存しています。','接続済み');
+      }).catch(function(){cloudStatus('記録を読み込めません。もう一度お試しください。','要確認');});
+    },function(){lastCloudMealsConfirmed=false;cloudStatus('DBに接続できません。通信を確認してください。','要確認');});
+  }else{var remembered=localStorage.getItem('mogumogu:family:'+profile);if(remembered)void cloudPair('resume');}}catch(e){el('offlineNotice').hidden=false;el('offlineNotice').textContent='記録を保存できませんでした。ブラウザの設定を確認してください。';note('記録を保存できませんでした');}
   if('serviceWorker' in navigator){navigator.serviceWorker.register('../../sw.js').catch(function(){});}
 }
 init();

@@ -113,7 +113,7 @@ if(mount){
     for(const item of items){
       const row=text('article','',item.sender===profile?'family-message own':'family-message');
       const at=item.createdAt?.toDate?.();
-      row.append(text('small',(names[item.sender]||'家族')+(at?' · '+at.toLocaleString('ja-JP'):' · 送信中')),text('p',item.text));
+      row.append(text('small',(names[item.sender]||'グループ')+(at?' · '+at.toLocaleString('ja-JP'):' · 送信中')),text('p',item.text));
       if(item.cardId&&BY_ID[item.cardId])row.append(text('strong',BY_ID[item.cardId].rarity+' · '+BY_ID[item.cardId].name));
       const group=chatCtx,liked=(item.likes||[]).includes(profile);
       const like=text('button','♥ '+(item.likes||[]).length,'message-like');like.type='button';like.setAttribute('aria-label','いいね '+(item.likes||[]).length+'件');like.setAttribute('aria-pressed',String(liked));like.disabled=liked||!group?.likeMessage;
@@ -123,29 +123,29 @@ if(mount){
         catch(e){like.disabled=false;if(chatCtx===group)el('messageStatus').textContent='いいねを保存できませんでした。もう一度お試しください。';}
       });row.append(like);list.append(row);
     }
-    if(!items.length)list.append(text('p','家族に「できた！」を伝えてみよう。','small'));
+    if(!items.length)list.append(text('p','グループに「できた！」を伝えてみよう。','small'));
   }
   async function send(value,cardId=''){
     if(!chatCtx||chatWorking)return;
     chatWorking=true;render();el('messageStatus').textContent='送信中…';
-    try{await chatCtx.sendMessage(value,chatCtx.familyId===ctx?.familyId&&!ctx?.isLocal?cardId:'');el('messageText').value='';el('messageStatus').textContent='送信しました。';}
-    catch(e){el('messageStatus').textContent='送信できませんでした。通信・家族接続を確認してください。';}
+    try{await chatCtx.sendMessage(value,(ctx?.isAccount||chatCtx.familyId===ctx?.familyId)&&!ctx?.isLocal?cardId:'');el('messageText').value='';el('messageStatus').textContent='送信しました。';}
+    catch(e){el('messageStatus').textContent='送信できませんでした。通信・グループ接続を確認してください。';}
     finally{chatWorking=false;render();}
   }
   el('messageForm').addEventListener('submit',e=>{e.preventDefault();const value=el('messageText').value.trim();if(value&&value.length<=500)void send(value);});
   window.addEventListener('mogumogu:share-card',e=>{const card=BY_ID[e.detail.id];if(card&&['SSR','UR'].includes(card.rarity))void send(card.name+'（'+card.rarity+'）をゲットしたよ！',card.id);});
-  function groupList(){try{const value=JSON.parse(localStorage.getItem('mogumogu:groups:'+profile)||'[]');return Array.isArray(value)?value.filter(g=>typeof g.name==='string'&&/^[A-Za-z0-9_-]{24}$/.test(g.id)):[];}catch(e){return [];}}
+  function groupList(){try{const value=JSON.parse(localStorage.getItem('mogumogu:groups:'+(window.MogumoguAccount?window.MogumoguAccount.uid+':':'')+profile)||'[]');return Array.isArray(value)?value.filter(g=>typeof g.name==='string'&&/^[A-Za-z0-9_-]{24}$/.test(g.id)):[];}catch(e){return [];}}
   function refreshGroups(){
     const select=el('chatGroupSelect');select.replaceChildren();
     for(const group of groupList()){const option=text('option',group.name);option.value=group.id;select.append(option);}
     if(chatCtx)select.value=chatCtx.familyId;
-    else {const remembered=localStorage.getItem('mogumogu:chat-current:'+profile);if(remembered&&groupList().some(g=>g.id===remembered))select.value=remembered;}
+    else {const remembered=localStorage.getItem('mogumogu:chat-current:'+(window.MogumoguAccount?window.MogumoguAccount.uid+':':'')+profile);if(remembered&&groupList().some(g=>g.id===remembered))select.value=remembered;}
     select.disabled=!select.options.length||chatWorking;
     el('chatInvite').textContent=chatCtx?.familyId||'';el('chatInviteCopy').disabled=!chatCtx;el('chatRename').disabled=!chatCtx;
   }
   async function selectChat(context){
     unmessages?.();chatCtx=context;el('familyMessages').replaceChildren();
-    localStorage.setItem('mogumogu:chat-current:'+profile,context.familyId);
+    localStorage.setItem('mogumogu:chat-current:'+(window.MogumoguAccount?window.MogumoguAccount.uid+':':'')+profile,context.familyId);
     unmessages=chatCtx.watchMessages(items=>{if(chatCtx.familyId===context.familyId)messages(items);},()=>{if(chatCtx.familyId===context.familyId)el('messageStatus').textContent='おしゃべりに接続できません。もう一度お試しください。';});
     el('messageStatus').textContent='';refreshGroups();render();
   }
@@ -163,11 +163,11 @@ if(mount){
   el('chatCreate').addEventListener('click',()=>void manageGroup('create'));
   el('chatJoin').addEventListener('click',()=>void manageGroup('join'));
   el('chatInviteCopy').addEventListener('click',async()=>{if(!chatCtx)return;try{await navigator.clipboard.writeText(chatCtx.familyId);el('messageStatus').textContent='招待コードをコピーしました。';}catch(e){el('messageStatus').textContent='招待コードを選んでコピーしてください。';}});
-  el('chatRename').addEventListener('click',async()=>{if(!chatCtx||chatWorking)return;const name=el('chatGroupName').value.trim();if(!name){el('chatGroupName').focus();return;}try{chatLibrary=chatLibrary||await import('./firebase-sync.js');chatLibrary.renameGroup(profile,chatCtx.familyId,name);refreshGroups();el('messageStatus').textContent='グループの名前を変更しました。';}catch(e){el('messageStatus').textContent='名前を変更できませんでした。もう一度お試しください。';}});
+  el('chatRename').addEventListener('click',async()=>{if(!chatCtx||chatWorking)return;const name=el('chatGroupName').value.trim();if(!name){el('chatGroupName').focus();return;}try{chatLibrary=chatLibrary||await import('./firebase-sync.js');await chatLibrary.renameGroup(profile,chatCtx.familyId,name);refreshGroups();el('messageStatus').textContent='グループの名前を変更しました。';}catch(e){el('messageStatus').textContent='名前を変更できませんでした。もう一度お試しください。';}});
   async function connect(context){
     const seq=++connectionSeq;
     confirmed=false;working=true;render();
-    try{context=await prepareCloudContext(context);}catch(e){if(seq!==connectionSeq)return;notice('家族の記録を読み込めませんでした。');void connect(localContext(profile));return;}
+    try{context=await prepareCloudContext(context);}catch(e){if(seq!==connectionSeq)return;notice('記録を読み込めませんでした。');if(!context.isAccount)void connect(localContext(profile));return;}
     if(seq!==connectionSeq)return;
     unwatch?.();ctx=context;working=false;confirmed=false;quests=emptyQuests(profile);render();
     notice('');
@@ -177,7 +177,7 @@ if(mount){
       notice(confirmed?'今日も、自分のペースでひとつずつ。':'準備しています…');void recordMeal();
       window.dispatchEvent(new CustomEvent('mogumogu:quest',{detail:{days:quests.days}}));
     },()=>{if(seq!==connectionSeq)return;confirmed=false;notice('習慣を読み込めませんでした。もう一度お試しください。');render();});
-    if(!ctx.isLocal){if(!chatCtx&&!chatWorking)await selectChat(ctx);refreshGroups();}
+    if(!ctx.isLocal&&!ctx.isAccount){if(!chatCtx&&!chatWorking)await selectChat(ctx);refreshGroups();}
 
   }
   window.addEventListener('mogumogu:connected',e=>void connect(e.detail.context));

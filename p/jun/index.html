@@ -2,7 +2,7 @@
 <html lang="ja"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#fff8ee"><meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="モグモグクエスト・じゅんちゃん">
+<meta name="apple-mobile-web-app-title" content="モグモグクエスト">
 <meta name="description" content="毎日の食事時間をたのしく記録する">
 <link rel="manifest" href="../../manifest-jun.webmanifest">
 <link rel="icon" type="image/svg+xml" href="../../icons/icon.svg"><link rel="stylesheet" href="../../style.css"><link rel="stylesheet" href="../../design.css">
@@ -34,7 +34,7 @@
     <article class="card home-rewards"><div class="panel-heading"><h2>🎁 もらえるごほうび</h2><button type="button" class="link-button" data-target="bonus">ガチャへ ›</button></div><div class="reward-strip"><div><span aria-hidden="true">🎫</span><strong id="homeTickets">0枚</strong><small>所持ガチャ券</small></div><div><span aria-hidden="true">🎁</span><strong id="homeQuestReward">解放待ち</strong><small>今日のごほうびガチャ</small></div><div><span aria-hidden="true">🌱</span><strong id="homeStreak">0日</strong><small>クエスト連続記録</small></div></div><p class="small">クエストを1件でも達成すると、その日1回ガチャが引けます。</p><p id="homeMulti" class="small"></p><button class="link-button" type="button" data-target="calendar">📅 スタンプカードを見る ›</button></article>
     <article class="card home-cards"><div class="panel-heading"><h2>📚 あつめたカード</h2><button type="button" class="link-button" data-target="collection">もっと見る ›</button></div><p id="homeCardCount" class="small">仲間を集めよう。</p><div id="homeCards" class="home-card-grid"></div></article>
   </section>
-  <section data-panel="menu" hidden><div class="card"><h2 class="section-title">☰ メニュー</h2><div class="menu-grid"><button class="btn secondary" data-target="timer" type="button">🍚 ごはんの記録</button><button class="btn secondary" data-target="home" type="button">🌱 デイリークエスト</button><button class="btn secondary" data-target="calendar" type="button">📅 スタンプカード</button><button class="btn secondary" data-target="family" type="button">💬 家族のおしゃべり</button><button class="btn secondary" data-target="history" type="button">⚙️ 設定・食事の履歴</button><a class="btn secondary" href="../../">🍀 使う人を選ぶ</a></div></div></section>
+  <section data-panel="menu" hidden><div class="card"><h2 class="section-title">☰ メニュー</h2><div class="menu-grid"><button class="btn secondary" data-target="timer" type="button">🍚 ごはんの記録</button><button class="btn secondary" data-target="home" type="button">🌱 デイリークエスト</button><button class="btn secondary" data-target="calendar" type="button">📅 スタンプカード</button><button class="btn secondary" data-target="family" type="button">💬 グループのおしゃべり</button><button class="btn secondary" data-target="history" type="button">⚙️ 設定・食事の履歴</button><a class="btn secondary" href="../../">🍀 ログイン画面へ</a></div></div></section>
   <section data-panel="timer" hidden>
     <div class="card">
       <h2 class="section-title">いまから計測 <span id="timerStatus" class="badge">待機中</span></h2>
@@ -99,27 +99,28 @@
 
     </div>
   </section>
-  <section data-panel="family" hidden><div class="card"><h2 class="section-title">💬 家族のおしゃべり</h2><p id="messageStatus" class="small" role="status">グループを作るか、招待コードで参加しよう。</p><label class="label" for="chatGroupSelect">おしゃべりするグループ</label><select class="field" id="chatGroupSelect" disabled></select>
-    <details class="group-manager"><summary>グループを管理する</summary><label class="label" for="chatGroupName">グループの名前</label><input id="chatGroupName" class="field" maxlength="30" placeholder="例：家族・なかよし"><div class="button-row"><button id="chatCreate" class="btn secondary" type="button">新しく作る</button><button id="chatRename" class="btn secondary" type="button" disabled>名前を変更</button></div><label class="label" for="chatGroupCode">招待コード</label><input id="chatGroupCode" class="field" maxlength="24" autocomplete="off" spellcheck="false"><button id="chatJoin" class="btn secondary" type="button">参加する</button><p><code id="chatInvite"></code></p><button id="chatInviteCopy" class="btn secondary" type="button" disabled>招待コードをコピー</button></details><div id="familyMessages" class="family-messages" aria-live="polite"></div><form id="messageForm"><label class="label" for="messageText">メッセージ</label><textarea id="messageText" class="field" maxlength="500" rows="3" required placeholder="今日できたこと、カードのお知らせなど"></textarea><button id="messageSend" class="btn primary" type="submit" disabled>送る</button></form></div></section>
+  <section data-panel="family" hidden><div class="card"><h2 class="section-title">💬 グループのおしゃべり</h2><p id="messageStatus" class="small" role="status">グループを作るか、招待コードで参加しよう。</p><label class="label" for="chatGroupSelect">おしゃべりするグループ</label><select class="field" id="chatGroupSelect" disabled></select>
+    <details class="group-manager"><summary>グループを管理する</summary><label class="label" for="chatGroupName">グループの名前</label><input id="chatGroupName" class="field" maxlength="30" placeholder="例：なかよし"><div class="button-row"><button id="chatCreate" class="btn secondary" type="button">新しく作る</button><button id="chatRename" class="btn secondary" type="button" disabled>名前を変更</button></div><label class="label" for="chatGroupCode">招待コード</label><input id="chatGroupCode" class="field" maxlength="24" autocomplete="off" spellcheck="false"><button id="chatJoin" class="btn secondary" type="button">参加する</button><p><code id="chatInvite"></code></p><button id="chatInviteCopy" class="btn secondary" type="button" disabled>招待コードをコピー</button></details><div id="familyMessages" class="family-messages" aria-live="polite"></div><form id="messageForm"><label class="label" for="messageText">メッセージ</label><textarea id="messageText" class="field" maxlength="500" rows="3" required placeholder="今日できたこと、カードのお知らせなど"></textarea><button id="messageSend" class="btn primary" type="submit" disabled>送る</button></form></div></section>
   <section data-panel="history" hidden>
-    <div class="card"><h2 class="section-title">⚙️ 設定</h2><a href="../../">使う人を選ぶ</a><p><a class="btn secondary" href="./?dev=1#developer">🧪 動作確認モードを開く</a></p><p><a class="btn secondary guide-entry" href="../../pwa-guide.html">📱 ホーム画面に追加する方法</a></p>
+    <div class="card"><h2 class="section-title">⚙️ 設定</h2><a href="../../">ログイン画面へ</a><p><a class="btn secondary" href="./?dev=1#developer">🧪 動作確認モードを開く</a></p><p><a class="btn secondary guide-entry" href="../../pwa-guide.html">📱 ホーム画面に追加する方法</a></p>
     <details class="manual"><summary>取説</summary><h3>ごはんと習慣</h3><p>夕食など、ごはんを1回記録すれば今日のクエストは達成。好きな習慣を10件まで登録できます。</p><h3>ガチャのごほうび</h3><p>ログインだけではごほうびガチャは引けません。クエストを1件でも達成すると、その日1回引けます。複数達成しても回数は増えず、翌日へ持ち越せません。2件目は20コイン、3件目からは5コイン、追加の達成コインは1日40コインまで。100コインでガチャを1回引けます。</p><h3>連続記録</h3><p>どれかができれば、全体の連続記録。同じ習慣を毎日続けると、個別の連続記録になります。</p><p>3・7・14・30日で、全体は5・10・15・25コイン、個別は10・20・30・50コイン。個別の方がごほうびが多くなります。</p><h3>スタンプ</h3><p>● 今日できた ／ 🌿 同じ習慣が2日以上 ／ 🌟 全体が1か月超 ／ 💎 個別が30日以上 ／ 👑 全体が100日以上。</p><h3>おしゃべり</h3><p>招待コードで参加するか、自分でグループを作れます。グループを切り替えても、習慣とコレクションはそのままです。</p><h3>カードの栄養グラフ</h3><p>Pはたんぱく質、Fは脂質、Cは炭水化物。グラフは食べ物のエネルギーを3つに分けた割合です。たんぱく質と炭水化物は1gを4kcal、脂質は9kcalとして計算しています。料理は代表的な材料の組み合わせから計算しています。</p><p>栄養データ：日本食品標準成分表（八訂）増補2023年から引用・計算（2026年3月の正誤反映版）。</p></details></div>
-  <div class="card" id="cloudCard">
-    <h2 class="section-title">家族の記録をつなぐ <span id="cloudBadge" class="badge">未接続</span></h2>
-    <p class="small" id="cloudStatus" role="status"></p><p class="small">別のブラウザ・ホーム画面のアプリへ移るときは、元のブラウザを家族グループにつなぎ、移動先でも同じプロフィールで同じ家族コードを使って参加してください。接続せずに保存したコインやカードは、別のブラウザへ自動では移りません。</p>
+  <div class="card"><h2 class="section-title">アカウント</h2><p>ユーザーID：<strong id="accountName"></strong></p><p id="accountSettingsStatus" class="small" role="status"></p><button id="accountLogout" class="btn secondary" type="button">ログアウト</button><details><summary>パスワードを変更する</summary><form id="passwordForm"><label class="label" for="oldPassword">現在のパスワード</label><input id="oldPassword" type="password" class="field" autocomplete="current-password" required><label class="label" for="newPassword">新しいパスワード</label><input id="newPassword" type="password" class="field" minlength="10" maxlength="128" autocomplete="new-password" required><button class="btn secondary" type="submit">変更する</button></form></details><p class="small" id="personalSaveStatus" role="status">記録はアカウントに保存されます。</p></div>
+  <div class="card" id="cloudCard" hidden>
+    <h2 class="section-title">グループの記録をつなぐ <span id="cloudBadge" class="badge">未接続</span></h2>
+    <p class="small" id="cloudStatus" role="status"></p><p class="small">別のブラウザ・ホーム画面のアプリへ移るときは、元のブラウザをグループグループにつなぎ、移動先でも同じプロフィールで同じグループコードを使って参加してください。接続せずに保存したコインやカードは、別のブラウザへ自動では移りません。</p>
     <div id="cloudSetup">
       <div id="cloudCreateRow" class="cloud-section">
-        <button id="cloudCreate" type="button" class="btn primary" style="width:100%">新しい家族グループを作る</button>
+        <button id="cloudCreate" type="button" class="btn primary" style="width:100%">新しいグループグループを作る</button>
 
       </div>
       <div class="cloud-section">
-        <label class="label" for="cloudCode">家族コードで参加する</label>
-        <input id="cloudCode" class="field" type="text" placeholder="家族コードを貼り付け" maxlength="24" autocomplete="off" autocapitalize="off" spellcheck="false">
-        <button id="cloudJoin" type="button" class="btn secondary" style="width:100%;margin-top:9px">家族に参加する</button>
+        <label class="label" for="cloudCode">グループコードで参加する</label>
+        <input id="cloudCode" class="field" type="text" placeholder="グループコードを貼り付け" maxlength="24" autocomplete="off" autocapitalize="off" spellcheck="false">
+        <button id="cloudJoin" type="button" class="btn secondary" style="width:100%;margin-top:9px">グループに参加する</button>
       </div>
     </div>
     <div id="cloudConnected" hidden>
-      <p class="small">ほかの家族を追加するときは、このコードを本人にだけ伝えてください。</p>
+      <p class="small">ほかのグループを追加するときは、このコードを本人にだけ伝えてください。</p>
       <div class="cloud-code"><code id="cloudFamilyCode"></code><button type="button" class="btn secondary" id="cloudCopy">コピー</button></div>
 
 
@@ -207,8 +208,8 @@
 </main><div class="toast" id="feedback" role="status" hidden></div>
 <script src="../../room-view.js" type="module"></script>
 <script src="../../stamp-art.js" defer></script>
-<script src="../../app.js" defer></script>
-<script src="../../game.js" type="module"></script>
-<script src="../../adventure.js" type="module"></script>
-<script src="../../ssr-prism-trial.js" type="module"></script>
-<script src="../../card-layer-lab.js" type="module"></script></body></html>
+<script src="../../account-bootstrap.js" type="module"></script>
+
+
+
+</body></html>
