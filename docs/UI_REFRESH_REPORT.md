@@ -14,7 +14,7 @@
 
 `room-view.js` は静止背景を表示する独立したWeb Component。背景と空の重ね合わせ領域を同じ表示座標に置き、将来の箱庭コンポーネントへの置換やキャラクター・家具の重ね合わせに備える。今回、位置情報・家具操作・解放報酬・箱庭のデータベース・3Dエンジンは追加していない。
 
-**専用の室内背景は既存素材にない。** 既存の木のテラス `assets/cards/scenes/scene-r.webp` と同一内容のWebPを仮背景 `assets/ui/room-placeholder.webp` に使った（114,500バイト）。画面にも準備中と表示。参考画像全体の貼り付けやSVGによる室内の再構築は行っていない。完成した室内用WebPを追加すれば、背景URLの差し替えで更新できる。
+室内用の背景 `assets/ui/room-cozy.webp`（約191KB）を追加。`room-view.js` の独立した表示領域から参照し、人物・家具などを将来重ねられる構造を維持した。参考画像全体の貼り付けやSVGによる室内の再構築は行っていない。
 
 ## 確認した画面サイズ
 
@@ -45,7 +45,7 @@ Chromiumで以下を確認。幅760px以上は左約52%・右約48%の2カラム
 ## 変更ファイル
 
 - `design.css`：共通ゲームUI、ホームのグリッド、端末幅での再配置、下部ナビ。
-- `room-view.js`、`assets/ui/room-placeholder.webp`：独立した表示領域と仮背景。
+- `room-view.js`、`assets/ui/room-cozy.webp`：独立した表示領域と室内背景。
 - `p/jun/index.html`、`p/ichika/index.html`、`p/sato/index.html`：ホームと4項目ナビ、既存機能への導線。
 - `index.html`：プロフィール選択にも共通デザインを適用。
 - `app.js`：画面切替時のナビ現在位置・スクロール位置。
