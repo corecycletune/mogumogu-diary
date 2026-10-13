@@ -1,6 +1,7 @@
 import {currentAccount,personalContext,importLegacyProgress,legacyAccountSource,restoreAccountGroups,logoutAccount,changeAccountPassword} from './firebase-sync.js';
 import {localContext} from './progress-store.js';
 import {accountError} from './account-id.js';
+import {canUseDevTools} from './developer-access.js';
 const profile=document.body.dataset.profile;
 const main=document.querySelector('main');
 main.inert=true;
@@ -32,6 +33,8 @@ async function start(){
   await ctx.ready();
   await restoreAccountGroups(account);
   window.MogumoguAccount={context:ctx,id:account.data.accountId,uid:account.user.uid};
+  const devEntryAllowed=canUseDevTools(profile,account.data.accountId);
+  document.querySelectorAll('[data-dev-entry]').forEach(entry=>{entry.hidden=!devEntryAllowed;});
   document.querySelector('.greeting').textContent='🍙 '+account.data.accountId+'の毎日';
   document.title='モグモグデイリークエスト';
   const label=document.getElementById('accountName');if(label)label.textContent=account.data.accountId;

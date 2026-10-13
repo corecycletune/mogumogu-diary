@@ -1,8 +1,10 @@
+import {isDevModeEnabled} from './developer-access.js';
 import {SSR_GOLD_FRAME} from './card-layer-manifest.js';
 import {putCardName,openCardDetails} from './card-details.js';
 export const SSR_PRISM_TRIAL=Object.freeze({id:'rousseau_jungle_ssr_trial',name:'ルソーの密林フルーツ',rarity:'SSR',food:'マンゴー',figure:'アンリ・ルソー',lore:'葉っぱのマントで密林を歩くマンゴーの探検家。迷子の星の実を家へ送っているが、みんな違う木を指すので毎晩フルーツ会議になる。'});
+const profile=document.body.dataset.profile;
 const mount=document.getElementById('ssrPrismTrial');
-if(mount&&document.body.dataset.profile==='jun'&&new URLSearchParams(location.search).get('dev')==='1'){
+if(mount&&isDevModeEnabled(profile,window.MogumoguAccount?.id,location.search)){
   mount.hidden=false;
   mount.innerHTML='<h2>SSRプリズムホロの試作</h2><p>ルソーの密林フルーツ</p><div class="prism-trial-stage"></div><label class="label" for="prismTrialMode">ホロの比較</label><select id="prismTrialMode" class="field"><option value="ssr-prism">三角プリズム</option><option value="ssr-vivid">今のSSRホロ</option><option value="none">絵だけ</option></select><p class="small">試作カードです。カードを押すとプロフィールが読めます。</p>';
   const button=document.createElement('button');button.type='button';button.className='collection-card rarity-ssr';button.setAttribute('aria-label',SSR_PRISM_TRIAL.name+'の説明を読む');

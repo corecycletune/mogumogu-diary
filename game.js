@@ -1,3 +1,4 @@
+import {isDevModeEnabled} from './developer-access.js';
 import {applyDraw,multiStatus,grantMultiRewards} from './multi-draw.js';
 import {initSound,playSound} from './sound.js';
 import {localContext,prepareCloudContext,freshGame} from './progress-store.js';
@@ -15,7 +16,7 @@ const fresh=()=>freshGame(profile);
 const clone=state=>state?JSON.parse(JSON.stringify(state)):fresh();
 let ctx=null,unsubscribe=null,unwatchDailyQuests=null,dailyQuestDays={},dailyQuestsReady=false,state=fresh(),ready=false,busy=false,lastMealSignature='',statusError='',latestDraw=null,connectionSeq=0;
 let testDrawCount=0,testInventory={};
-const devAvailable=profile==='jun'&&!!el('devModeToggle')&&/(?:^|[?&])dev=1(?:&|$)/.test(window.location.search);
+const devAvailable=!!el('devModeToggle')&&isDevModeEnabled(profile,window.MogumoguAccount?.id,window.location.search);
 if(devAvailable)el('devPanel').hidden=false;
 if(devAvailable){const select=el('devCharacter');select.replaceChildren(new Option('ランダム抽選を使う','random'),...CATALOG.map(card=>new Option(card.rarity+'：'+card.name,card.id)));}
 function isTesting(){return devAvailable&&el('devModeToggle').checked;}
