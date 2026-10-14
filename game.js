@@ -1,14 +1,14 @@
 import {isDevModeEnabled} from './developer-access.js';
 import {applyDraw,multiStatus,grantMultiRewards} from './multi-draw.js';
 import {initSound,playSound} from './sound.js';
-import {localContext,prepareCloudContext,freshGame} from './progress-store.js';
+import {freshGame} from './progress-store.js';
 import {openCardDetails,putCardName} from './card-details.js';
 import {CATALOG,BY_ID,levelForCopies,drawCharacter} from './game-catalog.js';
 import {CARD_LAYER_MANIFEST,pickBackgroundForCard,frameForCard,sceneForRarity,SR_PREMIUM_TRIM,SSR_GOLD_FRAME} from './card-layer-manifest.js';
 (function(){
 'use strict';
-const profile=document.body.dataset.profile;
-if(!['ichika','jun','sato'].includes(profile))return;
+const profile=window.MogumoguAccount?.uid;
+if(!profile)return;
 const el=id=>document.getElementById(id);
 const bridge=window.MogumoguGameBridge;
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
@@ -16,7 +16,7 @@ const fresh=()=>freshGame(profile);
 const clone=state=>state?JSON.parse(JSON.stringify(state)):fresh();
 let ctx=null,unsubscribe=null,unwatchDailyQuests=null,dailyQuestDays={},dailyQuestsReady=false,state=fresh(),ready=false,busy=false,lastMealSignature='',statusError='',latestDraw=null,connectionSeq=0;
 let testDrawCount=0,testInventory={};
-const devAvailable=!!el('devModeToggle')&&isDevModeEnabled(profile,window.MogumoguAccount?.id,window.location.search);
+const devAvailable=!!el('devModeToggle')&&isDevModeEnabled(window.MogumoguAccount,window.location.search);
 if(devAvailable)el('devPanel').hidden=false;
 if(devAvailable){const select=el('devCharacter');select.replaceChildren(new Option('ランダム抽選を使う','random'),...CATALOG.map(card=>new Option(card.rarity+'：'+card.name,card.id)));}
 function isTesting(){return devAvailable&&el('devModeToggle').checked;}
@@ -65,7 +65,6 @@ async function connect(context){
   if(!context||!context.watchGame)return;
   const seq=++connectionSeq;
   ready=false;renderHeader();
-  try{context=await prepareCloudContext(context);}catch(e){if(seq!==connectionSeq)return;message('グループの記録を読み込めませんでした。あとで設定から試してください。');if(!context.isLocal&&!context.isAccount)void connect(localContext(profile));return;}
   if(seq!==connectionSeq)return;
   if(unsubscribe)unsubscribe();
   unwatchDailyQuests?.();dailyQuestDays={};dailyQuestsReady=false;
@@ -372,6 +371,6 @@ window.addEventListener('visibilitychange',()=>{if(!document.hidden)renderHeader
 setInterval(()=>{if(!document.hidden)renderHeader();},60000);
 window.addEventListener('mogumogu:connected',event=>void connect(event.detail.context));
 if(bridge&&bridge.getContext())void connect(bridge.getContext());
-else void connect(localContext(profile));
+
 render();
 })();

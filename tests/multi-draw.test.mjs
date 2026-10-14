@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {freshGame,mergeLocalProgress,localContext} from '../progress-store.js';
+import {freshGame} from '../progress-store.js';
 import {completeQuest,emptyQuests} from '../quest-core.js';
 import {grantMultiRewards,multiStatus,applyDraw} from '../multi-draw.js';
 import {BY_ID} from '../game-catalog.js';
@@ -23,14 +23,8 @@ assert.equal(applyDraw(hundred.state,Array(100).fill(BY_ID.rice_n),'multi100','2
 assert.equal(applyDraw(g,cards,'multi100','2026-01-10',at),null);
 let q=emptyQuests('jun');q.days=days(9);
 const completed=completeQuest(q,freshGame('jun'),'meal','2026-01-10',at);assert.equal(multiStatus(completed.game,10),'available');
-const bundle={id:'migration',quests:completed.quests,game:pull.state};
-const merged=mergeLocalProgress(emptyQuests('jun'),freshGame('jun'),bundle,'jun');assert.equal(multiStatus(merged.game,10),'used');assert.equal(mergeLocalProgress(merged.quests,merged.game,bundle,'jun'),null);
-const memory=new Map();globalThis.localStorage={getItem:key=>memory.get(key)||null,setItem:(key,value)=>memory.set(key,value)};globalThis.window=new EventTarget();Object.defineProperty(globalThis,'navigator',{value:{},configurable:true});
-const ctx=localContext('jun');await ctx.updateGame(()=>g);
-const simultaneous=await Promise.all([1,2].map(()=>ctx.updateGame(value=>applyDraw(value,cards,'multi10','2026-01-10',at)?.state||null)));
-assert.equal(simultaneous.filter(Boolean).length,1);assert.equal(ctx.snapshot().game.drawCount,10);
 assert.equal(BY_ID.secret_rinpa_ur.rarity,'SSR');
-console.log('PASS: 9/10/100-day thresholds, gaps, durable one-time rights, duplicate NEW in bulk, 100-card atomic inventory, retries, concurrent spending, migration and SSR downgrade');
+console.log('PASS: 9/10/100-day thresholds, gaps, durable one-time rights, duplicate NEW in bulk, 100-card atomic inventory, retries and SSR downgrade');
 
 // Login must never create a draw; existing tickets remain usable and spend once.
 assert.equal(applyDraw(freshGame('jun'),[BY_ID.rice_n],'free','2026-10-13',at),null);
@@ -49,8 +43,4 @@ assert.equal(applyDraw(dailyDraw.state,[BY_ID.rice_n],'free','2026-10-13',at,cle
 assert.equal(applyDraw(dailyDraw.state,[BY_ID.rice_n],'free','2026-10-14',at,clearedDays),null);
 assert.ok(applyDraw(dailyDraw.state,[BY_ID.rice_n],'free','2026-10-14',at,{'2026-10-14':['meal']}));
 assert.equal(applyDraw(dailyGame,cards,'free','2026-10-13',at,clearedDays),null);
-const dailyCtx=localContext('ichika');
-await dailyCtx.updateAdventure(()=>({quests:{...emptyQuests('ichika'),days:clearedDays},game:freshGame('ichika')}));
-const concurrentDaily=await Promise.all([1,2].map(()=>dailyCtx.updateAdventure((q,g)=>{const result=applyDraw(g,[BY_ID.rice_n],'free','2026-10-13',at,q.days);return result?{quests:q,game:result.state}:null;})));
-assert.equal(concurrentDaily.filter(Boolean).length,1);assert.equal(dailyCtx.snapshot().game.drawCount,1);
-console.log('PASS: quest-required daily reward, one draw per day, no carryover, wallet preserved, concurrent consumption once');
+console.log('PASS: quest-required daily reward, one draw per day, no carryover, wallet preserved');

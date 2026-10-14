@@ -1,8 +1,6 @@
-// Developer previews are local-only UI; this is not a server-side permission grant.
-export const DEVELOPER_ACCOUNT_ID='junsakata0720';
-export function canUseDevTools(profile,accountId){
-  return profile==='jun'&&accountId===DEVELOPER_ACCOUNT_ID;
-}
-export function isDevModeEnabled(profile,accountId,search){
-  return canUseDevTools(profile,accountId)&&new URLSearchParams(search).get('dev')==='1';
+// Existing development previews remain limited to the owner's login ID.
+// This gate only hides local UI; it never grants Firestore privileges.
+export function canUseDevTools(account){return !!account?.uid && account.id==='junsakata0720';}
+export function isDevModeEnabled(account,search){
+  return canUseDevTools(account)&&new URLSearchParams(search).get('dev')==='1';
 }

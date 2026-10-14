@@ -1,0 +1,51 @@
+// Local UI smoke test with a mocked cloud boundary; no production account/data access.
+import {chromium} from '@playwright/test';
+import assert from 'node:assert/strict';
+const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox']});
+try{
+  for(const [uid,id] of [['existingUid','junsakata0720'],['newUid','alice_123']]){
+    const context=await browser.newContext({viewport:{width:390,height:844},serviceWorkers:'block'}),page=await context.newPage(),errors=[];
+    page.on('pageerror',e=>errors.push(e.message));
+    await page.route('**/firebase-sync.js',route=>route.fulfill({contentType:'text/javascript',body:`
+      import {freshGame} from './progress-store.js';
+      import {emptyQuests} from './quest-core.js';
+      const uid=${JSON.stringify(uid)},id=${JSON.stringify(id)},account={user:{uid},data:{accountId:id,profile:'unusedOldValue'}};
+      let game={...freshGame(uid),coins:789,tickets:4,inventory:{rice_n:{copies:9}}},quests=emptyQuests(uid),meals=[];
+      const gameListeners=[],questListeners=[],mealListeners=[],meta={fromCache:false,hasPendingWrites:false};window.cloudWrites=[];
+      const ctx={uid,profile:uid,isAccount:true,ready:async()=>{},
+        watchGame:fn=>{gameListeners.push(fn);fn(game,meta);return ()=>{};},
+        watchQuests:fn=>{questListeners.push(fn);fn(quests,meta);return ()=>{};},
+        updateGame:async fn=>{const next=fn(game);if(next){game=next;for(const cb of gameListeners)cb(game,meta);}return next;},
+        updateAdventure:async fn=>{const next=fn(quests,game);if(next){quests=next.quests;if(next.game)game=next.game;for(const cb of gameListeners)cb(game,meta);for(const cb of questListeners)cb(quests,meta);}return next;},
+        watch:fn=>{mealListeners.push(fn);fn(meals,{fromCache:false,confirmedIds:meals.map(m=>m.id)});return ()=>{};},
+        saveMeal:async entry=>{window.cloudWrites.push(entry);meals.push(entry);for(const fn of mealListeners)fn(meals,{fromCache:false,confirmedIds:meals.map(m=>m.id)});},
+        deleteMeal:async()=>{}};
+      export async function currentAccount(){return account;}
+      export async function ensureAccount(){return account;}
+      export function personalContext(){return ctx;}
+      export async function restoreAccountGroups(){localStorage.setItem('mogumogu:groups:'+uid,'[]');}
+      export async function logoutAccount(){}
+      export async function changeAccountPassword(){}
+    `}));
+    await page.goto('http://127.0.0.1:8765/p/jun/?dev=1');
+    await page.waitForFunction(()=>window.MogumoguAccount&&!document.querySelector('main').inert);
+    assert.match(page.url(),/\/p\/app\//);
+    assert.equal(await page.locator('#accountName').textContent(),id);
+    assert.equal(await page.locator('[data-dev-entry]').evaluateAll(items=>items.every(item=>!item.hidden)),id==='junsakata0720');
+    await page.locator('.settings-button').click();
+    assert.equal(await page.locator('#devPanel').isVisible(),id==='junsakata0720');
+    await page.locator('.game-nav [data-target="home"]').click();
+    await page.locator('.home-meal [data-target="timer"]').click();
+    await page.locator('#manualMeal').selectOption('snack');
+    await page.locator('#manualTime').fill('00:00');
+    await page.locator('#manualFoodNote').fill('りんご');
+    await page.locator('#manualSubmit').click();
+    await page.waitForFunction(()=>window.cloudWrites.length===1);
+    const entry=await page.evaluate(()=>window.cloudWrites[0]);assert.equal(entry.profile,uid);assert.equal(entry.foodNote,'りんご');
+    assert.deepEqual(errors,[]);
+    await context.close();
+  }
+  const page=await browser.newPage();await page.route('**/firebase-sync.js',route=>route.fulfill({contentType:'text/javascript',body:'export async function currentAccount(){return null;} export async function ensureAccount(){} export async function loginAccount(){} export async function registerAccount(){}'}));
+  await page.goto('http://127.0.0.1:8765/account.html');await page.locator('#accountSwitch').click();assert.equal(await page.locator('#accountConfirm').isVisible(),true);assert.equal(await page.locator('#legacyProfile,#accountImport').count(),0);
+  console.log('PASS: common mobile page, old URL redirect, two UID-specific accounts and meals, no profile selection');
+}finally{await browser.close();}

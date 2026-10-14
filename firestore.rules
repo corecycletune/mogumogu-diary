@@ -1,15 +1,23 @@
 rules_version = '2';
+// users/{uid}: accountId (immutable string 3..24), createdAt (timestamp).
+// progress/game, progress/quests, meals: existing bounded schemas; profile = UID.
+// families/{fid}: createdBy UID, createdAt timestamp; members keyed by UID.
+// messages: senderUid, senderId, text, cardId, createdAt; append-only.
+// UID-era documents remain readable; old shared progress is denied, not deleted.
 service cloud.firestore {
   match /databases/{database}/documents {
-    function signedIn() {
-      return request.auth != null;
+    function signedIn() { return request.auth != null; }
+    function accountOwner(uid) {
+      return signedIn() && request.auth.uid == uid &&
+        request.auth.token.email is string &&
+        request.auth.token.email.matches('^[a-z0-9_]{3,24}@id[.]mogumogu[.]invalid$');
+    }
+    function hasAccount(uid) {
+      return accountOwner(uid) && exists(/databases/$(database)/documents/users/$(uid));
     }
     function isMember(fid) {
-      return signedIn() &&
+      return hasAccount(request.auth.uid) &&
         exists(/databases/$(database)/documents/families/$(fid)/members/$(request.auth.uid));
-    }
-    function myProfile(fid) {
-      return get(/databases/$(database)/documents/families/$(fid)/members/$(request.auth.uid)).data.profile;
     }
     function validMeal(mealId) {
       return request.resource.data.keys().hasAll([
@@ -23,7 +31,7 @@ service cloud.firestore {
       request.resource.data.id == mealId &&
       request.resource.data.id is string &&
       request.resource.data.id.size() <= 100 &&
-      request.resource.data.profile in ['ichika', 'jun', 'sato'] &&
+      request.resource.data.profile == request.auth.uid &&
       request.resource.data.date is string &&
       request.resource.data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$') &&
       request.resource.data.mealType in ['breakfast', 'lunch', 'dinner', 'snack'] &&
@@ -44,8 +52,7 @@ service cloud.firestore {
     }
 
 
-    // Family prototype: existing per-profile game balances remain client-driven.
-    // adventures/{profile}: bounded habit definitions, daily completions and reward ledger.
+    // The legacy wire field `profile` now contains the UID.
     function validAdventure(gameProfile) {
       let d=request.resource.data;
       return d.keys().hasAll(['profile','version','tasks','days','rewards','updatedAt']) &&
@@ -85,153 +92,87 @@ service cloud.firestore {
           request.resource.data.streakRewardKeys is list && request.resource.data.streakRewardKeys.size() <= 5000 &&
           request.resource.data.updatedAt is string && request.resource.data.updatedAt.size() <= 40;
     }
-    // users/{uid} is private account metadata. progress/game and progress/quests
-    // preserve the existing game schema; imports are an insert-only retry ledger.
-    function accountOwner(uid) {
-      return signedIn() && request.auth.uid == uid &&
-        request.auth.token.email is string &&
-        request.auth.token.email.matches('^[a-z0-9_]{3,24}@id[.]mogumogu[.]invalid$');
+
+    function validAccount() {
+      let d=request.resource.data;
+      return d.keys().hasAll(['accountId','createdAt']) && d.keys().hasOnly(['accountId','createdAt']) &&
+        d.accountId is string && d.accountId.matches('^[a-z0-9_]{3,24}$') &&
+        request.auth.token.email == d.accountId + '@id.mogumogu.invalid' && d.createdAt == request.time;
     }
-    function accountProfile(uid) {
-      return get(/databases/$(database)/documents/users/$(uid)).data.profile;
-    }
-    function hasAccount(uid) {
-      return accountOwner(uid) && exists(/databases/$(database)/documents/users/$(uid));
+    function validGroup(fid) {
+      let d=request.resource.data;
+      return fid.matches('^[A-Za-z0-9_-]{24}$') && isMember(fid) &&
+        d.keys().hasAll(['name']) && d.keys().hasOnly(['name']) &&
+        d.name is string && d.name.size() > 0 && d.name.size() <= 30;
     }
     match /users/{uid} {
       allow get: if accountOwner(uid);
+      allow create: if accountOwner(uid) && validAccount();
       allow list, update, delete: if false;
-      allow create: if accountOwner(uid) &&
-        request.resource.data.keys().hasAll(['profile','accountId','createdAt']) &&
-        request.resource.data.keys().hasOnly(['profile','accountId','createdAt']) &&
-        request.resource.data.profile in ['jun','ichika','sato'] &&
-        request.resource.data.accountId is string &&
-        request.resource.data.accountId.matches('^[a-z0-9_]{3,24}$') &&
-        request.auth.token.email == request.resource.data.accountId + '@id.mogumogu.invalid' &&
-        request.resource.data.createdAt == request.time;
       match /progress/{name} {
         allow get: if hasAccount(uid) && name in ['game','quests'];
-        allow list, delete: if false;
         allow create, update: if hasAccount(uid) &&
-          ((name == 'game' && validGame(accountProfile(uid))) ||
-           (name == 'quests' && validAdventure(accountProfile(uid))));
+          ((name == 'game' && validGame(uid)) || (name == 'quests' && validAdventure(uid)));
+        allow list, delete: if false;
       }
       match /meals/{mealId} {
-        allow get, list: if hasAccount(uid);
-        allow create: if hasAccount(uid) && validMeal(mealId) &&
-          request.resource.data.profile == accountProfile(uid);
+        allow get, list, delete: if hasAccount(uid);
+        allow create: if hasAccount(uid) && validMeal(mealId);
+        // UID-scoped legacy records may be normalized; creation time stays fixed.
         allow update: if hasAccount(uid) && validMeal(mealId) &&
-          request.resource.data.profile == accountProfile(uid) &&
-          request.resource.data.profile == resource.data.profile &&
           request.resource.data.createdAt == resource.data.createdAt;
-        allow delete: if hasAccount(uid);
       }
       match /groups/{fid} {
         allow get, list: if hasAccount(uid);
-        allow create, update: if hasAccount(uid) &&
-          fid.matches('^[A-Za-z0-9_-]{24}$') && isMember(fid) &&
-          request.resource.data.keys().hasAll(['name']) &&
-          request.resource.data.keys().hasOnly(['name']) &&
-          request.resource.data.name is string && request.resource.data.name.size() > 0 &&
-          request.resource.data.name.size() <= 30;
+        allow create, update: if hasAccount(uid) && validGroup(fid);
         allow delete: if false;
       }
-      match /imports/{sourceId} {
-        allow get: if hasAccount(uid);
-        allow create: if hasAccount(uid) && sourceId.size() <= 100 &&
-          request.resource.data.keys().hasAll(['completedAt']) &&
-          request.resource.data.keys().hasOnly(['completedAt']) &&
-          request.resource.data.completedAt == request.time;
-        allow list, update, delete: if false;
-      }
     }
-    function validMessage(fid) {
+    function validMessage() {
       let d=request.resource.data;
-      return d.keys().hasAll(['sender','text','cardId','createdAt']) &&
-        d.keys().hasOnly(['sender','text','cardId','createdAt','senderUid','senderId']) &&
-        d.sender == myProfile(fid) && d.text is string &&
-        d.text.size() > 0 && d.text.size() <= 500 &&
-        (hasAccount(request.auth.uid) ?
-          ('senderUid' in d && 'senderId' in d && d.senderUid == request.auth.uid &&
-           d.senderId == accountProfileId(request.auth.uid)) :
-          !('senderUid' in d) && !('senderId' in d)) &&
-        d.cardId is string && d.cardId.size() <= 100 &&
-        d.createdAt == request.time &&
+      return d.keys().hasAll(['senderUid','senderId','text','cardId','createdAt']) &&
+        d.keys().hasOnly(['senderUid','senderId','text','cardId','createdAt']) &&
+        d.senderUid == request.auth.uid &&
+        d.senderId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.accountId &&
+        d.text is string && d.text.size() > 0 && d.text.size() <= 500 &&
+        d.cardId is string && d.cardId.size() <= 100 && d.createdAt == request.time &&
         (d.cardId == '' ||
-          (exists(/databases/$(database)/documents/families/$(fid)/games/$(d.sender)) &&
-           d.cardId in get(/databases/$(database)/documents/families/$(fid)/games/$(d.sender)).data.inventory &&
-           get(/databases/$(database)/documents/families/$(fid)/games/$(d.sender)).data.inventory[d.cardId].copies > 0) ||
-          (hasAccount(request.auth.uid) &&
-           exists(/databases/$(database)/documents/users/$(request.auth.uid)/progress/game) &&
+          (exists(/databases/$(database)/documents/users/$(request.auth.uid)/progress/game) &&
            d.cardId in get(/databases/$(database)/documents/users/$(request.auth.uid)/progress/game).data.inventory &&
            get(/databases/$(database)/documents/users/$(request.auth.uid)/progress/game).data.inventory[d.cardId].copies > 0));
     }
-    function accountProfileId(uid) {
-      return get(/databases/$(database)/documents/users/$(uid)).data.accountId;
-    }
     function validReaction(fid,messageId) {
       return !messageId.matches('^_like_.*') ||
-        (request.resource.data.text == '__mogumogu_like_v1__' &&
-         request.resource.data.cardId == '' &&
-         (hasAccount(request.auth.uid) ?
-           messageId.matches('^_like_[A-Za-z0-9]{20}_'+request.auth.uid+'$') :
-           messageId.matches('^_like_[A-Za-z0-9]{20}_'+myProfile(fid)+'$')));
+        (messageId.matches('^_like_[A-Za-z0-9]{20}_'+request.auth.uid+'$') &&
+         request.resource.data.text == '__mogumogu_like_v1__' && request.resource.data.cardId == '' &&
+         exists(/databases/$(database)/documents/families/$(fid)/messages/$(messageId.split('_')[2])));
     }
-
+    function validFamily(fid) {
+      let d=request.resource.data;
+      return fid.matches('^[A-Za-z0-9_-]{24}$') &&
+        d.keys().hasAll(['createdBy','createdAt']) && d.keys().hasOnly(['createdBy','createdAt']) &&
+        d.createdBy == request.auth.uid && d.createdAt == request.time;
+    }
+    function validMember(uid) {
+      let d=request.resource.data;
+      return d.keys().hasAll(['uid','joinedAt']) && d.keys().hasOnly(['uid','joinedAt']) &&
+        d.uid == uid && d.joinedAt == request.time;
+    }
     match /families/{fid} {
-      // A group ID is 144-bit cryptographic randomness and must stay private.
-      allow create: if signedIn() &&
-        fid.matches('^[A-Za-z0-9_-]{24}$') &&
-        request.resource.data.keys().hasOnly(['createdBy', 'createdAt']) &&
-        request.resource.data.createdBy == request.auth.uid &&
-        request.resource.data.createdAt == request.time;
+      allow create: if hasAccount(request.auth.uid) && validFamily(fid);
       allow get: if isMember(fid);
       allow list, update, delete: if false;
-
       match /members/{uid} {
-        // Only the user's own device identity may be enrolled. Knowing the
-        // unguessable group ID constitutes an invitation. Share privately.
-        allow create: if signedIn() && uid == request.auth.uid &&
-          exists(/databases/$(database)/documents/families/$(fid)) &&
-          request.resource.data.keys().hasOnly(['profile','joinedAt']) &&
-          request.resource.data.profile in ['ichika','jun','sato'] &&
-          request.resource.data.joinedAt == request.time;
-        allow get: if signedIn() && uid == request.auth.uid;
+        allow get: if hasAccount(uid);
+        allow create: if hasAccount(uid) && validMember(uid) &&
+          exists(/databases/$(database)/documents/families/$(fid));
         allow list, update, delete: if false;
-      }
-
-      match /games/{gameProfile} {
-        // This is a family prototype: restrict ownership and document shape,
-        // but client-driven RNG and balances are not anti-cheat protected.
-        // Production anti-tamper requires a trusted backend function.
-        allow get: if isMember(fid) && gameProfile == myProfile(fid);
-        allow list, delete: if false;
-        allow create, update: if isMember(fid) &&
-          gameProfile == myProfile(fid) &&
-validGame(gameProfile);
-      }
-
-      match /adventures/{gameProfile} {
-        allow get: if isMember(fid) && gameProfile == myProfile(fid);
-        allow list, delete: if false;
-        allow create, update: if isMember(fid) && gameProfile == myProfile(fid) && validAdventure(gameProfile);
       }
       match /messages/{messageId} {
         allow get: if isMember(fid);
         allow list: if isMember(fid) && request.query.limit != null && request.query.limit <= 100;
-        allow create: if isMember(fid) && validMessage(fid) && validReaction(fid,messageId);
+        allow create: if isMember(fid) && validMessage() && validReaction(fid,messageId);
         allow update, delete: if false;
-      }
-      match /meals/{mealId} {
-        // Family members may read all entries for cooperative missions.
-        allow get, list: if isMember(fid);
-        // Only the matching profile's registered device may edit its entries.
-        allow create: if isMember(fid) && validMeal(mealId) &&
-          request.resource.data.profile == myProfile(fid);
-        allow update: if isMember(fid) && validMeal(mealId) &&
-          resource.data.profile == myProfile(fid) &&
-          request.resource.data.profile == resource.data.profile;
-        allow delete: if isMember(fid) && resource.data.profile == myProfile(fid);
       }
     }
   }
