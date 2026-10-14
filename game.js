@@ -229,7 +229,6 @@ function renderHome(){
   if(!preview.length){const empty=document.createElement('p');empty.className='card-empty';empty.textContent='？　はじめての仲間に会いにいこう';target.append(empty);}
 }
 function renderHeader(){
-  el('coins').textContent=ready?String(state.coins):'—';
   el('gameCoinCount').textContent=ready?String(state.coins):'—';
   el('gameTickets').textContent=ready?String(state.tickets):'—';
   el('gamePullCount').textContent=ready?String(state.drawCount):'—';
@@ -280,14 +279,15 @@ function showLatestDraw(){
 }
 async function preview(){
   celebrating=true;playSound('start');
+  const machine=el('gachaMachine');machine.className='gacha-machine is-rolling';
   const target=el('gameResult');resultKey='';releaseCards(target);target.replaceChildren();
-  const pack=document.createElement('div');pack.className='gacha-pack';pack.setAttribute('aria-label','パックを開いています');
-  const symbol=document.createElement('span');symbol.className='gacha-pack-symbol';symbol.textContent='✦';pack.append(symbol);
-  const hint=document.createElement('p');hint.textContent='どんな仲間に会えるかな…';target.append(pack,hint);
-  target.scrollIntoView({behavior:'smooth',block:'center'});if(!matchMedia('(prefers-reduced-motion: reduce)').matches)await delay(850);
+  const hint=document.createElement('p');hint.className='gacha-preview-status';hint.setAttribute('role','status');hint.textContent='仲間を探しています…';target.append(hint);
+  machine.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'center'});
+  if(!matchMedia('(prefers-reduced-motion: reduce)').matches){await delay(650);playSound('confirm');await delay(650);}
 }
 async function reveal(results){
   const rank=Math.max(...results.map(r=>rarityRank.indexOf(BY_ID[r.id].rarity))),rarity=rarityRank[rank];
+  el('gachaMachine').className='gacha-machine is-revealed rarity-'+rarity.toLowerCase();
   el('gameResult').className='gacha-result result-'+rarity.toLowerCase();
   if(rarity==='UR'&&!matchMedia('(prefers-reduced-motion: reduce)').matches)await delay(400);
   celebrating=false;latestResults=results;latestDraw=results[0];showLatestDraw();
@@ -344,7 +344,7 @@ async function pull(mode){
     if(!saved){message('今日のクエスト達成と、ごほうび・コイン・券の残りを確認してください。');return;}
     state=saved;await reveal(chosen);displayed=true;renderHeader();renderCollection();
   }catch(e){gameError(e);}
-  finally{celebrating=false;setBusy(false);if(!displayed)showLatestDraw();}
+  finally{celebrating=false;el('gachaMachine').classList.remove('is-rolling');setBusy(false);if(!displayed)showLatestDraw();}
 }
 if(devAvailable){
   const toggle=el('devModeToggle');

@@ -121,14 +121,6 @@ function renderMetrics(){
   el('todayCount').textContent=String(todayMeals.length);
   el('todayMinutes').textContent=String(Math.round(todayMeals.reduce(function(sum,r){return sum+r.durationSec;},0)/60));
   var dates=dailyDates();el('streak').textContent=String(numStreak(dates));
-  el('markedDays').textContent=String(dates.size);
-  var logins=readJSON(bonusKey,[]);
-  if(!Array.isArray(logins))logins=[];
-  el('bonusDays').textContent=String(logins.length);
-  var grouped={};
-  mealOnly().forEach(function(m){grouped[m.date]=(grouped[m.date]||0)+1;});
-  var coins=logins.length*10+Object.keys(grouped).reduce(function(s,k){return s+(grouped[k]>=1?20:0)+(grouped[k]>=2?10:0)+(grouped[k]>=3?10:0);},0);
-  if(!window.mogumoguGameManaged)el('coins').textContent=String(coins);
 }
 function renderCalendar(){
   var y=month.getFullYear(),m=month.getMonth();

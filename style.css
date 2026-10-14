@@ -760,11 +760,6 @@ button.collection-card{font:inherit;text-align:left;color:inherit;width:100%;cur
 .sound-controls .btn{min-height:44px}
 .multi-draw-actions{margin-top:12px}
 .reward-available{background:#fff0ba!important;border-color:#c19036!important;box-shadow:0 0 12px #e5bd6180}
-.gacha-pack{width:110px;height:145px;border:3px double #c4a768;border-radius:12px;margin:25px auto 15px;display:grid;place-items:center;font-size:42px;color:#b58b38;background:linear-gradient(150deg,#fff8df,#e7ecd8);animation:pack-ready .65s ease-in-out}
-.gacha-pack{position:relative;isolation:isolate;box-shadow:0 12px 28px #815e3433, inset 0 0 0 6px #fff8e5;animation:pack-ready .85s ease-in-out}
-.gacha-pack::before{content:'';position:absolute;z-index:2;top:-3px;left:-3px;right:-3px;height:29px;border:3px double #c4a768;border-radius:12px 12px 3px 3px;background:linear-gradient(120deg,#fff9dd,#ead3a0,#fff9dd);transform-origin:top center;animation:pack-peel .85s ease-in forwards}
-.gacha-pack::after{content:'✦  ·  ✧';position:absolute;inset:-24px;z-index:-1;display:grid;place-items:center;color:#dfbc6b;letter-spacing:24px;text-shadow:0 0 12px #fff;animation:pack-sparks .85s ease-out}
-.gacha-pack-symbol{animation:pack-symbol .85s ease-out}
 .gacha-result{text-align:center}
 .gacha-result .draw-result{animation:game-pop .4s ease-out}
 .result-r .draw-result{animation:reward-glow .6s ease-out}
@@ -777,17 +772,13 @@ button.collection-card{font:inherit;text-align:left;color:inherit;width:100%;cur
 .first-discovery .new-badge{animation:new-arrival .85s ease-out}
 .message-like{min-height:44px;padding:6px 12px;border:1px solid #b5c6af;border-radius:20px;background:#fff9ed;color:#50684d;cursor:pointer}
 .message-like[aria-pressed="true"]{color:#9c443a;background:#ffe9de;border-color:#d5a28f}
-@keyframes pack-ready{0%{transform:translateY(8px) rotate(-3deg)}50%{transform:translateY(-8px) rotate(3deg)}100%{transform:none}}
-@keyframes pack-peel{0%,42%{transform:rotateX(0)}100%{transform:rotateX(75deg) translateY(-16px);opacity:.2}}
-@keyframes pack-sparks{0%,45%{opacity:0;transform:scale(.5)}75%{opacity:1}100%{opacity:0;transform:scale(1.25)}}
-@keyframes pack-symbol{0%,40%{transform:scale(.75)}78%{transform:scale(1.45);color:#ffd87d}100%{transform:none}}
 @keyframes reward-glow{0%{filter:brightness(1.35);transform:scale(.95)}100%{filter:none;transform:none}}
 @keyframes gold-reveal{0%{filter:brightness(1.6) drop-shadow(0 0 20px #f4ce70);transform:scale(.92)}100%{filter:none;transform:none}}
 @keyframes cosmic-reveal{0%{opacity:0;transform:translateY(15px) scale(.96)}100%{opacity:1;transform:none}}
 @keyframes new-arrival{0%{transform:scale(.5) rotate(-12deg)}60%{transform:scale(1.15)}100%{transform:none}}
 @media(min-width:700px){.multi-result-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(max-width:480px){h1{font-size:clamp(17px,4.8vw,23px)}.multi-draw-actions{grid-template-columns:1fr}.card-details{width:calc(100% - 18px);max-height:92dvh}.card-detail-back{padding:10px}.card-detail-front{max-width:calc((100dvh - 145px)*.8)}.card-back-hero{padding:12px}.card-back-hero h2{font-size:20px}}
-@media(prefers-reduced-motion:reduce){.gacha-pack,.gacha-pack::before,.gacha-pack::after,.gacha-pack-symbol,.gacha-result .draw-result,.first-discovery .new-badge{animation:none!important}.card-details *{scroll-behavior:auto}}
+@media(prefers-reduced-motion:reduce){.gacha-result .draw-result,.first-discovery .new-badge{animation:none!important}.card-details *{scroll-behavior:auto}}
 .topbar>div{min-width:0}.topbar .settings-button{flex-shrink:0}
 .gacha-result .reveal-n{animation:game-pop .25s ease-out}
 .gacha-result .reveal-r{animation:reward-glow .6s ease-out}
@@ -802,3 +793,29 @@ button.collection-card{font:inherit;text-align:left;color:inherit;width:100%;cur
 #collectionGrid .card-art:not(.card-in-view) .composite-glint,
 #gameResult .card-art:not(.card-in-view) .composite-foil,
 #gameResult .card-art:not(.card-in-view) .composite-glint{animation-play-state:paused!important}
+
+/* The machine is presentation only. Rewards are committed by the existing transaction. */
+.gacha-machine{position:relative;width:min(240px,72vw);height:185px;margin:10px auto 18px;isolation:isolate;filter:drop-shadow(0 9px 8px #68452342)}
+.machine-stars{position:absolute;inset:5px -15px auto;color:#e9bf62;text-align:center;letter-spacing:12px;opacity:.6;pointer-events:none}
+.machine-window{position:absolute;inset:9px 36px 31px;overflow:hidden;border:8px solid #dcae62;border-radius:90px 90px 30px 30px;background:radial-gradient(circle at 50% 24%,#fffef3,#d8f1de 65%,#9bc2ad);box-shadow:inset 0 0 0 4px #fff2d3,inset 0 -15px 18px #8ca57b66,0 0 0 3px #986638;display:grid;place-items:center}
+.machine-capsule{position:relative;z-index:1;font-size:68px;line-height:1;filter:drop-shadow(0 5px 2px #5d553944)}
+.machine-glow{position:absolute;inset:0;background:radial-gradient(circle at center,#fff5afc0,transparent 65%);opacity:0}
+.machine-base{position:absolute;inset:auto 15px 0;height:43px;border:3px solid #986638;border-radius:13px;background:linear-gradient(#f7d28e,#d59b5d);display:flex;align-items:center;justify-content:center;gap:9px;color:#653e20;box-shadow:inset 0 4px #fff4d7}
+.machine-dial{width:33px;height:33px;display:grid;place-items:center;border-radius:50%;border:3px solid #fff1ca;background:#dc725c;font-size:18px;color:#fff}
+.machine-label{font-size:12px;font-weight:800;white-space:nowrap}
+.gacha-machine.is-rolling .machine-dial{animation:machine-turn .7s ease-in-out both}
+.gacha-machine.is-rolling .machine-capsule{animation:machine-bounce 1.3s ease-in-out both}
+.gacha-machine.is-rolling .machine-glow{animation:machine-charge 1.3s ease-in-out both}
+.gacha-machine.is-rolling .machine-stars{animation:machine-stars 1.3s ease-in-out both}
+.gacha-machine.is-revealed{--reveal-color:#f6d16b;--reveal-strength:14px}
+.gacha-machine.is-revealed.rarity-r{--reveal-color:#b7dfba;--reveal-strength:17px}
+.gacha-machine.is-revealed.rarity-sr{--reveal-color:#8acded;--reveal-strength:20px}
+.gacha-machine.is-revealed.rarity-ssr{--reveal-color:#f3ba58;--reveal-strength:27px}
+.gacha-machine.is-revealed.rarity-ur{--reveal-color:#bc9fff;--reveal-strength:36px}
+.gacha-machine.is-revealed .machine-window{box-shadow:inset 0 0 0 4px #fff2d3,0 0 var(--reveal-strength) var(--reveal-color),0 0 0 3px #986638}
+.gacha-machine.is-revealed.rarity-ssr .machine-stars,.gacha-machine.is-revealed.rarity-ur .machine-stars{color:var(--reveal-color);opacity:1;text-shadow:0 0 12px var(--reveal-color)}
+@keyframes machine-turn{to{transform:rotate(360deg)}}
+@keyframes machine-bounce{0%{transform:translateY(0) scale(1)}25%,55%{transform:translateY(-9px) scale(1.08)}42%,75%{transform:translateY(5px) scale(.95)}100%{transform:translateY(15px) scale(.7);opacity:.3}}
+@keyframes machine-charge{0%,20%{opacity:0}65%{opacity:.55}100%{opacity:1}}
+@keyframes machine-stars{0%{opacity:.4;transform:scale(.8)}65%{opacity:1;transform:scale(1.2)}100%{opacity:.5}}
+@media(prefers-reduced-motion:reduce){.gacha-machine *{animation:none!important}.gacha-machine.is-rolling .machine-capsule{opacity:1;transform:none}}
