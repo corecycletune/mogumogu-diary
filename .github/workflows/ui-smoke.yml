@@ -1,0 +1,31 @@
+name: UI smoke
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund @playwright/test@1.64.0
+      - run: npx playwright install --with-deps chromium
+      - name: Run browser smoke against a local app and mocked Firebase boundary
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 &
+          node tests/ui-smoke.mjs
