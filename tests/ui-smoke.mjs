@@ -10,13 +10,13 @@ try{
       import {freshGame} from './progress-store.js';
       import {emptyQuests} from './quest-core.js';
       const uid=${JSON.stringify(uid)},id=${JSON.stringify(id)},account={user:{uid},data:{accountId:id,profile:'unusedOldValue'}};
-      let game={...freshGame(uid),coins:789,tickets:4,inventory:{rice_n:{copies:9}}},quests=emptyQuests(uid),meals=[];
+      let game={...freshGame(uid),coins:789,tickets:4,inventory:{rice_n:{copies:9}}},quests=emptyQuests(uid),meals=[];window.testQuests=quests;
       const gameListeners=[],questListeners=[],mealListeners=[],meta={fromCache:false,hasPendingWrites:false};window.cloudWrites=[];
       const ctx={uid,profile:uid,isAccount:true,ready:async()=>{},
         watchGame:fn=>{gameListeners.push(fn);fn(game,meta);return ()=>{};},
         watchQuests:fn=>{questListeners.push(fn);fn(quests,meta);return ()=>{};},
         updateGame:async fn=>{const next=fn(game);if(next){game=next;for(const cb of gameListeners)cb(game,meta);}return next;},
-        updateAdventure:async fn=>{const next=fn(quests,game);if(next){quests=next.quests;if(next.game)game=next.game;for(const cb of gameListeners)cb(game,meta);for(const cb of questListeners)cb(quests,meta);}return next;},
+        updateAdventure:async fn=>{const next=fn(quests,game);if(next){quests=next.quests;window.testQuests=quests;if(next.game)game=next.game;for(const cb of gameListeners)cb(game,meta);for(const cb of questListeners)cb(quests,meta);}return next;},
         watch:fn=>{mealListeners.push(fn);fn(meals,{fromCache:false,confirmedIds:meals.map(m=>m.id)});return ()=>{};},
         saveMeal:async entry=>{window.cloudWrites.push(entry);meals.push(entry);for(const fn of mealListeners)fn(meals,{fromCache:false,confirmedIds:meals.map(m=>m.id)});},
         deleteMeal:async()=>{}};
@@ -34,6 +34,20 @@ try{
     assert.equal(await page.locator('[data-dev-entry]').evaluateAll(items=>items.every(item=>!item.hidden)),id==='junsakata0720');
     await page.locator('.settings-button').click();
     assert.equal(await page.locator('#devPanel').isVisible(),id==='junsakata0720');
+    if(id==='junsakata0720'){
+      await page.locator('#prismTrialArt').selectOption('v2');
+      await page.waitForFunction(()=>document.querySelector('#ssrPrismTrial .card-full-art')?.naturalWidth>0);
+      assert.match(await page.locator('#ssrPrismTrial .card-full-art').getAttribute('src'),/_v2\.webp$/);
+      assert.match(await page.locator('#ssrPrismTrial .card-ssr-gold').getAttribute('src'),/ssr-gold-trim\.svg$/);
+    }
+    assert.equal(await page.locator('#soundToggle').getAttribute('aria-pressed'),'true');
+    await page.locator('#soundVolume').fill('25');
+    await page.locator('#bgmToggle').click();
+    await page.reload();await page.waitForFunction(()=>window.MogumoguAccount&&!document.querySelector('main').inert);
+    await page.locator('.settings-button').click();
+    assert.equal(await page.locator('#soundVolume').inputValue(),'25');
+    assert.equal(await page.locator('#bgmToggle').getAttribute('aria-pressed'),'true');
+    await page.locator('#bgmToggle').click();
     await page.locator('.game-nav [data-target="home"]').click();
     await page.locator('.home-meal [data-target="timer"]').click();
     await page.locator('#manualMeal').selectOption('snack');
@@ -42,6 +56,33 @@ try{
     await page.locator('#manualSubmit').click();
     await page.waitForFunction(()=>window.cloudWrites.length===1);
     const entry=await page.evaluate(()=>window.cloudWrites[0]);assert.equal(entry.profile,uid);assert.equal(entry.foodNote,'りんご');
+    await page.locator('.game-nav [data-target="home"]').click();
+    await page.locator('.habit-manager > summary').click();
+    await page.locator('#questName').fill('体重を測る');
+    await page.locator('#questExtraEnabled').check();
+    await page.locator('#questExtraLabel').fill('体重');
+    await page.locator('#questAdd').click();
+    const habit=page.locator('#questList .quest-row').filter({hasText:'体重を測る'});
+    await habit.getByRole('button',{name:'できた！'}).click();
+    await page.locator('#questConfirm input').fill('52.5kg');
+    await page.locator('#questConfirm').getByRole('button',{name:'完了する'}).click();
+    await page.waitForFunction(()=>Object.values(window.testQuests.values||{}).includes('52.5kg'));
+    await page.locator('.game-nav [data-target="calendar"]').click();
+    const day=await page.evaluate(()=>Object.keys(window.testQuests.days)[0]);
+    await page.locator('#calendarGrid [data-day="'+day+'"]').click();
+    assert.match(await page.locator('#stampDetails').textContent(),/体重.*52\.5kg/);
+    await page.locator('#stampDetails').getByRole('button',{name:'閉じる'}).click();
+    await page.locator('.game-nav [data-target="home"]').click();
+    page.once('dialog',dialog=>dialog.accept());
+    await habit.getByRole('button',{name:'削除する'}).click();
+    await page.waitForFunction(()=>Object.keys(window.testQuests.tasks).length===0);
+    assert.equal(await page.evaluate(()=>Object.values(window.testQuests.days).flat().length)>0,true);
+    for(const width of [320,768]){
+      await page.setViewportSize({width,height:844});
+      await page.locator('.game-nav [data-target="menu"]').click();
+      await page.locator('[data-panel="menu"] [data-target="family"]').click();
+      assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+    }
     assert.deepEqual(errors,[]);
     await context.close();
   }

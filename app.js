@@ -28,7 +28,7 @@ var lastSavedId=null;
 var personalMealChain=Promise.resolve();
 function cloudStatus(message){if(el('personalSaveStatus'))el('personalSaveStatus').textContent=message;}
 function el(id){return document.getElementById(id);}
-function localDate(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function localDate(d){var parts=Object.fromEntries(new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(d).map(function(p){return [p.type,p.value];}));return parts.year+'-'+parts.month+'-'+parts.day;}
 function localClock(d){return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
 function validMealTime(value){return typeof value==='string'&&/^([01][0-9]|2[0-3]):[0-5][0-9]$/.test(value);}
 function mealDetails(note,time){return {foodNote:note.trim().slice(0,200),mealTime:time};}
@@ -144,7 +144,7 @@ function renderCalendar(){
     var iso=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
     var stamped=dates.has(iso);
     var stamp=stamped&&window.MogumoguStampForDay?window.MogumoguStampForDay(stampDays,iso):null;
-    html+='<div class="day'+(stamped?' marked stamp-'+(stamp?stamp.type:'ordinary'):'')+'" aria-label="'+iso+(stamped?' '+(stamp?stamp.label:'今日できた'):'')+'">'+d+(stamped?'<span class="stamp-symbol" aria-hidden="true">'+(window.MogumoguStampArt?window.MogumoguStampArt(stamp?stamp.type:'ordinary'):(stamp?stamp.symbol:'●'))+'</span>':'')+'</div>';
+    html+='<button type="button" data-day="'+iso+'" class="day'+(stamped?' marked stamp-'+(stamp?stamp.type:'ordinary'):'')+'" aria-label="'+iso+(stamped?' '+(stamp?stamp.label:'今日できた'):'')+'">'+d+(stamped?'<span class="stamp-symbol" aria-hidden="true">'+(window.MogumoguStampArt?window.MogumoguStampArt(stamp?stamp.type:'ordinary'):(stamp?stamp.symbol:'●'))+'</span>':'')+'</button>';
   }
   el('calendarGrid').innerHTML=html;
   el('nextMonth').disabled=(y>=new Date().getFullYear()&&m>=new Date().getMonth());
@@ -221,7 +221,23 @@ function changePanel(name){
   window.dispatchEvent(new CustomEvent('mogumogu:panel',{detail:{name:name}}));
   window.scrollTo({top:0,behavior:'auto'});
 }
-window.addEventListener('mogumogu:quest',function(event){window.mogumoguQuestDays=event.detail.days||{};renderCalendar();});
+window.addEventListener('mogumogu:quest',function(event){window.mogumoguQuestDays=event.detail.days||{};window.mogumoguQuestTasks=event.detail.tasks||{};window.mogumoguDeletedTasks=event.detail.deletedTasks||{};window.mogumoguQuestValues=event.detail.values||{};renderCalendar();});
+el('calendarGrid').addEventListener('click',function(event){
+  var day=event.target.closest('[data-day]')?.dataset.day;if(!day)return;
+  var details=el('stampDetails'),list=el('stampDetailsList');
+  el('stampDetailsTitle').textContent=day+'の記録';list.replaceChildren();
+  (window.mogumoguQuestDays?.[day]||[]).forEach(function(id){
+    var item=document.createElement('li'),task=window.mogumoguQuestTasks?.[id]||window.mogumoguDeletedTasks?.[id];
+    item.textContent=id==='meal'?'ごはんを記録':(task?.name||'過去の習慣');
+    var value=window.mogumoguQuestValues?.[day+':'+id];if(value){var extra=document.createElement('span');extra.textContent=' · '+(task?.fieldLabel||'記録')+'：'+value;item.append(extra);}
+    list.append(item);
+  });
+  allMeals.filter(function(m){return m.date===day;}).forEach(function(m){
+    var item=document.createElement('li');item.textContent=mealLabels[m.mealType]+(m.foodNote?' · '+m.foodNote:'');list.append(item);
+  });
+  if(!list.children.length){var item=document.createElement('li');item.textContent='記録はありません。';list.append(item);}
+  details.showModal();
+});
 async function init(){
   el('timerMeal').value='dinner';
   el('manualMeal').value='dinner';

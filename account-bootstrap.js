@@ -5,7 +5,10 @@ const main=document.querySelector('main');main.inert=true;
 const status=document.createElement('p');status.className='account-loading';status.setAttribute('role','status');status.textContent='記録を読み込んでいます…';document.body.prepend(status);
 async function start(){
   let account=await currentAccount();
-  if(!account){location.replace('../../account.html');return;}
+  if(!account){
+    const invite=new URLSearchParams(location.search).get('invite');
+    location.replace('../../account.html'+(invite&&/^[A-Za-z0-9_-]{24}$/.test(invite)?'?invite='+encodeURIComponent(invite):''));return;
+  }
   if(!account.data)account=await ensureAccount();
   const identity={id:account.data.accountId,uid:account.user.uid};
   const ctx=personalContext(account);

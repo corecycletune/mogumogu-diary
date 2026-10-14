@@ -13,7 +13,10 @@ function render(){
   el('accountRecovery').hidden=!registering;
   el('accountSubmit').disabled=el('accountSwitch').disabled=busy;
 }
-function enter(account){location.replace('./p/app/');}
+function enter(account){
+  const invite=new URLSearchParams(location.search).get('invite');
+  location.replace('./p/app/'+(invite&&/^[A-Za-z0-9_-]{24}$/.test(invite)?'?invite='+encodeURIComponent(invite):''));
+}
 el('accountSwitch').onclick=()=>{registering=!registering;el('accountStatus').textContent='';render();};
 el('accountForm').onsubmit=async event=>{
   event.preventDefault();if(busy)return;

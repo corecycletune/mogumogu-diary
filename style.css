@@ -528,7 +528,7 @@
     conic-gradient(from 30deg,#06e4ff 0deg 57deg,#fff7c7 58deg 60deg,#fa36ce 60deg 120deg,#ffc820 120deg 180deg,#1af297 180deg 240deg,#4470ff 240deg 300deg,#ff6232 300deg 358deg,#fff7c7 359deg 360deg) 0 0/46px 40px;
 }
 .layered-card.full-art-card.foil-ssr-prism .full-art-glint{
-  z-index:3;opacity:.5;mix-blend-mode:screen;
+  z-index:3;opacity:.68;mix-blend-mode:screen;
   background:
     radial-gradient(circle at 25% 35%,#fff 0 .8px,transparent 2px) 0 0/37px 51px,
     radial-gradient(ellipse 5% 7% at var(--prism-x,72%) var(--prism-y,25%),#fff8,transparent 100%);
@@ -742,6 +742,10 @@ button.collection-card{font:inherit;text-align:left;color:inherit;width:100%;cur
 .multi-draw-actions{margin-top:12px}
 .reward-available{background:#fff0ba!important;border-color:#c19036!important;box-shadow:0 0 12px #e5bd6180}
 .gacha-pack{width:110px;height:145px;border:3px double #c4a768;border-radius:12px;margin:25px auto 15px;display:grid;place-items:center;font-size:42px;color:#b58b38;background:linear-gradient(150deg,#fff8df,#e7ecd8);animation:pack-ready .65s ease-in-out}
+.gacha-pack{position:relative;isolation:isolate;box-shadow:0 12px 28px #815e3433, inset 0 0 0 6px #fff8e5;animation:pack-ready .85s ease-in-out}
+.gacha-pack::before{content:'';position:absolute;z-index:2;top:-3px;left:-3px;right:-3px;height:29px;border:3px double #c4a768;border-radius:12px 12px 3px 3px;background:linear-gradient(120deg,#fff9dd,#ead3a0,#fff9dd);transform-origin:top center;animation:pack-peel .85s ease-in forwards}
+.gacha-pack::after{content:'✦  ·  ✧';position:absolute;inset:-24px;z-index:-1;display:grid;place-items:center;color:#dfbc6b;letter-spacing:24px;text-shadow:0 0 12px #fff;animation:pack-sparks .85s ease-out}
+.gacha-pack-symbol{animation:pack-symbol .85s ease-out}
 .gacha-result{text-align:center}
 .gacha-result .draw-result{animation:game-pop .4s ease-out}
 .result-r .draw-result{animation:reward-glow .6s ease-out}
@@ -755,13 +759,16 @@ button.collection-card{font:inherit;text-align:left;color:inherit;width:100%;cur
 .message-like{min-height:44px;padding:6px 12px;border:1px solid #b5c6af;border-radius:20px;background:#fff9ed;color:#50684d;cursor:pointer}
 .message-like[aria-pressed="true"]{color:#9c443a;background:#ffe9de;border-color:#d5a28f}
 @keyframes pack-ready{0%{transform:translateY(8px) rotate(-3deg)}50%{transform:translateY(-8px) rotate(3deg)}100%{transform:none}}
+@keyframes pack-peel{0%,42%{transform:rotateX(0)}100%{transform:rotateX(75deg) translateY(-16px);opacity:.2}}
+@keyframes pack-sparks{0%,45%{opacity:0;transform:scale(.5)}75%{opacity:1}100%{opacity:0;transform:scale(1.25)}}
+@keyframes pack-symbol{0%,40%{transform:scale(.75)}78%{transform:scale(1.45);color:#ffd87d}100%{transform:none}}
 @keyframes reward-glow{0%{filter:brightness(1.35);transform:scale(.95)}100%{filter:none;transform:none}}
 @keyframes gold-reveal{0%{filter:brightness(1.6) drop-shadow(0 0 20px #f4ce70);transform:scale(.92)}100%{filter:none;transform:none}}
 @keyframes cosmic-reveal{0%{opacity:0;transform:translateY(15px) scale(.96)}100%{opacity:1;transform:none}}
 @keyframes new-arrival{0%{transform:scale(.5) rotate(-12deg)}60%{transform:scale(1.15)}100%{transform:none}}
 @media(min-width:700px){.multi-result-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(max-width:480px){h1{font-size:clamp(17px,4.8vw,23px)}.multi-draw-actions{grid-template-columns:1fr}.card-details{width:calc(100% - 18px);max-height:92dvh}.card-detail-back{padding:10px}.card-detail-front{max-width:calc((100dvh - 145px)*.8)}.card-back-hero{padding:12px}.card-back-hero h2{font-size:20px}}
-@media(prefers-reduced-motion:reduce){.gacha-pack,.gacha-result .draw-result,.first-discovery .new-badge{animation:none!important}.card-details *{scroll-behavior:auto}}
+@media(prefers-reduced-motion:reduce){.gacha-pack,.gacha-pack::before,.gacha-pack::after,.gacha-pack-symbol,.gacha-result .draw-result,.first-discovery .new-badge{animation:none!important}.card-details *{scroll-behavior:auto}}
 .topbar>div{min-width:0}.topbar .settings-button{flex-shrink:0}
 .gacha-result .reveal-n{animation:game-pop .25s ease-out}
 .gacha-result .reveal-r{animation:reward-glow .6s ease-out}

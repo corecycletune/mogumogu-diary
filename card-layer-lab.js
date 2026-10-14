@@ -11,7 +11,7 @@ import {putCardName} from './card-details.js';
   const toggle=document.getElementById('devModeToggle');
   if(!mount||!toggle)return;
 
-  const examples=['rice_n','bread_n','mango_r','omu_ketchup_r','newton_apple_sr','omu_princess_sr','vangogh_bread_ssr','secret_omurice_ur','secret_celestial_ur'];
+  const examples=['rice_n','bread_n','mango_r','omu_ketchup_r','newton_apple_sr','omu_princess_sr','vangogh_bread_ssr','secret_omurice_ur','secret_celestial_ur','secret_pomegranate_ur'];
   const layerOrder=[
     {key:'substrate',text:'① ホロ下地'},
     {key:'background',text:'② 背景'},
@@ -31,7 +31,8 @@ import {putCardName} from './card-details.js';
     omu_princess_sr:'SR｜麻婆オムライス・既存フレーム、弱いパール反射',
     vangogh_bread_ssr:'SSR｜豪華な金枠・高密度の虹色ホログラム',
     secret_omurice_ur:'UR試作｜土星×ドーナツ×カッシーニ・同じシリーズの擬人化と金箔',
-    secret_celestial_ur:'UR試作｜海王星×青いゼリー×ボイジャー2号・同じシリーズの擬人化と白金箔'
+    secret_celestial_ur:'UR試作｜海王星×青いゼリー×ボイジャー2号・同じシリーズの擬人化と白金箔',
+    secret_pomegranate_ur:'UR｜ザクロの惑星・深紅と金箔の守り手'
   };
   function elem(tag,className,text){
     const element=document.createElement(tag);
@@ -102,7 +103,7 @@ import {putCardName} from './card-details.js';
   tierComparison.appendChild(elem('h3','','全レア度の雰囲気｜N・R・SR・SSR・UR試作2枚'));
   tierComparison.appendChild(elem('p','small','SSRは極彩色と豊かな装飾。URは宇宙の余白と精密な輝き。並べて全体の差を確認してください。'));
   const tierGrid=elem('div','layer-lab-grid');
-  ['rice_n','omu_ketchup_r','omu_demi_sr','klimt_honey_ssr','secret_omurice_ur','secret_celestial_ur'].forEach(id=>{
+  ['rice_n','omu_ketchup_r','omu_demi_sr','klimt_honey_ssr','secret_omurice_ur','secret_celestial_ur','secret_pomegranate_ur'].forEach(id=>{
     const sample=card(id);if(sample)tierGrid.appendChild(sample);
   });
   tierComparison.appendChild(tierGrid);

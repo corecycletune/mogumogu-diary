@@ -103,6 +103,11 @@ export const CARD_LAYER_MANIFEST=Object.freeze({
     foil:'ur-cosmic',
     layout:'full-art'
   }),
+  secret_pomegranate_ur:Object.freeze({
+    fullArt:root+'full-art/secret_pomegranate_ur.webp?v=ur-planet-foil-v1',
+    foil:'ur-cosmic',
+    layout:'full-art'
+  }),
   omu_ichika_ssr:Object.freeze({
     fullArt:root+'full-art/omu_ichika_ssr.webp?v=ssr-full-art-v1',
     foil:'ssr-vivid',

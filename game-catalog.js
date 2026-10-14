@@ -75,7 +75,8 @@ const rows=[
   // UR: HIDDEN; never list before owning.
   ["secret_omurice_ur","土星の環ドーナツ","UR","🪐","ドーナツ","","secret","土星の環とドーナツ、カッシーニ探査機を重ねた、金箔の宇宙探検家。※創作キャラ","person","legend"],
   ['secret_rinpa_ur','宗達の千年黄金おこめ','SSR','✨','ごはん','俵屋宗達','inspired','絵巻物に宿るような、不思議なおこめの守り神。※創作','food','legend'],
-  ["secret_celestial_ur","海王星の蒼ゼリー","UR","🔵","ゼリー","","secret","海王星の青とゼリー、ボイジャー2号を重ねた、白金箔の星海探検家。※創作キャラ","person","cosmos"]
+  ["secret_celestial_ur","海王星の蒼ゼリー","UR","🔵","ゼリー","","secret","海王星の青とゼリー、ボイジャー2号を重ねた、白金箔の星海探検家。※創作キャラ","person","cosmos"],
+  ["secret_pomegranate_ur","ザクロ","UR","🔴","ザクロ","","secret","深紅の果実と星々をまとう、ザクロの惑星の守り手。※創作キャラ","person","cosmos"]
 ];
 // Backgrounds are determined only by rarity via RARITY_BACKGROUNDS.
 // Legacy per-card SVG/CSS pattern metadata is intentionally not used.
