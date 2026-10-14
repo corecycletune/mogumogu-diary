@@ -10,7 +10,7 @@
 
 ## 公開手順
 
-1. 利用者が記録操作をしない時間に、PR内の [firestore.rules](../firestore.rules) 全文をFirebase Console → Firestore Database → ルールへ貼り、「公開」する。既存のユーザー・コレクション・文書は削除しない。
+1. [Firestore CIの初回設定](FIRESTORE_CI.md) 後はmain反映時にルールが自動公開される。保存形式が変わるこの移行では利用者が記録操作をしない時間を設け、Actionsの公開成功とPages更新を確認する。CI未設定時のみPR内の [firestore.rules](../firestore.rules) 全文をFirebase Consoleから公開する。既存のユーザー・コレクション・文書は削除しない。
 2. PRをmainへ反映し、GitHub Pagesの更新を待つ。
 3. 各端末でアプリを再読み込みする。旧URLは共通画面へ移る。
 4. `junsakata0720` で既存の記録・カード・残高を確認する。別の新規IDを登録し、互いの個人データが表示されないことを確認する。同じ招待コードでチャットに参加し、それぞれのログインIDが表示されることも確認する。

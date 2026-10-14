@@ -1,5 +1,7 @@
 > 現行認証仕様は2026-10-14のUID方式です。旧プロフィールは廃止。公開手順は [UID_RELEASE.md](./docs/UID_RELEASE.md)。
 
+> Firestoreルールは [一度だけのCI認証設定](./docs/FIRESTORE_CI.md) 後、mainへの変更反映時にGitHub Actionsで検証・自動公開されます。以下のConsole手動公開の記載はCI未設定時の手順です。
+
 # モグモグデイリークエスト / mogumogu-diary
 
 > **ゲーム・カード制作の正式仕様（SSOT）**：**[docs/GAME_DESIGN_SSOT.md](./docs/GAME_DESIGN_SSOT.md)**  

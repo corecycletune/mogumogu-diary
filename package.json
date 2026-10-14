@@ -1,0 +1,13 @@
+{
+  "name": "mogumogu-diary-ci",
+  "private": true,
+  "scripts": {
+    "test:rules": "firebase emulators:exec --config firebase.rules.json --only firestore --project demo-mogumogu \"node tests/firestore-rules.emulator.mjs\"",
+    "deploy:rules": "firebase deploy --config firebase.rules.json --only firestore:rules --project mogumogu-diary --non-interactive"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "6.0.0",
+    "firebase": "13.0.0",
+    "firebase-tools": "15.33.0"
+  }
+}
