@@ -1,13 +1,12 @@
-import {localContext,prepareCloudContext} from './progress-store.js';
+import {groupStorageKey,chatStorageKey} from './account-compat.js';
 import {emptyQuests,completeQuest,localDay,streakFor,stampForDay,nextMilestone} from './quest-core.js';
 import {BY_ID} from './game-catalog.js';
-const profile=document.body.dataset.profile;
+const profile=window.MogumoguAccount?.uid;
 const mount=document.getElementById('questList');
-if(mount){
+if(mount&&!window.MogumoguAccount.isAdmin){
   const el=id=>document.getElementById(id);
   let ctx=null,chatCtx=null,chatLibrary=null,chatWorking=false,quests=emptyQuests(profile),confirmed=false,working=false,unwatch=null,unmessages=null,connectionSeq=0;
   window.MogumoguStampForDay=stampForDay;
-  const names={jun:'じゅんちゃん',ichika:'いちかちゃん',sato:'ばぁば'};
   function text(tag,value,className){const e=document.createElement(tag);e.textContent=value;if(className)e.className=className;return e;}
   function notice(value){el('questStatus').textContent=value;}
   const completionDialog=text('dialog','','quest-confirm');
@@ -111,12 +110,12 @@ if(mount){
   function messages(items){
     const list=el('familyMessages');list.replaceChildren();
     for(const item of items){
-      const mine=item.senderUid?item.senderUid===window.MogumoguAccount?.uid:item.sender===profile&&!window.MogumoguAccount;
+      const mine=item.senderUid===profile;
       const row=text('article','',mine?'family-message own':'family-message');
       const at=item.createdAt?.toDate?.();
-      row.append(text('small',(item.senderId||names[item.sender]||'グループ')+(at?' · '+at.toLocaleString('ja-JP'):' · 送信中')),text('p',item.text));
+      row.append(text('small',(item.senderId||'過去のメッセージ')+(at?' · '+at.toLocaleString('ja-JP'):' · 送信中')),text('p',item.text));
       if(item.cardId&&BY_ID[item.cardId])row.append(text('strong',BY_ID[item.cardId].rarity+' · '+BY_ID[item.cardId].name));
-      const group=chatCtx,liked=(item.likes||[]).includes(group?.uid||profile)||(item.likes||[]).includes('legacy:'+profile)&&!window.MogumoguAccount;
+      const group=chatCtx,liked=(item.likes||[]).includes(profile);
       const like=text('button','♥ '+(item.likes||[]).length,'message-like');like.type='button';like.setAttribute('aria-label','いいね '+(item.likes||[]).length+'件');like.setAttribute('aria-pressed',String(liked));like.disabled=liked||!group?.likeMessage;
       like.addEventListener('click',async()=>{
         like.disabled=true;
@@ -135,18 +134,18 @@ if(mount){
   }
   el('messageForm').addEventListener('submit',e=>{e.preventDefault();const value=el('messageText').value.trim();if(value&&value.length<=500)void send(value);});
   window.addEventListener('mogumogu:share-card',e=>{const card=BY_ID[e.detail.id];if(card&&['SSR','UR'].includes(card.rarity))void send(card.name+'（'+card.rarity+'）をゲットしたよ！',card.id);});
-  function groupList(){try{const value=JSON.parse(localStorage.getItem('mogumogu:groups:'+(window.MogumoguAccount?window.MogumoguAccount.uid+':':'')+profile)||'[]');return Array.isArray(value)?value.filter(g=>typeof g.name==='string'&&/^[A-Za-z0-9_-]{24}$/.test(g.id)):[];}catch(e){return [];}}
+  function groupList(){try{const value=JSON.parse(localStorage.getItem(groupStorageKey(profile))||'[]');return Array.isArray(value)?value.filter(g=>typeof g.name==='string'&&/^[A-Za-z0-9_-]{24}$/.test(g.id)):[];}catch(e){return [];}}
   function refreshGroups(){
     const select=el('chatGroupSelect');select.replaceChildren();
     for(const group of groupList()){const option=text('option',group.name);option.value=group.id;select.append(option);}
     if(chatCtx)select.value=chatCtx.familyId;
-    else {const remembered=localStorage.getItem('mogumogu:chat-current:'+(window.MogumoguAccount?window.MogumoguAccount.uid+':':'')+profile);if(remembered&&groupList().some(g=>g.id===remembered))select.value=remembered;}
+    else {const remembered=localStorage.getItem(chatStorageKey(profile));if(remembered&&groupList().some(g=>g.id===remembered))select.value=remembered;}
     select.disabled=!select.options.length||chatWorking;
     el('chatInvite').textContent=chatCtx?.familyId||'';el('chatInviteCopy').disabled=!chatCtx;el('chatRename').disabled=!chatCtx;
   }
   async function selectChat(context){
     unmessages?.();chatCtx=context;el('familyMessages').replaceChildren();
-    localStorage.setItem('mogumogu:chat-current:'+(window.MogumoguAccount?window.MogumoguAccount.uid+':':'')+profile,context.familyId);
+    localStorage.setItem(chatStorageKey(profile),context.familyId);
     unmessages=chatCtx.watchMessages(items=>{if(chatCtx.familyId===context.familyId)messages(items);},()=>{if(chatCtx.familyId===context.familyId)el('messageStatus').textContent='おしゃべりに接続できません。もう一度お試しください。';});
     el('messageStatus').textContent='';refreshGroups();render();
   }
@@ -155,7 +154,7 @@ if(mount){
     try{
       chatLibrary=chatLibrary||await import('./firebase-sync.js');
       const name=el('chatGroupName').value.trim(),code=el('chatGroupCode').value.trim();
-      const context=action==='create'?await chatLibrary.createChatGroup(profile,name):await chatLibrary.joinChatGroup(profile,action==='select'?el('chatGroupSelect').value:code,action==='select'?undefined:name);
+      const context=action==='create'?await chatLibrary.createChatGroup(name):await chatLibrary.joinChatGroup(action==='select'?el('chatGroupSelect').value:code,action==='select'?undefined:name);
       await selectChat(context);el('chatGroupCode').value='';el('chatGroupName').value='';
     }catch(e){el('messageStatus').textContent='グループに参加できませんでした。招待コードを確認してください。';}
     finally{chatWorking=false;refreshGroups();render();}
@@ -164,11 +163,10 @@ if(mount){
   el('chatCreate').addEventListener('click',()=>void manageGroup('create'));
   el('chatJoin').addEventListener('click',()=>void manageGroup('join'));
   el('chatInviteCopy').addEventListener('click',async()=>{if(!chatCtx)return;try{await navigator.clipboard.writeText(chatCtx.familyId);el('messageStatus').textContent='招待コードをコピーしました。';}catch(e){el('messageStatus').textContent='招待コードを選んでコピーしてください。';}});
-  el('chatRename').addEventListener('click',async()=>{if(!chatCtx||chatWorking)return;const name=el('chatGroupName').value.trim();if(!name){el('chatGroupName').focus();return;}try{chatLibrary=chatLibrary||await import('./firebase-sync.js');await chatLibrary.renameGroup(profile,chatCtx.familyId,name);refreshGroups();el('messageStatus').textContent='グループの名前を変更しました。';}catch(e){el('messageStatus').textContent='名前を変更できませんでした。もう一度お試しください。';}});
+  el('chatRename').addEventListener('click',async()=>{if(!chatCtx||chatWorking)return;const name=el('chatGroupName').value.trim();if(!name){el('chatGroupName').focus();return;}try{chatLibrary=chatLibrary||await import('./firebase-sync.js');await chatLibrary.renameGroup(chatCtx.familyId,name);refreshGroups();el('messageStatus').textContent='グループの名前を変更しました。';}catch(e){el('messageStatus').textContent='名前を変更できませんでした。もう一度お試しください。';}});
   async function connect(context){
     const seq=++connectionSeq;
     confirmed=false;working=true;render();
-    try{context=await prepareCloudContext(context);}catch(e){if(seq!==connectionSeq)return;notice('記録を読み込めませんでした。');if(!context.isAccount)void connect(localContext(profile));return;}
     if(seq!==connectionSeq)return;
     unwatch?.();ctx=context;working=false;confirmed=false;quests=emptyQuests(profile);render();
     notice('');
@@ -178,13 +176,12 @@ if(mount){
       notice(confirmed?'今日も、自分のペースでひとつずつ。':'準備しています…');void recordMeal();
       window.dispatchEvent(new CustomEvent('mogumogu:quest',{detail:{days:quests.days}}));
     },()=>{if(seq!==connectionSeq)return;confirmed=false;notice('習慣を読み込めませんでした。もう一度お試しください。');render();});
-    if(!ctx.isLocal&&!ctx.isAccount){if(!chatCtx&&!chatWorking)await selectChat(ctx);refreshGroups();}
 
   }
   window.addEventListener('mogumogu:connected',e=>void connect(e.detail.context));
   window.addEventListener('mogumogu:game-ready',()=>void recordMeal());
   window.addEventListener('mogumogu:meals',()=>void recordMeal());
   if(window.MogumoguGameBridge?.getContext())void connect(window.MogumoguGameBridge.getContext());
-  else void connect(localContext(profile));
+
   refreshGroups();if(groupList().length)void manageGroup('select');render();
 }

@@ -8,7 +8,8 @@ export function normalizeAccountId(value){
 export function accountAddress(value){return normalizeAccountId(value)+'@id.mogumogu.invalid';}
 export function accountError(error){
   const code=error?.code||error?.message;
-  return ({'account-id':'IDは半角英数字・_の3〜24文字で入力してください。',
+  return ({'reserved-id':'adminは管理者専用IDです。管理者用の作成手順を使ってください。',
+    'account-id':'IDは半角英数字・_の3〜24文字で入力してください。',
     'auth/email-already-in-use':'このIDは使われています。別のIDを入力してください。',
     'auth/invalid-credential':'IDまたはパスワードが違います。',
     'auth/wrong-password':'IDまたはパスワードが違います。',
@@ -19,3 +20,5 @@ export function accountError(error){
     'permission-denied':'保存先に接続できません。もう一度お試しください。'
   })[code]||'接続できませんでした。もう一度お試しください。';
 }
+
+export function registrationAccountId(value){const id=normalizeAccountId(value);if(id==='admin')throw new Error('reserved-id');return id;}

@@ -5,8 +5,8 @@ import {CARD_LAYER_MANIFEST,RARITY_BACKGROUNDS,RARITY_VARIANT_BACKGROUNDS,RARITY
 import {BY_ID} from './game-catalog.js';
 import {putCardName} from './card-details.js';
 (function(){
-  const profile=document.body.dataset.profile;
-  if(!isDevModeEnabled(profile,window.MogumoguAccount?.id,location.search))return;
+  const profile=window.MogumoguAccount?.uid;
+  if(!isDevModeEnabled(window.MogumoguAccount,location.search))return;
   const mount=document.getElementById('layerLab');
   const toggle=document.getElementById('devModeToggle');
   if(!mount||!toggle)return;
