@@ -34,7 +34,7 @@ try{
     assert.equal(await page.locator('[data-dev-entry]').evaluateAll(items=>items.every(item=>!item.hidden)),id==='junsakata0720');
     assert.equal(await page.locator('[data-panel="bonus"] #coins,[data-panel="bonus"] #markedDays,[data-panel="bonus"] #bonusDays,[data-panel="bonus"] [data-dev-entry]').count(),0);
     assert.equal(await page.locator('.header-values .header-value').count(),3);
-    assert.equal(await page.locator('#headerCoins').textContent(),'789');
+    assert.equal(await page.locator('#headerCoins').textContent(),'799'); // 789 plus the existing daily login reward
     assert.equal(await page.locator('#headerTickets').textContent(),'4');
     assert.equal(await page.locator('.home-rewards .reward-strip button').count(),3);
     for(const [index,target] of [[0,'bonus'],[1,'bonus'],[2,'calendar']]){
