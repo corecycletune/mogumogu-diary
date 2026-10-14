@@ -32,7 +32,7 @@ import {putCardName} from './card-details.js';
     vangogh_bread_ssr:'SSR｜豪華な金枠・高密度の虹色ホログラム',
     secret_omurice_ur:'UR試作｜土星×ドーナツ×カッシーニ・同じシリーズの擬人化と金箔',
     secret_celestial_ur:'UR試作｜海王星×青いゼリー×ボイジャー2号・同じシリーズの擬人化と白金箔',
-    secret_pomegranate_ur:'UR｜ザクロの惑星・深紅と金箔の守り手'
+    secret_pomegranate_ur:'UR｜火星×ザクロ×Perseverance・紅と銅の探検家'
   };
   function elem(tag,className,text){
     const element=document.createElement(tag);
@@ -96,11 +96,11 @@ import {putCardName} from './card-details.js';
 
   const intro=elem('div','layer-lab-intro');
   intro.appendChild(elem('h3','', '🧩 N → UR：全レア段階の雰囲気を比較'));
-  intro.appendChild(elem('p','small','N～SRは独立したキャラ画像と背景・枠を合成。SSRとURは各カード固有の1枚絵に、独立したホロを重ねています。URは惑星×食べ物×探査機を擬人化した2枚試作です。'));
+  intro.appendChild(elem('p','small','N～SRは独立したキャラ画像と背景・枠を合成。SSRとURは各カード固有の1枚絵に、独立したホロを重ねています。URは惑星×食べ物×探査機を擬人化した3枚です。'));
   mount.appendChild(intro);
 
   const tierComparison=elem('section','all-rarity-comparison');
-  tierComparison.appendChild(elem('h3','','全レア度の雰囲気｜N・R・SR・SSR・UR試作2枚'));
+  tierComparison.appendChild(elem('h3','','全レア度の雰囲気｜N・R・SR・SSR・UR 3枚'));
   tierComparison.appendChild(elem('p','small','SSRは極彩色と豊かな装飾。URは宇宙の余白と精密な輝き。並べて全体の差を確認してください。'));
   const tierGrid=elem('div','layer-lab-grid');
   ['rice_n','omu_ketchup_r','omu_demi_sr','klimt_honey_ssr','secret_omurice_ur','secret_celestial_ur','secret_pomegranate_ur'].forEach(id=>{
