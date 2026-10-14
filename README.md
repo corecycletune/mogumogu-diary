@@ -1,4 +1,4 @@
-> 現行認証仕様は2026-10-14のUID方式です。旧プロフィールは廃止。公開手順は [ADMIN_RELEASE.md](./docs/ADMIN_RELEASE.md)。
+> 現行認証仕様は2026-10-14のUID方式です。旧プロフィールは廃止。公開手順は [UID_RELEASE.md](./docs/UID_RELEASE.md)。
 
 # モグモグデイリークエスト / mogumogu-diary
 
@@ -87,18 +87,18 @@ https://corecycletune.github.io/mogumogu-diary/
 
 ゲーム用の `/games/` 保存領域は以前の食事記録のルールにはありません。**[firestore.rules](./firestore.rules) の全文を Firebase Console → Firestore Database →「ルール」に貼り直し、必ず「公開」してください。** GitHubにファイルがあるだけではFirebase運用環境のルールは更新されません。更新前はゲーム画面に `permission-denied` 等が表示されます。
 
-UID方式を使います。adminの作成とルールの公開順序は [ADMIN_RELEASE.md](./docs/ADMIN_RELEASE.md) を参照。
+UID方式を使います。公開時のルール更新順序は [UID_RELEASE.md](./docs/UID_RELEASE.md) を参照。
 
 ### セキュリティ上の制約
 
 初期版は自宅用・非課金のクライアントゲームです。Firestoreトランザクションで同時操作の整合性を守りますが、ブラウザに抽選率・キャラクター表・抽選処理を配布するため、**技術的なユーザーによる内容閲覧や残高の改ざんを完全には防ぎません**。外部公開・商用利用前にサーバー側（Cloud Functions等）で抽選と報酬を検証する構成への移行が必要です。
 
 
-### 管理者専用の動作確認モード
+### 既存アカウントの動作確認モード
 
-`roles/{UID}.admin == true` をサーバーから確認した管理者だけが `/p/app/?dev=1` でテストガチャ・レイヤー比較・SSR試作を利用できます。`junsakata0720` は一般の生活記録用です。ID文字列だけでは管理者になりません。adminのテスト状態はページ内メモリのみで、本番の記録・カード・残高を変更しません。
+従来の `junsakata0720` の動作確認モードは維持します。`/p/app/?dev=1` でテストガチャ・レイヤー比較・SSR試作を利用できます。テストガチャはページ内メモリだけで、本番の記録・残高を変更しません。専用のadminアカウントや権限設定はありません。
 
-管理者本人によるアカウント作成、役割設定、ルール公開、リリース確認は [docs/ADMIN_RELEASE.md](./docs/ADMIN_RELEASE.md) にまとめています。
+Firestoreルールの公開と動作確認は [docs/UID_RELEASE.md](./docs/UID_RELEASE.md) にまとめています。
 
 
 ## ブラウザ切替とアイコン

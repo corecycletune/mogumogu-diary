@@ -216,7 +216,6 @@ function awardLogin(){
   if(dates.indexOf(today)===-1){dates.push(today);writeJSON(bonusKey,dates);}
 }
 function changePanel(name){
-  if(window.MogumoguAccount.isAdmin&&!['history','bonus','collection'].includes(name))name='history';
   document.querySelectorAll('[data-panel]').forEach(function(n){n.hidden=n.dataset.panel!==name;});
   document.querySelectorAll('[data-target]').forEach(function(n){var target=n.dataset.target;var selected=target===name||(n.closest('.game-nav')&&((target==='home'&&name==='timer')||(target==='menu'&&['history','family'].includes(name))));n.setAttribute('aria-selected',String(!!selected));if(n.closest('.game-nav')){if(selected)n.setAttribute('aria-current','page');else n.removeAttribute('aria-current');}});
   window.dispatchEvent(new CustomEvent('mogumogu:panel',{detail:{name:name}}));
@@ -224,12 +223,6 @@ function changePanel(name){
 }
 window.addEventListener('mogumogu:quest',function(event){window.mogumoguQuestDays=event.detail.days||{};renderCalendar();});
 async function init(){
-  if(window.MogumoguAccount.isAdmin){
-    document.querySelectorAll('[data-target]').forEach(btn=>{btn.addEventListener('click',()=>changePanel(btn.dataset.target));if(!['history','bonus','collection'].includes(btn.dataset.target))btn.hidden=true;});
-    el('personalSaveStatus').hidden=true;
-    for(const id of ['historyList','exportBtn','importFile'])el(id)?.closest('.card')?.setAttribute('hidden','');
-    changePanel('history');el('devPanel').open=true;return;
-  }
   el('timerMeal').value='dinner';
   el('manualMeal').value='dinner';
   el('manualDate').value=todayDate;el('manualDate').max=todayDate;el('manualTime').value=localClock(new Date());
@@ -243,9 +236,9 @@ async function init(){
   el('snackNow').addEventListener('click',function(){void recordSnack(localDate(new Date()),localClock(new Date()),el('timerFoodNote').value).then(function(saved){if(saved)el('timerFoodNote').value='';});});
   el('viewFullHistory').addEventListener('click',function(){changePanel('history');});
   setSnackMode();
-  if(window.MogumoguAccount.isAdmin&&location.hash==='#developer'){changePanel('history');el('devPanel').open=true;window.addEventListener('load',function(){el('devPanel').scrollIntoView({block:'center'});},{once:true});}
+  if(window.MogumoguAccount.id==='junsakata0720'&&location.hash==='#developer'){changePanel('history');el('devPanel').open=true;window.addEventListener('load',function(){el('devPanel').scrollIntoView({block:'center'});},{once:true});}
   document.querySelectorAll('[data-target]').forEach(function(btn){btn.addEventListener('click',function(){changePanel(btn.dataset.target);});});
-  if(window.MogumoguAccount.isAdmin&&new URLSearchParams(location.search).get('dev')==='1'&&location.hash==='#ssrPrismTrial'){
+  if(window.MogumoguAccount.id==='junsakata0720'&&new URLSearchParams(location.search).get('dev')==='1'&&location.hash==='#ssrPrismTrial'){
     changePanel('history');window.addEventListener('load',function(){el('ssrPrismTrial')?.scrollIntoView({block:'start'});},{once:true});
   }
   el('timerStart').addEventListener('click',startTimer);

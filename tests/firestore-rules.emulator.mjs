@@ -1,13 +1,13 @@
 import {initializeTestEnvironment,assertSucceeds,assertFails} from '@firebase/rules-unit-testing';
-import {doc,setDoc,getDoc,getDocs,collection,query,limit,updateDoc,deleteDoc,serverTimestamp} from 'firebase/firestore';
+import {doc,setDoc,getDoc,getDocs,collection,query,limit,updateDoc,serverTimestamp} from 'firebase/firestore';
 import {readFile} from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import {freshGame} from '../progress-store.js';
 import {emptyQuests} from '../quest-core.js';
 const env=await initializeTestEnvironment({projectId:'demo-mogumogu',firestore:{host:'127.0.0.1',port:8085,rules:await readFile('firestore.rules','utf8')}});
-const uid='userExisting',uid2='userNew',adminUid='adminOwner',fid='A'.repeat(24),mid='B'.repeat(20);
+const uid='userExisting',uid2='userNew',fid='A'.repeat(24),mid='B'.repeat(20);
 const dbFor=(uid,id)=>env.authenticatedContext(uid,{email:id+'@id.mogumogu.invalid'}).firestore();
-const a=dbFor(uid,'junsakata0720'),b=dbFor(uid2,'any_id_123'),admin=dbFor(adminUid,'admin'),impostor=dbFor('fakeAdmin','admin');
+const a=dbFor(uid,'junsakata0720'),b=dbFor(uid2,'any_id_123');
 const meal={id:'meal1',profile:'oldProfile',date:'2026-10-13',mealType:'dinner',durationSec:1200,source:'manual',startAt:null,endAt:null,createdAt:'2026-10-13T10:00:00Z',updatedAt:'2026-10-13T10:00:00Z'};
 const original={...freshGame('oldProfile'),coins:789,tickets:4,inventory:{rice_n:{copies:9}}};
 try{
@@ -19,16 +19,10 @@ try{
     await setDoc(doc(db,'families',fid),{createdBy:uid,createdAt:new Date()});
     await setDoc(doc(db,'families',fid,'members',uid),{profile:'oldProfile',joinedAt:new Date()});
     await setDoc(doc(db,'users',uid,'groups',fid),{name:'既存グループ'});
-    await setDoc(doc(db,'roles',adminUid),{admin:true});
   });
-  await assertSucceeds(getDoc(doc(a,'roles',uid)));
+  await assertFails(getDoc(doc(a,'roles',uid)));
   await assertFails(setDoc(doc(a,'roles',uid),{admin:true}));
-  await assertFails(updateDoc(doc(admin,'roles',adminUid),{admin:false}));
-  await assertFails(deleteDoc(doc(admin,'roles',adminUid)));
-  await assertFails(getDoc(doc(a,'roles',adminUid)));
-  await assertFails(getDocs(collection(a,'roles')));
-  await assertFails(setDoc(doc(impostor,'users','fakeAdmin'),{accountId:'admin',createdAt:serverTimestamp()}));
-  await assertSucceeds(setDoc(doc(admin,'users',adminUid),{accountId:'admin',createdAt:serverTimestamp()}));
+  await assertSucceeds(setDoc(doc(dbFor('thirdUid','admin'),'users','thirdUid'),{accountId:'admin',createdAt:serverTimestamp()}));
   await assertSucceeds(setDoc(doc(b,'users',uid2),{accountId:'any_id_123',createdAt:serverTimestamp()}));
   await assertFails(updateDoc(doc(b,'users',uid2),{admin:true}));
   await assertFails(getDoc(doc(b,'users',uid)));
@@ -46,8 +40,6 @@ try{
   await assertFails(updateDoc(doc(a,'users',uid,'progress','game'),{extraData:true}));
   await assertFails(updateDoc(doc(a,'users',uid,'progress','quests'),{tasks:'bad'}));
   await assertFails(updateDoc(doc(a,'users',uid,'meals','meal1'),{foodNote:'x'.repeat(201)}));
-  await assertFails(setDoc(doc(admin,'users',adminUid,'progress','game'),freshGame(adminUid)));
-  await assertFails(getDoc(doc(admin,'users',uid,'progress','game')));
   await assertSucceeds(getDocs(collection(a,'users',uid,'groups')));
   await assertSucceeds(setDoc(doc(b,'families',fid,'members',uid2),{uid:uid2,joinedAt:serverTimestamp()}));
   await assertFails(setDoc(doc(b,'families',fid,'members','someoneElse'),{uid:'someoneElse',joinedAt:serverTimestamp()}));
@@ -63,8 +55,7 @@ try{
   await assertSucceeds(setDoc(doc(b,'families',fid,'messages',lid),like));
   await assertFails(setDoc(doc(b,'families',fid,'messages',lid),like));
   await assertFails(setDoc(doc(b,'families',fid,'messages','_like_'+'Z'.repeat(20)+'_'+uid2),like));
-  await assertFails(setDoc(doc(admin,'families','Z'.repeat(24)),{createdBy:adminUid,createdAt:serverTimestamp()}));
   await assertFails(getDoc(doc(a,'families',fid,'games','oldProfile')));
   await assertFails(setDoc(doc(a,'users',uid,'imports','old'),{completedAt:serverTimestamp()}));
-  console.log('PASS: server roles, admin reservation, UID privacy, preserved legacy wallet, account registration, membership, chat identity/card ownership, likes and rejected invalid writes');
+  console.log('PASS: UID privacy, preserved legacy wallet, account registration, membership, chat identity/card ownership, likes and rejected invalid writes');
 }finally{await env.cleanup();}

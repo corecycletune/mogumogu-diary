@@ -2,7 +2,7 @@
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js';
 import {getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,EmailAuthProvider,reauthenticateWithCredential,updatePassword} from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js';
 import {getFirestore,collection,doc,setDoc,getDocFromServer,getDocs,getDocsFromServer,onSnapshot,runTransaction,serverTimestamp,query,orderBy,limit,startAfter,deleteDoc} from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js';
-import {accountAddress,registrationAccountId} from './account-id.js';
+import {accountAddress,normalizeAccountId} from './account-id.js';
 import {ownedRecord,groupStorageKey} from './account-compat.js';
 const config = {
   apiKey: "AIzaSyA6yTBzzI8WrVrkX1ubJ1HsptS1S1ieelA",
@@ -25,18 +25,15 @@ const metadata=s=>({fromCache:s.metadata.fromCache,hasPendingWrites:s.metadata.h
 const validCode=value=>typeof value==='string'&&/^[A-Za-z0-9_-]{24}$/.test(value);
 const reactionText='__mogumogu_like_v1__';
 const isLike=item=>item.id.startsWith('_like_')&&item.text===reactionText;
-async function role(uid){const snap=await getDocFromServer(doc(db,'roles',uid));return snap.exists()&&snap.data().admin===true;}
 export async function currentAccount(){
   await auth.authStateReady();const current=auth.currentUser;
   if(!current||current.isAnonymous)return null;
-  const isAdmin=await role(current.uid);
-  if(current.email===accountAddress('admin')&&!isAdmin)throw new Error('reserved-id');
   const snapshot=await getDocFromServer(accountRef(current.uid));
-  return {user:current,data:snapshot.exists()?snapshot.data():null,isAdmin};
+  return {user:current,data:snapshot.exists()?snapshot.data():null};
 }
 export async function loginAccount(id,password){await signInWithEmailAndPassword(auth,accountAddress(id),password);return currentAccount();}
 export async function registerAccount(id,password){
-  id=registrationAccountId(id);
+  id=normalizeAccountId(id);
   if(password.length<10)throw Object.assign(new Error('weak-password'),{code:'auth/weak-password'});
   await createUserWithEmailAndPassword(auth,accountAddress(id),password);return ensureAccount();
 }
@@ -55,7 +52,6 @@ export async function changeAccountPassword(oldPassword,newPassword){
   const current=auth.currentUser;await reauthenticateWithCredential(current,EmailAuthProvider.credential(current.email,oldPassword));await updatePassword(current,newPassword);
 }
 export function personalContext(account){
-  if(account.isAdmin)throw new Error('admin-personal-disabled');
   const uid=account.user.uid,gref=personalRef(uid,'game'),qref=personalRef(uid,'quests'),meals=collection(db,'users',uid,'meals');
   const owned=s=>ownedRecord(s.exists()?s.data():null,uid);
   return {uid,profile:uid,isAccount:true,
@@ -68,7 +64,7 @@ export function personalContext(account){
     ready:()=>Promise.all([getDocFromServer(gref),getDocFromServer(qref),getDocsFromServer(meals)])
   };
 }
-async function chatAccount(){const account=await currentAccount();if(!account?.data||account.isAdmin)throw new Error('account-required');return account;}
+async function chatAccount(){const account=await currentAccount();if(!account?.data)throw new Error('account-required');return account;}
 function newFamilyCode(){const bytes=new Uint8Array(18);crypto.getRandomValues(bytes);return btoa(String.fromCharCode(...bytes)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/g,'');}
 export function savedGroups(){
   try{const value=JSON.parse(localStorage.getItem(groupStorageKey(auth.currentUser.uid))||'[]');return Array.isArray(value)?value.filter(g=>validCode(g.id)&&typeof g.name==='string'):[];}catch{return [];}

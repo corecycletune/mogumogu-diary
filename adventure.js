@@ -3,7 +3,7 @@ import {emptyQuests,completeQuest,localDay,streakFor,stampForDay,nextMilestone} 
 import {BY_ID} from './game-catalog.js';
 const profile=window.MogumoguAccount?.uid;
 const mount=document.getElementById('questList');
-if(mount&&!window.MogumoguAccount.isAdmin){
+if(mount){
   const el=id=>document.getElementById(id);
   let ctx=null,chatCtx=null,chatLibrary=null,chatWorking=false,quests=emptyQuests(profile),confirmed=false,working=false,unwatch=null,unmessages=null,connectionSeq=0;
   window.MogumoguStampForDay=stampForDay;

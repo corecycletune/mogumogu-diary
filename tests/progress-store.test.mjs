@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import {sandboxContext,freshGame} from '../progress-store.js';
-import {emptyQuests,completeQuest} from '../quest-core.js';
-import {ownedRecord,groupStorageKey} from '../account-compat.js';
+import {freshGame} from '../progress-store.js';
+import {emptyQuests} from '../quest-core.js';
+import {ownedRecord,groupStorageKey,chatStorageKey} from '../account-compat.js';
 const uid='uidExisting';
 const original={...freshGame('oldValue'),coins:1234,tickets:12,inventory:{rice_n:{copies:7}},history:[{id:'rice_n'}]};
 const normalized=ownedRecord(original,uid);
@@ -11,14 +11,5 @@ assert.equal(ownedRecord(null,uid),null);
 const q=emptyQuests('oldValue');q.tasks.read={name:'本',archived:false};q.days['2026-10-13']=['read'];q.rewards['legacy-ledger']=1;
 assert.deepEqual({...ownedRecord(q,uid),profile:q.profile},q);
 assert.notEqual(groupStorageKey('uid1'),groupStorageKey('uid2'));
-// Any attempted persistence is a test failure.
-globalThis.localStorage={setItem:()=>{throw Error('persistent-write');}};
-const ctx=sandboxContext(uid),other=sandboxContext('uidOther');let seen;
-const off=ctx.watchGame(v=>seen=v);assert.equal(seen,null);
-await ctx.updateGame(()=>freshGame(uid));
-await ctx.updateAdventure(q=>{q.tasks.read={name:'読書',archived:false};return {quests:q};});
-const finish=()=>ctx.updateAdventure((q,g)=>completeQuest(q,g,'read','2026-10-12'));
-const results=await Promise.all([finish(),finish()]);assert.equal(results.filter(Boolean).length,1);assert.equal(seen.tickets,0);
-assert.equal(ctx.snapshot().quests.days['2026-10-12'].length,1);
-assert.equal(other.snapshot().game,null);assert.equal(sandboxContext(uid).snapshot().game,null);
-off();console.log('PASS: UID normalization preserves inventory/wallet/quests, isolated ephemeral sandbox and concurrent deduplication');
+assert.notEqual(chatStorageKey('uid1'),chatStorageKey('uid2'));
+console.log('PASS: UID normalization preserves inventory/wallet/quests, isolated group and chat storage keys');

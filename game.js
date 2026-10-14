@@ -17,7 +17,7 @@ const clone=state=>state?JSON.parse(JSON.stringify(state)):fresh();
 let ctx=null,unsubscribe=null,unwatchDailyQuests=null,dailyQuestDays={},dailyQuestsReady=false,state=fresh(),ready=false,busy=false,lastMealSignature='',statusError='',latestDraw=null,connectionSeq=0;
 let testDrawCount=0,testInventory={};
 const devAvailable=!!el('devModeToggle')&&isDevModeEnabled(window.MogumoguAccount,window.location.search);
-if(devAvailable){el('devPanel').hidden=false;if(window.MogumoguAccount.isAdmin){el('devModeToggle').checked=true;el('devControls').hidden=false;}}
+if(devAvailable)el('devPanel').hidden=false;
 if(devAvailable){const select=el('devCharacter');select.replaceChildren(new Option('ランダム抽選を使う','random'),...CATALOG.map(card=>new Option(card.rarity+'：'+card.name,card.id)));}
 function isTesting(){return devAvailable&&el('devModeToggle').checked;}
 function testSummary(){
@@ -83,7 +83,7 @@ async function connect(context){
   unwatchDailyQuests=ctx.watchQuests((value,meta)=>{
     if(seq!==connectionSeq)return;dailyQuestDays=value?.days||{};dailyQuestsReady=!meta.fromCache&&!meta.hasPendingWrites;renderHeader();
   },()=>{if(seq!==connectionSeq)return;dailyQuestsReady=false;renderHeader();});
-  if(!window.MogumoguAccount.isAdmin)await awardLogin();
+  await awardLogin();
   try{await ctx.updateAdventure((q,g)=>{
     if(!q||!g)return null;
     const next=clone(g);if(!grantMultiRewards(next,q.days))return null;
@@ -319,7 +319,6 @@ async function testPull(){
 }
 async function pull(mode){
   if(mode==='free'&&isTesting()){void testPull();return;}
-  if(window.MogumoguAccount.isAdmin){message('管理者は動作確認モードでテストしてください。');return;}
   if(busy||!ctx||!ready){message('まだ準備中です。もう一度お試しください。');return;}
   const count=mode==='multi10'?10:mode==='multi100'?100:1;
   // Draw once outside the transaction: retries must keep the same random outcomes.

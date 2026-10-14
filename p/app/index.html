@@ -9,7 +9,6 @@
 <title>モグモグデイリークエスト</title><link rel="apple-touch-icon" sizes="180x180" href="../../icons/onigiri-180.png?v=onigiri-v2"></head>
 <body>
 <main class="shell">
-  <section class="card" id="adminWorkspace" hidden><h2>確認用アカウント</h2><p>動作確認専用です。生活記録や本番の残高には保存しません。</p><button class="btn primary" data-target="bonus" type="button">テストガチャを開く</button><button class="btn secondary" data-target="history" type="button">アカウント設定</button></section>
   <header class="topbar game-header">
     <div><span class="greeting">🍙 あなたの毎日</span><h1>モグモグデイリークエスト</h1></div>
     <div class="header-tools"><span class="coin-pill" aria-label="所持コイン">🪙 <strong id="headerCoins">—</strong><span>コイン</span></span><button class="settings-button" type="button" data-target="history" aria-label="設定" aria-selected="false">⚙️</button></div>
@@ -120,7 +119,7 @@
       </div>
     </div>
       <details class="dev-panel" id="devPanel" hidden>
-        <summary>🧪 動作確認モード（確認用アカウント専用）</summary>
+        <summary>🧪 動作確認モード</summary>
         <label class="dev-switch"><input type="checkbox" id="devModeToggle"> <span>動作確認モードをONにする</span></label>
         <div id="devControls" hidden>
           <p class="small"><strong>テスト専用：</strong>練習用のガチャです。コインやコレクションは変わりません。</p>

@@ -1,7 +1,6 @@
 rules_version = '2';
 // users/{uid}: accountId (immutable string 3..24), createdAt (timestamp).
 // progress/game, progress/quests, meals: existing bounded schemas; profile = UID.
-// roles/{uid}: admin (boolean), console/Admin SDK writes only, self get only.
 // families/{fid}: createdBy UID, createdAt timestamp; members keyed by UID.
 // messages: senderUid, senderId, text, cardId, createdAt; append-only.
 // UID-era documents remain readable; old shared progress is denied, not deleted.
@@ -13,17 +12,11 @@ service cloud.firestore {
         request.auth.token.email is string &&
         request.auth.token.email.matches('^[a-z0-9_]{3,24}@id[.]mogumogu[.]invalid$');
     }
-    function isAdmin() {
-      return signedIn() && exists(/databases/$(database)/documents/roles/$(request.auth.uid)) &&
-        get(/databases/$(database)/documents/roles/$(request.auth.uid)).data.admin == true;
-    }
     function hasAccount(uid) {
-      return accountOwner(uid) && exists(/databases/$(database)/documents/users/$(uid)) &&
-        (request.auth.token.email != 'admin@id.mogumogu.invalid' || isAdmin());
+      return accountOwner(uid) && exists(/databases/$(database)/documents/users/$(uid));
     }
-    function personalOwner(uid) { return hasAccount(uid) && !isAdmin(); }
     function isMember(fid) {
-      return personalOwner(request.auth.uid) &&
+      return hasAccount(request.auth.uid) &&
         exists(/databases/$(database)/documents/families/$(fid)/members/$(request.auth.uid));
     }
     function validMeal(mealId) {
@@ -104,8 +97,7 @@ service cloud.firestore {
       let d=request.resource.data;
       return d.keys().hasAll(['accountId','createdAt']) && d.keys().hasOnly(['accountId','createdAt']) &&
         d.accountId is string && d.accountId.matches('^[a-z0-9_]{3,24}$') &&
-        request.auth.token.email == d.accountId + '@id.mogumogu.invalid' && d.createdAt == request.time &&
-        (d.accountId != 'admin' || isAdmin());
+        request.auth.token.email == d.accountId + '@id.mogumogu.invalid' && d.createdAt == request.time;
     }
     function validGroup(fid) {
       let d=request.resource.data;
@@ -113,30 +105,26 @@ service cloud.firestore {
         d.keys().hasAll(['name']) && d.keys().hasOnly(['name']) &&
         d.name is string && d.name.size() > 0 && d.name.size() <= 30;
     }
-    match /roles/{uid} {
-      allow get: if accountOwner(uid);
-      allow list, create, update, delete: if false;
-    }
     match /users/{uid} {
       allow get: if accountOwner(uid);
       allow create: if accountOwner(uid) && validAccount();
       allow list, update, delete: if false;
       match /progress/{name} {
-        allow get: if personalOwner(uid) && name in ['game','quests'];
-        allow create, update: if personalOwner(uid) &&
+        allow get: if hasAccount(uid) && name in ['game','quests'];
+        allow create, update: if hasAccount(uid) &&
           ((name == 'game' && validGame(uid)) || (name == 'quests' && validAdventure(uid)));
         allow list, delete: if false;
       }
       match /meals/{mealId} {
-        allow get, list, delete: if personalOwner(uid);
-        allow create: if personalOwner(uid) && validMeal(mealId);
+        allow get, list, delete: if hasAccount(uid);
+        allow create: if hasAccount(uid) && validMeal(mealId);
         // UID-scoped legacy records may be normalized; creation time stays fixed.
-        allow update: if personalOwner(uid) && validMeal(mealId) &&
+        allow update: if hasAccount(uid) && validMeal(mealId) &&
           request.resource.data.createdAt == resource.data.createdAt;
       }
       match /groups/{fid} {
-        allow get, list: if personalOwner(uid);
-        allow create, update: if personalOwner(uid) && validGroup(fid);
+        allow get, list: if hasAccount(uid);
+        allow create, update: if hasAccount(uid) && validGroup(fid);
         allow delete: if false;
       }
     }
@@ -171,12 +159,12 @@ service cloud.firestore {
         d.uid == uid && d.joinedAt == request.time;
     }
     match /families/{fid} {
-      allow create: if personalOwner(request.auth.uid) && validFamily(fid);
+      allow create: if hasAccount(request.auth.uid) && validFamily(fid);
       allow get: if isMember(fid);
       allow list, update, delete: if false;
       match /members/{uid} {
-        allow get: if personalOwner(uid);
-        allow create: if personalOwner(uid) && validMember(uid) &&
+        allow get: if hasAccount(uid);
+        allow create: if hasAccount(uid) && validMember(uid) &&
           exists(/databases/$(database)/documents/families/$(fid));
         allow list, update, delete: if false;
       }

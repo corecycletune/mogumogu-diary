@@ -13,7 +13,7 @@ function render(){
   el('accountRecovery').hidden=!registering;
   el('accountSubmit').disabled=el('accountSwitch').disabled=busy;
 }
-function enter(account){location.replace('./p/app/'+(account.isAdmin?'?dev=1#developer':''));}
+function enter(account){location.replace('./p/app/');}
 el('accountSwitch').onclick=()=>{registering=!registering;el('accountStatus').textContent='';render();};
 el('accountForm').onsubmit=async event=>{
   event.preventDefault();if(busy)return;

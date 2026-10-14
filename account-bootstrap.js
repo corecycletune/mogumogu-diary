@@ -1,5 +1,4 @@
 import {currentAccount,ensureAccount,personalContext,restoreAccountGroups,logoutAccount,changeAccountPassword} from './firebase-sync.js';
-import {sandboxContext} from './progress-store.js';
 import {accountError} from './account-id.js';
 import {canUseDevTools} from './developer-access.js';
 const main=document.querySelector('main');main.inert=true;
@@ -8,15 +7,13 @@ async function start(){
   let account=await currentAccount();
   if(!account){location.replace('../../account.html');return;}
   if(!account.data)account=await ensureAccount();
-  if(account.isAdmin&&new URLSearchParams(location.search).get('dev')!=='1'){const url=new URL(location.href);url.searchParams.set('dev','1');location.replace(url.href);return;}
-  const identity={id:account.data.accountId,uid:account.user.uid,isAdmin:account.isAdmin};
-  const ctx=account.isAdmin?sandboxContext(identity.uid):personalContext(account);
+  const identity={id:account.data.accountId,uid:account.user.uid};
+  const ctx=personalContext(account);
   await ctx.ready();
-  if(!account.isAdmin)await restoreAccountGroups(account);
+  await restoreAccountGroups(account);
   window.MogumoguAccount={...identity,context:ctx};
   document.querySelectorAll('[data-dev-entry]').forEach(entry=>{entry.hidden=!canUseDevTools(identity);});
-  document.getElementById('adminWorkspace').hidden=!identity.isAdmin;
-  document.querySelector('.greeting').textContent=identity.isAdmin?'🍙 admin 動作確認用':'🍙 '+identity.id+'の毎日';
+  document.querySelector('.greeting').textContent='🍙 '+identity.id+'の毎日';
   document.title='モグモグデイリークエスト';
   document.getElementById('accountName').textContent=identity.id;
   const logout=document.getElementById('accountLogout');logout.onclick=async()=>{logout.disabled=true;try{await logoutAccount();location.replace('../../account.html?login=1');}catch(e){logout.disabled=false;document.getElementById('accountSettingsStatus').textContent=accountError(e);}};
