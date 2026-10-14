@@ -66,7 +66,7 @@ try{
   await assertSucceeds(setDoc(doc(a,'users',uid,'activity','2026-10-13'),{done:true}));
   await assertSucceeds(setDoc(doc(a,'families',fid,'activity','2026-10-13_'+uid),{uid,day:'2026-10-13',done:true}));
   await assertSucceeds(getDocs(query(collection(b,'families',fid,'activity'),limit(5000))));
-  await assertSucceeds(getDocs(query(collection(b,'families',fid,'activity'),orderBy(documentId(),'desc'),limit(5000))));
+  await assertSucceeds(getDocs(query(collection(b,'families',fid,'activity'),orderBy(documentId()),limit(5000))));
   await assertFails(setDoc(doc(b,'families',fid,'activity','2026-10-13_'+uid),{uid,day:'2026-10-13',done:true}));
   await assertFails(getDoc(doc(b,'users',uid,'activity','2026-10-13')));
   await assertFails(getDoc(doc(b,'users',uid,'progress','quests')));
@@ -74,7 +74,7 @@ try{
   await assertFails(setDoc(doc(a,'friendships',uid+'--'+uid2),{senderUid:uid,targetUid:uid2,senderId:'junsakata0720',targetId:'any_id_123',members:[uid,uid2],acceptedAt:serverTimestamp()}));
   await assertSucceeds(setDoc(doc(b,'friendships',uid+'--'+uid2),{senderUid:uid,targetUid:uid2,senderId:'junsakata0720',targetId:'any_id_123',members:[uid,uid2],acceptedAt:serverTimestamp()}));
   await assertSucceeds(getDoc(doc(b,'users',uid,'activity','2026-10-13')));
-  await assertSucceeds(getDocs(query(collection(b,'users',uid,'activity'),orderBy(documentId(),'desc'),limit(400))));
+  await assertSucceeds(getDocs(query(collection(b,'users',uid,'activity'),orderBy(documentId()),limit(400))));
   await assertSucceeds(getDocs(query(collection(b,'friendships'),where('members','array-contains',uid2),limit(100))));
   await assertFails(getDoc(doc(b,'users',uid,'progress','quests')));
   await assertSucceeds(deleteDoc(doc(a,'friendships',uid+'--'+uid2)));

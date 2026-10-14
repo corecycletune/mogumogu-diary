@@ -217,10 +217,24 @@ export async function publishActivity(quests,day){
   if(results.some(r=>r.status==='rejected'))throw new Error('group-activity');
 }
 export async function friendActivity(uid){
-  const rows=await getDocsFromServer(query(collection(db,'users',uid,'activity'),orderBy(documentId(),'desc'),limit(400)));
-  return new Set(rows.docs.filter(row=>row.data().done===true).map(row=>row.id));
+  const days=new Set(),activities=collection(db,'users',uid,'activity');
+  let cursor=null;
+  do{
+    const rows=await getDocsFromServer(query(activities,orderBy(documentId()),...(cursor?[startAfter(cursor)]:[]),limit(400)));
+    rows.docs.forEach(row=>{if(row.data().done===true)days.add(row.id)});
+    if(rows.size<400)break;
+    cursor=rows.docs.at(-1);
+  }while(cursor);
+  return days;
 }
 export async function groupActivity(fid){
-  const rows=await getDocsFromServer(query(collection(db,'families',fid,'activity'),orderBy(documentId(),'desc'),limit(5000)));
-  return rows.docs.filter(row=>row.data().done===true).map(row=>row.data());
+  const activities=collection(db,'families',fid,'activity'),done=[];
+  let cursor=null;
+  do{
+    const rows=await getDocsFromServer(query(activities,orderBy(documentId()),...(cursor?[startAfter(cursor)]:[]),limit(5000)));
+    rows.docs.forEach(row=>{if(row.data().done===true)done.push(row.data())});
+    if(rows.size<5000)break;
+    cursor=rows.docs.at(-1);
+  }while(cursor);
+  return done;
 }
