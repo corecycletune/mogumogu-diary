@@ -1,6 +1,7 @@
 import {isDevModeEnabled} from './developer-access.js';
 import {applyDraw,multiStatus,grantMultiRewards} from './multi-draw.js';
 import {initSound,playSound} from './sound.js';
+import {localDay} from './quest-core.js';
 import {freshGame} from './progress-store.js';
 import {openCardDetails,putCardName} from './card-details.js';
 import {CATALOG,BY_ID,levelForCopies,drawCharacter} from './game-catalog.js';
@@ -11,7 +12,7 @@ const profile=window.MogumoguAccount?.uid;
 if(!profile)return;
 const el=id=>document.getElementById(id);
 const bridge=window.MogumoguGameBridge;
-const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+const today=localDay;
 const fresh=()=>freshGame(profile);
 const clone=state=>state?JSON.parse(JSON.stringify(state)):fresh();
 let ctx=null,unsubscribe=null,unwatchDailyQuests=null,dailyQuestDays={},dailyQuestsReady=false,state=fresh(),ready=false,busy=false,lastMealSignature='',statusError='',latestDraw=null,connectionSeq=0;
@@ -248,7 +249,7 @@ function renderHeader(){
     button.classList.toggle('reward-available',value==='available');
     button.textContent=value==='available'?'🎁 '+size+'連を引く（権利1回分）':value==='used'?'✓ '+size+'連のごほうびは使用済み':'🔒 '+size+'日連続で'+size+'連';
   }
-  if(el('headerCoins')){el('headerCoins').textContent=ready?String(state.coins):'—';el('homeTickets').textContent=ready?state.tickets+'枚':'—';el('homeQuestReward').textContent=!ready||!dailyQuestsReady?'準備中':already?'使用済み':questCleared?'1回引ける':'解放待ち';el('homeMulti').textContent=[10,100].map(size=>size+'連：'+({available:'権利1回分あり',used:'使用済み',locked:size+'日連続で解放'}[multiStatus(state,size)]||size+'日連続で解放')).join(' ／ ');renderHome();}
+  if(el('headerCoins')){el('headerCoins').textContent=ready?String(state.coins):'—';el('headerTickets').textContent=ready?String(state.tickets):'—';el('homeTickets').textContent=ready?state.tickets+'枚':'—';el('homeQuestReward').textContent=!ready||!dailyQuestsReady?'準備中':already?'使用済み':questCleared?'1回引ける':'解放待ち';el('homeMulti').textContent=[10,100].map(size=>size+'連：'+({available:'権利1回分あり',used:'使用済み',locked:size+'日連続で解放'}[multiStatus(state,size)]||size+'日連続で解放')).join(' ／ ');renderHome();}
   testSummary();
 }
 function showLatestDraw(){
@@ -280,17 +281,18 @@ function showLatestDraw(){
 async function preview(){
   celebrating=true;playSound('start');
   const target=el('gameResult');resultKey='';releaseCards(target);target.replaceChildren();
-  const pack=document.createElement('div');pack.className='gacha-pack';pack.textContent='✦';pack.setAttribute('aria-label','パックを開いています');
+  const pack=document.createElement('div');pack.className='gacha-pack';pack.setAttribute('aria-label','パックを開いています');
+  const symbol=document.createElement('span');symbol.className='gacha-pack-symbol';symbol.textContent='✦';pack.append(symbol);
   const hint=document.createElement('p');hint.textContent='どんな仲間に会えるかな…';target.append(pack,hint);
-  target.scrollIntoView({behavior:'smooth',block:'center'});await delay(650);
+  target.scrollIntoView({behavior:'smooth',block:'center'});if(!matchMedia('(prefers-reduced-motion: reduce)').matches)await delay(850);
 }
 async function reveal(results){
   const rank=Math.max(...results.map(r=>rarityRank.indexOf(BY_ID[r.id].rarity))),rarity=rarityRank[rank];
   el('gameResult').className='gacha-result result-'+rarity.toLowerCase();
-  if(rarity==='UR')await delay(400);
+  if(rarity==='UR'&&!matchMedia('(prefers-reduced-motion: reduce)').matches)await delay(400);
   celebrating=false;latestResults=results;latestDraw=results[0];showLatestDraw();
   playSound('reveal',rarity);
-  await delay([180,280,420,650,850][rank]);
+  if(!matchMedia('(prefers-reduced-motion: reduce)').matches)await delay([180,280,420,650,850][rank]);
   if(results.some(r=>r.newCard))playSound('new');
 }
 function render(){

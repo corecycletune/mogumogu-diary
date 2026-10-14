@@ -1,4 +1,5 @@
 /* Warm game shell. Card artwork and compositor rules remain in style.css. */
+.header-metrics{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:4px;font-size:12px;color:var(--sub)}
 .quest-confirm{width:min(440px,calc(100% - 28px));max-height:85dvh;overflow:auto;border:2px solid var(--line);border-radius:24px;background:var(--white);color:var(--ink);padding:24px;box-shadow:0 12px 40px #57392333}
 .quest-confirm::backdrop{background:#3b2b235c}.quest-confirm h2{font-size:21px;line-height:1.5;margin:0 0 14px}.quest-confirm p{font-size:16px;line-height:1.8;overflow-wrap:anywhere;margin:0 0 22px}.quest-confirm .button-row>.btn{min-width:0;min-height:48px;padding:12px 8px}
 #homeCards .card-art:not(.card-in-view) .composite-foil,

@@ -1,7 +1,7 @@
 // Passwords are managed solely by Firebase Authentication.
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js';
 import {getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,EmailAuthProvider,reauthenticateWithCredential,updatePassword} from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js';
-import {getFirestore,collection,doc,setDoc,getDocFromServer,getDocs,getDocsFromServer,onSnapshot,runTransaction,serverTimestamp,query,orderBy,limit,startAfter,deleteDoc} from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js';
+import {getFirestore,collection,doc,setDoc,getDocFromServer,getDocs,getDocsFromServer,onSnapshot,runTransaction,serverTimestamp,query,orderBy,limit,startAfter,where,deleteDoc} from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js';
 import {accountAddress,normalizeAccountId} from './account-id.js';
 import {ownedRecord,groupStorageKey} from './account-compat.js';
 const config = {
@@ -69,15 +69,41 @@ function newFamilyCode(){const bytes=new Uint8Array(18);crypto.getRandomValues(b
 export function savedGroups(){
   try{const value=JSON.parse(localStorage.getItem(groupStorageKey(auth.currentUser.uid))||'[]');return Array.isArray(value)?value.filter(g=>validCode(g.id)&&typeof g.name==='string'):[];}catch{return [];}
 }
-async function rememberGroup(id,name){
-  const account=await chatAccount(),groups=savedGroups(),old=groups.find(g=>g.id===id);
-  if(old){if(name)old.name=name;}else groups.push({id,name:name||'グループ '+(groups.length+1)});
-  await setDoc(doc(db,'users',account.user.uid,'groups',id),{name:groups.find(g=>g.id===id).name});
+async function groupDetails(id,account){
+  const snapshot=await getDocFromServer(familyRef(id));
+  if(!snapshot.exists())throw new Error('group-missing');
+  const own=await getDocFromServer(doc(db,'users',account.user.uid,'groups',id));
+  const shared=snapshot.data().name;
+  return {id,name:shared||own.data()?.name||'グループ',alias:own.data()?.alias||'',sharedName:shared||'',createdBy:snapshot.data().createdBy,membershipChangedAt:snapshot.data().membershipChangedAt?.toMillis?.()||0};
+}
+async function rememberGroup(id,account){
+  const group=await groupDetails(id,account);
+  const ref=doc(db,'users',account.user.uid,'groups',id);
+  const old=await getDocFromServer(ref);
+  if(!old.exists())await setDoc(ref,{name:group.name});
+  const groups=savedGroups().filter(item=>item.id!==id);groups.push(group);
   localStorage.setItem(groupStorageKey(account.user.uid),JSON.stringify(groups));
+  return group;
 }
 export async function restoreAccountGroups(account){
+  account=account?.data?account:await chatAccount();
   const records=await getDocsFromServer(collection(db,'users',account.user.uid,'groups'));
-  localStorage.setItem(groupStorageKey(account.user.uid),JSON.stringify(records.docs.map(s=>({id:s.id,...s.data()}))));
+  const groups=[];
+  for(const row of records.docs){
+    try{
+      const member=await getDocFromServer(memberRef(row.id,account.user.uid));
+      if(member.exists()){
+        if(!member.data().accountId)try{await setDoc(memberRef(row.id,account.user.uid),{accountId:account.data.accountId},{merge:true});}catch{/* Existing membership still works. */}
+        let group=await groupDetails(row.id,account);
+        if(!group.sharedName&&group.createdBy===account.user.uid&&row.data().name){
+          try{await setDoc(familyRef(row.id),{name:row.data().name},{merge:true});group=await groupDetails(row.id,account);}catch{/* Keep the old personal label until the shared name can be saved. */}
+        }
+        groups.push(group);
+      }
+    }catch{/* A deleted group is never presented as a current membership. */}
+  }
+  localStorage.setItem(groupStorageKey(account.user.uid),JSON.stringify(groups));
+  return groups;
 }
 function watchMessages(id,onValue,onError){
   const messages=collection(db,'families',id,'messages');let active=true,revision=0;
@@ -113,9 +139,88 @@ function chatContext(id,account){
 async function ensureMember(id){
   const account=await chatAccount(),uid=account.user.uid,ref=memberRef(id,uid),old=await getDocFromServer(ref);
   // Existing UID memberships remain valid; their old profile field is ignored.
-  if(!old.exists())await setDoc(ref,{uid,joinedAt:serverTimestamp()});
-  await rememberGroup(id);return chatContext(id,account);
+  if(!old.exists()){
+    await setDoc(ref,{uid,accountId:account.data.accountId,joinedAt:serverTimestamp()});
+    await setDoc(familyRef(id),{membershipChangedAt:serverTimestamp()},{merge:true});
+  }else if(!old.data().accountId)await setDoc(ref,{accountId:account.data.accountId},{merge:true});
+  await rememberGroup(id,account);return chatContext(id,account);
 }
-export async function renameGroup(id,name){if(!validCode(id)||!name.trim()||name.trim().length>30)throw new Error('group-name');await rememberGroup(id,name.trim());}
-export async function joinChatGroup(code,name){const id=code.trim();if(!validCode(id))throw new Error('group-code');const ctx=await ensureMember(id);if(name)await rememberGroup(id,name.trim().slice(0,30));return ctx;}
-export async function createChatGroup(name){const account=await chatAccount(),id=newFamilyCode();await setDoc(familyRef(id),{createdBy:account.user.uid,createdAt:serverTimestamp()});const ctx=await ensureMember(id);await rememberGroup(id,name.trim().slice(0,30)||'新しいグループ');return ctx;}
+export async function renameGroup(id,name){
+  const account=await chatAccount(),value=name.trim();
+  if(!validCode(id)||!value||value.length>30)throw new Error('group-name');
+  await setDoc(familyRef(id),{name:value},{merge:true});
+  await rememberGroup(id,account);
+}
+export async function setGroupAlias(id,alias){
+  const account=await chatAccount(),value=alias.trim();if(!validCode(id)||value.length>30)throw new Error('group-alias');
+  const ref=doc(db,'users',account.user.uid,'groups',id),old=await getDocFromServer(ref);
+  if(!old.exists())throw new Error('group-missing');
+  await setDoc(ref,{...old.data(),alias:value});await rememberGroup(id,account);
+}
+export async function joinChatGroup(code){const id=code.trim();if(!validCode(id))throw new Error('group-code');return ensureMember(id);}
+export async function createChatGroup(name){
+  const value=name.trim(),account=await chatAccount(),id=newFamilyCode();
+  if(!value||value.length>30)throw new Error('group-name');
+  await setDoc(familyRef(id),{name:value,createdBy:account.user.uid,createdAt:serverTimestamp()});
+  const ctx=await ensureMember(id);return ctx;
+}
+export async function groupMembers(id){
+  if(!validCode(id))throw new Error('group-code');
+  const rows=await getDocsFromServer(query(collection(db,'families',id,'members'),limit(100)));
+  return rows.docs.map(row=>({uid:row.id,accountId:row.data().accountId||'',joinedAt:row.data().joinedAt}));
+}
+export async function leaveGroup(id){
+  const account=await chatAccount();if(!validCode(id))throw new Error('group-code');
+  await setDoc(familyRef(id),{membershipChangedAt:serverTimestamp()},{merge:true});
+  await deleteDoc(memberRef(id,account.user.uid));
+  try{await deleteDoc(doc(db,'users',account.user.uid,'groups',id));}catch{/* Server restoration filters memberships that have already been removed. */}
+  const groups=savedGroups().filter(g=>g.id!==id);
+  localStorage.setItem(groupStorageKey(account.user.uid),JSON.stringify(groups));
+  return groups;
+}
+export async function sendFriendRequest(targetUid,fid){
+  const account=await chatAccount();if(targetUid===account.user.uid||!validCode(fid))throw new Error('friend-target');
+  return setDoc(doc(db,'users',targetUid,'friendRequests',account.user.uid),{
+    senderUid:account.user.uid,senderId:account.data.accountId,fid,createdAt:serverTimestamp()
+  });
+}
+export async function pendingFriendRequests(){
+  const account=await chatAccount();
+  const rows=await getDocsFromServer(query(collection(db,'users',account.user.uid,'friendRequests'),limit(100)));
+  return rows.docs.map(row=>({id:row.id,...row.data()}));
+}
+export async function acceptFriendRequest(senderUid){
+  const account=await chatAccount(),uid=account.user.uid,ref=doc(db,'users',uid,'friendRequests',senderUid);
+  const request=await getDocFromServer(ref);if(!request.exists())throw new Error('request-missing');
+  const pair=senderUid+'--'+uid;
+  await setDoc(doc(db,'friendships',pair),{senderUid,targetUid:uid,senderId:request.data().senderId,targetId:account.data.accountId,members:[senderUid,uid],acceptedAt:serverTimestamp()});
+  await deleteDoc(ref);
+}
+export async function rejectFriendRequest(senderUid){
+  const account=await chatAccount();await deleteDoc(doc(db,'users',account.user.uid,'friendRequests',senderUid));
+}
+export async function friendList(){
+  const account=await chatAccount(),uid=account.user.uid;
+  const rows=await getDocsFromServer(query(collection(db,'friendships'),where('members','array-contains',uid),limit(100)));
+  return rows.docs.map(row=>({id:row.id,...row.data(),uid:row.data().senderUid===uid?row.data().targetUid:row.data().senderUid,
+    accountId:row.data().senderUid===uid?row.data().targetId:row.data().senderId}));
+}
+export async function removeFriend(pair){
+  if(!pair||pair.length>256)throw new Error('friend-id');
+  await deleteDoc(doc(db,'friendships',pair));
+}
+export async function publishActivity(quests,day){
+  if(!quests.days?.[day]?.length)return;
+  const account=await chatAccount(),uid=account.user.uid;
+  await setDoc(doc(db,'users',uid,'activity',day),{done:true});
+  const results=await Promise.allSettled(savedGroups().map(group=>setDoc(doc(db,'families',group.id,'activity',day+'_'+uid),{uid,day,done:true})));
+  if(results.some(r=>r.status==='rejected'))throw new Error('group-activity');
+}
+export async function friendActivity(uid){
+  const rows=await getDocsFromServer(query(collection(db,'users',uid,'activity'),limit(400)));
+  return new Set(rows.docs.filter(row=>row.data().done===true).map(row=>row.id));
+}
+export async function groupActivity(fid){
+  const rows=await getDocsFromServer(query(collection(db,'families',fid,'activity'),limit(5000)));
+  return rows.docs.filter(row=>row.data().done===true).map(row=>row.data());
+}
