@@ -520,7 +520,7 @@
   -webkit-mask-image:radial-gradient(ellipse 48% 27% at 51% 53%,#0001 0 45%,#0008 75%,#000 105%),linear-gradient(115deg,transparent 39%,#0004 44%,#000 48%,#000b 52%,transparent 58%);
   mask-size:100% 100%,300% 100%;mask-position:0 0,140% 0;mask-repeat:no-repeat;mask-composite:intersect;
   -webkit-mask-size:100% 100%,300% 100%;-webkit-mask-position:0 0,140% 0;-webkit-mask-repeat:no-repeat;-webkit-mask-composite:source-in;
-  animation:prism-reflection-band 7.5s ease-in-out infinite;
+  animation:prism-reflection-band 3s ease-in-out infinite;
 }
 .layered-card.full-art-card.foil-ssr-prism .full-art-foil{
   z-index:2;opacity:.9;mix-blend-mode:overlay;
@@ -533,17 +533,36 @@
     radial-gradient(circle at 25% 35%,#fff 0 .8px,transparent 2px) 0 0/37px 51px,
     radial-gradient(ellipse 5% 7% at var(--prism-x,72%) var(--prism-y,25%),#fff8,transparent 100%);
 }
-.layered-card.full-art-card.foil-ssr-prism.prism-follow-pointer .full-art-foil,
-.layered-card.full-art-card.foil-ssr-prism.prism-follow-pointer .full-art-glint{
-  animation:none;mask-position:0 0,var(--prism-band-x,50%) 0;-webkit-mask-position:0 0,var(--prism-band-x,50%) 0;
-}
 @keyframes prism-reflection-band{
   0%,12%{mask-position:0 0,140% 0;-webkit-mask-position:0 0,140% 0}
   68%,100%{mask-position:0 0,-100% 0;-webkit-mask-position:0 0,-100% 0}
 }
+/* Alternate foil for comparing the light treatment on the adopted Rousseau art. */
+.layered-card.full-art-card.foil-ssr-stardust .full-art-foil,
+.layered-card.full-art-card.foil-ssr-stardust .full-art-glint{
+  mask-image:radial-gradient(ellipse 40% 38% at 50% 50%,transparent 0 65%,#0008 100%,#000 130%);
+  -webkit-mask-image:radial-gradient(ellipse 40% 38% at 50% 50%,transparent 0 65%,#0008 100%,#000 130%);
+}
+.layered-card.full-art-card.foil-ssr-stardust .full-art-foil{
+  z-index:2;opacity:.58;mix-blend-mode:overlay;
+  background:radial-gradient(circle at 18% 22%,#fff4bd 0 1px,transparent 3px) 0 0/31px 47px,
+    radial-gradient(circle at 70% 70%,#84eaff 0 1.5px,transparent 3px) 7px 13px/53px 37px,
+    radial-gradient(circle at 38% 63%,#ffa3d8 0 1px,transparent 2px) 19px 5px/41px 61px;
+}
+.layered-card.full-art-card.foil-ssr-stardust .full-art-glint{
+  z-index:3;opacity:.64;mix-blend-mode:screen;
+  background:linear-gradient(110deg,transparent 36%,#92eaff22 44%,#fff7d8b8 50%,#fba7e444 56%,transparent 64%);
+  background-size:300% 100%;background-position:140% 0;
+  animation:ssr-stardust-sweep 3s ease-in-out infinite;
+}
+@keyframes ssr-stardust-sweep{
+  0%,12%{background-position:140% 0}
+  68%,100%{background-position:-100% 0}
+}
 @media(prefers-reduced-motion:reduce){
   .layered-card.full-art-card.foil-ssr-prism .full-art-foil,
   .layered-card.full-art-card.foil-ssr-prism .full-art-glint{animation:none;filter:none;mask-position:0 0,56% 0;-webkit-mask-position:0 0,56% 0}
+  .layered-card.full-art-card.foil-ssr-stardust .full-art-glint{animation:none;background-position:50% 0}
 }
 .layer-lab-card .lab-hide-character .card-full-art{display:none}
 .layered-card.full-art-card.foil-ur-cosmic .full-art-foil,
