@@ -42,6 +42,11 @@ try{
       assert.equal(await page.locator('[data-panel="'+target+'"]').isVisible(),true);
       await page.locator('.game-nav [data-target="home"]').click();
     }
+    await page.locator('.game-nav [data-target="bonus"]').click();
+    await page.locator('#gameCoinDraw').click();
+    await page.waitForSelector('#gameResult .draw-result');
+    assert.match(await page.locator('#gachaMachine').getAttribute('class'),/is-revealed rarity-(n|r|sr|ssr|ur)/);
+    assert.equal(await page.locator('#headerCoins').textContent(),'699');
     await page.locator('.settings-button').click();
     assert.equal(await page.locator('#devPanel').isVisible(),id==='junsakata0720');
     if(id==='junsakata0720'){
