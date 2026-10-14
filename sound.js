@@ -2,7 +2,8 @@ const pref=key=>'mogumogu:'+key;
 let enabled=localStorage.getItem(pref('sound'))!=='off',musicEnabled=localStorage.getItem(pref('bgm'))==='on',context=null,activated=false;
 let soundVolume=Number(localStorage.getItem(pref('sound-volume'))??60)/100;
 let bgmVolume=Number(localStorage.getItem(pref('bgm-volume'))??35)/100;
-const samples=new Map(),sampleKinds=['button','tab','success','confirm','error'];
+const samples=new Map(),sampleKinds=['tab','success','confirm','error'];
+let lastButtonSound=0;
 const bgm=new Audio(new URL('./assets/audio/flowerbed-fields.m4a',import.meta.url));bgm.loop=true;bgm.preload='none';
 function audio(){if(!context){const C=window.AudioContext||window.webkitAudioContext;if(C)context=new C();}if(context?.state==='suspended')void context.resume();return context;}
 function notes(frequencies,duration=.11,volume=.055,channel='sound'){
@@ -10,6 +11,21 @@ function notes(frequencies,duration=.11,volume=.055,channel='sound'){
   const ctx=audio();if(!ctx)return;
   const start=ctx.currentTime;
   frequencies.forEach((f,i)=>{const oscillator=ctx.createOscillator(),gain=ctx.createGain(),at=start+i*duration;oscillator.type='sine';oscillator.frequency.value=f;gain.gain.setValueAtTime(0,at);gain.gain.linearRampToValueAtTime(volume*(channel==='sound'?soundVolume:bgmVolume),at+.01);gain.gain.exponentialRampToValueAtTime(.0001,at+duration*.95);oscillator.connect(gain).connect(ctx.destination);oscillator.start(at);oscillator.stop(at+duration);});
+}
+function softButton(){
+  const now=performance.now();if(now-lastButtonSound<75)return;lastButtonSound=now;
+  const ctx=audio();if(!ctx)return;
+  const start=ctx.currentTime,osc=ctx.createOscillator(),gain=ctx.createGain(),filter=ctx.createBiquadFilter();
+  osc.type='sine';filter.type='lowpass';filter.frequency.value=1150;
+  osc.frequency.setValueAtTime(435,start);
+  osc.frequency.exponentialRampToValueAtTime(285,start+.075);
+  osc.frequency.exponentialRampToValueAtTime(345,start+.105);
+  osc.frequency.exponentialRampToValueAtTime(240,start+.17);
+  gain.gain.setValueAtTime(.0001,start);
+  gain.gain.exponentialRampToValueAtTime(Math.max(.0002,soundVolume*.065),start+.012);
+  gain.gain.exponentialRampToValueAtTime(.0001,start+.19);
+  osc.connect(filter).connect(gain).connect(ctx.destination);
+  osc.start(start);osc.stop(start+.2);
 }
 async function loadSamples(){
   const ctx=audio();if(!ctx)return;
@@ -21,9 +37,10 @@ async function loadSamples(){
 export function playSound(kind,rarity){
   try{
     if(!enabled||!activated||document.hidden)return;
+    if(kind==='button'){softButton();return;}
     const buffer=samples.get(kind);
     if(buffer){const ctx=audio(),source=ctx.createBufferSource(),gain=ctx.createGain();source.buffer=buffer;gain.gain.value=soundVolume*.55;source.connect(gain).connect(ctx.destination);source.start();return;}
-    const tunes={start:[330,440,660],new:[784,988,1175],button:[360,520],tab:[580],success:[523,659,784],confirm:[440,587],error:[330,294],N:[440],R:[523,659],SR:[523,659,784],SSR:[523,659,784,1047],UR:[262,392,523,784,1047]};
+    const tunes={start:[330,440,660],new:[784,988,1175],tab:[580],success:[523,659,784],confirm:[440,587],error:[330,294],N:[440],R:[523,659],SR:[523,659,784],SSR:[523,659,784,1047],UR:[262,392,523,784,1047]};
     notes(tunes[kind==='reveal'?rarity:kind]||tunes.N,rarity==='UR'?.22:.11);
   }catch{/* Audio must never interrupt a saved action. */}
 }

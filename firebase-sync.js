@@ -1,7 +1,7 @@
 // Passwords are managed solely by Firebase Authentication.
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js';
 import {getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,EmailAuthProvider,reauthenticateWithCredential,updatePassword} from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js';
-import {getFirestore,collection,doc,setDoc,getDocFromServer,getDocs,getDocsFromServer,onSnapshot,runTransaction,serverTimestamp,query,orderBy,limit,startAfter,where,deleteDoc} from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js';
+import {getFirestore,collection,doc,documentId,setDoc,getDocFromServer,getDocs,getDocsFromServer,onSnapshot,runTransaction,serverTimestamp,query,orderBy,limit,startAfter,where,deleteDoc} from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js';
 import {accountAddress,normalizeAccountId} from './account-id.js';
 import {ownedRecord,groupStorageKey} from './account-compat.js';
 const config = {
@@ -217,10 +217,10 @@ export async function publishActivity(quests,day){
   if(results.some(r=>r.status==='rejected'))throw new Error('group-activity');
 }
 export async function friendActivity(uid){
-  const rows=await getDocsFromServer(query(collection(db,'users',uid,'activity'),limit(400)));
+  const rows=await getDocsFromServer(query(collection(db,'users',uid,'activity'),orderBy(documentId(),'desc'),limit(400)));
   return new Set(rows.docs.filter(row=>row.data().done===true).map(row=>row.id));
 }
 export async function groupActivity(fid){
-  const rows=await getDocsFromServer(query(collection(db,'families',fid,'activity'),limit(5000)));
+  const rows=await getDocsFromServer(query(collection(db,'families',fid,'activity'),orderBy(documentId(),'desc'),limit(5000)));
   return rows.docs.filter(row=>row.data().done===true).map(row=>row.data());
 }

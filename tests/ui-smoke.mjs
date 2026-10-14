@@ -32,12 +32,23 @@ try{
     assert.match(page.url(),/\/p\/app\//);
     assert.equal(await page.locator('#accountName').textContent(),id);
     assert.equal(await page.locator('[data-dev-entry]').evaluateAll(items=>items.every(item=>!item.hidden)),id==='junsakata0720');
+    assert.equal(await page.locator('[data-panel="bonus"] #coins,[data-panel="bonus"] #markedDays,[data-panel="bonus"] #bonusDays,[data-panel="bonus"] [data-dev-entry]').count(),0);
+    assert.equal(await page.locator('.header-values .header-value').count(),3);
+    assert.equal(await page.locator('#headerCoins').textContent(),'789');
+    assert.equal(await page.locator('#headerTickets').textContent(),'4');
+    assert.equal(await page.locator('.home-rewards .reward-strip button').count(),3);
+    for(const [index,target] of [[0,'bonus'],[1,'bonus'],[2,'calendar']]){
+      await page.locator('.home-rewards .reward-strip button').nth(index).click();
+      assert.equal(await page.locator('[data-panel="'+target+'"]').isVisible(),true);
+      await page.locator('.game-nav [data-target="home"]').click();
+    }
     await page.locator('.settings-button').click();
     assert.equal(await page.locator('#devPanel').isVisible(),id==='junsakata0720');
     if(id==='junsakata0720'){
-      await page.locator('#prismTrialArt').selectOption('v2');
       await page.waitForFunction(()=>document.querySelector('#ssrPrismTrial .card-full-art')?.naturalWidth>0);
-      assert.match(await page.locator('#ssrPrismTrial .card-full-art').getAttribute('src'),/_v2\.webp$/);
+      assert.match(await page.locator('#ssrPrismTrial .card-full-art').getAttribute('src'),/rousseau_jungle_ssr\.webp/);
+      await page.locator('#prismTrialMode').selectOption('ssr-stardust');
+      assert.equal(await page.locator('#ssrPrismTrial .foil-ssr-stardust').count(),1);
       assert.match(await page.locator('#ssrPrismTrial .card-ssr-gold').getAttribute('src'),/ssr-gold-trim\.svg$/);
     }
     assert.equal(await page.locator('#soundToggle').getAttribute('aria-pressed'),'true');

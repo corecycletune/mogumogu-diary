@@ -10,8 +10,8 @@
 <body>
 <main class="shell">
   <header class="topbar game-header">
-    <div><span class="greeting">🍙 あなたの毎日</span><h1>モグモグデイリークエスト</h1><div class="header-metrics"><span>🎫 <strong id="headerTickets">—</strong>枚</span><span>🌱 <strong id="headerStreak">—</strong>日</span></div></div>
-    <div class="header-tools"><span class="coin-pill" aria-label="所持コイン">🪙 <strong id="headerCoins">—</strong><span>コイン</span></span><button class="settings-button" type="button" data-target="history" aria-label="設定" aria-selected="false">⚙️</button></div>
+    <div><span class="greeting">🍙 あなたの毎日</span><h1>モグモグデイリークエスト</h1></div>
+    <div class="header-tools"><div class="header-values" aria-label="現在のごほうび"><span class="header-value" aria-label="所持コイン">🪙 <strong id="headerCoins">—</strong><small>コイン</small></span><span class="header-value" aria-label="所持ガチャ券">🎫 <strong id="headerTickets">—</strong><small>枚</small></span><span class="header-value" aria-label="個人のクエスト連続記録">🌱 <strong id="headerStreak">—</strong><small>日</small></span></div><button class="settings-button" type="button" data-target="history" aria-label="設定" aria-selected="false">⚙️</button></div>
   </header>
   <nav class="tabs game-nav" aria-label="メインナビゲーション">
     <button class="tab" data-target="home" aria-selected="true" aria-current="page"><span aria-hidden="true">⌂</span>ホーム</button>
@@ -31,7 +31,7 @@
 
     </div>
     <article class="card home-meal"><div class="meal-banner"><span class="meal-icon" aria-hidden="true">🍚</span><div><h2>ごはんを記録する</h2><p>今日もおいしく、自分のペースで。</p></div></div><button class="btn primary meal-action" type="button" data-target="timer">ごはんを記録する <span aria-hidden="true">›</span></button></article>
-    <article class="card home-rewards"><div class="panel-heading"><h2>🎁 もらえるごほうび</h2><button type="button" class="link-button" data-target="bonus">ガチャへ ›</button></div><div class="reward-strip"><div><span aria-hidden="true">🎫</span><strong id="homeTickets">0枚</strong><small>所持ガチャ券</small></div><div><span aria-hidden="true">🎁</span><strong id="homeQuestReward">解放待ち</strong><small>今日のごほうびガチャ</small></div><div><span aria-hidden="true">🌱</span><strong id="homeStreak">0日</strong><small>クエスト連続記録</small></div></div><p class="small">クエストを1件でも達成すると、その日1回ガチャが引けます。</p><p id="homeMulti" class="small"></p><button class="link-button" type="button" data-target="calendar">📅 スタンプカードを見る ›</button></article>
+    <article class="card home-rewards"><div class="panel-heading"><h2>🎁 もらえるごほうび</h2><button type="button" class="link-button" data-target="bonus">ガチャへ ›</button></div><div class="reward-strip"><button type="button" data-target="bonus" aria-label="所持ガチャ券を見る・ガチャへ"><span aria-hidden="true">🎫</span><strong id="homeTickets">—</strong><small>所持ガチャ券</small></button><button type="button" data-target="bonus" aria-label="今日のごほうびガチャへ"><span aria-hidden="true">🎁</span><strong id="homeQuestReward">準備中</strong><small>今日のごほうびガチャ</small></button><button type="button" data-target="calendar" aria-label="クエスト連続記録を見る・スタンプへ"><span aria-hidden="true">🌱</span><strong id="homeStreak">—</strong><small>クエスト連続記録</small></button></div><p class="small">クエストを1件でも達成すると、その日1回ガチャが引けます。</p><p id="homeMulti" class="small"></p><button class="link-button" type="button" data-target="calendar">📅 スタンプカードを見る ›</button></article>
     <article class="card home-cards"><div class="panel-heading"><h2>📚 あつめたカード</h2><button type="button" class="link-button" data-target="collection">もっと見る ›</button></div><p id="homeCardCount" class="small">仲間を集めよう。</p><div id="homeCards" class="home-card-grid"></div></article>
   </section>
   <section data-panel="menu" hidden><div class="card"><h2 class="section-title">☰ メニュー</h2><div class="menu-grid"><button class="btn secondary" data-target="timer" type="button">🍚 ごはんの記録</button><button class="btn secondary" data-target="home" type="button">🌱 デイリークエスト</button><button class="btn secondary" data-target="calendar" type="button">📅 スタンプカード</button><button class="btn secondary" data-target="family" type="button">💬 グループのおしゃべり</button><button class="btn secondary" data-target="history" type="button">⚙️ 設定・食事の履歴</button><a class="btn secondary" href="../../">🍀 ログイン画面へ</a></div></div></section>
@@ -134,19 +134,7 @@
             <option value="UR">隠しカードを確認（開発者用）</option>
           </select>
           <label class="label" for="devCharacter">代表カードを直接確認</label>
-          <select class="field" id="devCharacter">
-            <option value="random">ランダム抽選を使う</option>
-            <option value="omu_ichika_ssr">SSR：きらめきオムライス姫</option>
-            <option value="rice_n">N：おこめちゃん【5段階比較】</option>
-            <option value="secret_rinpa_ur">SSR：宗達の千年黄金おこめ【開発用のみ】</option>
-            <option value="mango_r">R：マンゴー王子【新】</option>
-            <option value="newton_apple_sr">SR：ニュートンりんご【新】</option>
-            <option value="vangogh_bread_ssr">SSR：ゴッホのひまわりパン【新】</option>
-            <option value="hokusai_wave_ssr">SSR：北斎・大波の和菓子</option>
-            <option value="omu_ketchup_r">R：ケチャップオムライス</option>
-            <option value="newton_apple_sr">SR：ニュートンりんご</option>
-            <option value="rice_n">N：おこめちゃん</option>
-          </select>
+          <select class="field" id="devCharacter"><option value="random">ランダム抽選を使う</option></select>
           <p class="small">カードを指定した場合は、レア度の選択より優先します。</p>
           <p class="small" id="devConnectionStatus">本番の接続状態を確認中…</p>
           <p class="small" id="devDrawCount">テスト抽選：0回</p>
@@ -158,15 +146,10 @@
       <section id="layerLab" class="layer-lab" hidden aria-label="5レイヤーカード動作確認"></section>
   </section>
   <section data-panel="bonus" hidden>
-    <div class="card">
-      <h2 class="section-title">ガチャ</h2>
-      <div class="metrics"><div class="metric"><strong id="coins">0</strong><span>コイン</span></div><div class="metric"><strong id="markedDays">0</strong><span>記録した日</span></div><div class="metric"><strong id="bonusDays">0</strong><span>ログインした日</span></div></div>
-
-    </div>
-    <p data-dev-entry hidden><a class="btn secondary" href="./?dev=1#developer">🧪 動作確認モードを開く</a></p>
     <div class="card" id="gachaCard">
       <h2 class="section-title">🎁 もぐもぐガチャ</h2>
       <p id="gameStatus" class="small" role="status"></p>
+      <div id="gachaMachine" class="gacha-machine" aria-hidden="true"><div class="machine-stars">✧　✦　✧</div><div class="machine-window"><span class="machine-capsule">🍙</span><span class="machine-glow"></span></div><div class="machine-base"><span class="machine-dial">✦</span><span class="machine-label">どんな仲間に会えるかな</span></div></div>
       <div class="game-wallet">
         <div><span>🪙 コイン</span><strong id="gameCoinCount">--</strong></div>
         <div><span>🎫 ガチャ券</span><strong id="gameTickets">0</strong></div>

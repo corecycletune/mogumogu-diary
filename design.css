@@ -62,3 +62,16 @@ summary{min-height:44px;align-content:center;cursor:pointer;font-weight:700}deta
 
 /* Account entry uses the same cream panels and coral actions as the game. */
 .account-shell{max-width:520px}.account-mascot{display:block;margin:0 auto 12px}.account-shell h1{font-size:clamp(1.3rem,4.5vw,1.9rem)}.account-shell .card{text-align:left}.account-shell input{margin-bottom:12px}.account-shell button{min-height:44px}.account-shell #accountSubmit{width:100%;margin-top:12px}.account-import{display:flex;gap:10px;align-items:center;min-height:44px;margin-top:8px}.account-import input{width:20px;height:20px;margin:0;flex-shrink:0}.account-loading{position:fixed;inset:0;z-index:1000;margin:0;background:#fff8ee;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;color:var(--ink,#593f2c)}
+
+/* The three current values share the header; reward tiles are complete buttons. */
+.header-values{display:flex;align-items:center;gap:6px;min-width:0}
+.header-value{display:flex;align-items:baseline;justify-content:center;gap:3px;white-space:nowrap;background:#fff9e9;border:2px solid #e8cda1;border-radius:18px;padding:8px 10px;box-shadow:var(--shadow);font-size:17px}
+.header-value strong{font-size:20px}.header-value small{font-size:11px;color:var(--sub)}
+.header-tools{min-width:0}.reward-strip>button{appearance:none;background:#fff1ca;border:1px solid #edd7a0;border-radius:18px;text-align:center;padding:12px 5px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;color:var(--ink);font:inherit;cursor:pointer;min-width:0;min-height:104px}
+.reward-strip>button>span{font-size:28px}.reward-strip>button strong{font-size:18px}.reward-strip>button small{font-size:11px;color:var(--sub)}
+.reward-strip>button:hover{background:#ffe8ae;transform:translateY(-2px)}.reward-strip>button:focus-visible{outline:3px solid #5b8c4a;outline-offset:2px}
+@media(max-width:760px){.game-header{flex-wrap:wrap}.game-header>.header-tools{width:100%;justify-content:space-between;gap:5px}.header-values{flex:1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.header-value{padding:7px 3px;font-size:13px}.header-value strong{font-size:16px}.header-value small{font-size:10px}.home-rewards .reward-strip>button{padding:9px 3px;gap:5px;min-height:98px}.home-rewards .reward-strip>button>span{font-size:24px}}
+@media(max-width:360px){.header-value{font-size:11px}.header-value strong{font-size:14px}.header-value small{font-size:9px}.game-header h1{font-size:18px}}
+/* Give the portrait room enough height on phones to keep the window, bed and floor visible. */
+@media(max-width:759px){.home-room{height:clamp(340px,calc(105vw - 34px),480px)}.room-background{object-position:center 57%}}
+@media(min-width:760px){.room-background{object-position:center 50%}}
