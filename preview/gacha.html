@@ -115,7 +115,7 @@ dialog::backdrop{background:#1c1412bb}
 <div class="result-shell">
 <div class="result-head"><strong>🥚 ガチャ結果（デモ）</strong><button id="close" aria-label="閉じる">×</button></div>
 <div id="resultBody" class="result-body"></div>
-<div class="result-foot"><button id="all" class="secondary" hidden>まとめて見る</button><button id="next" class="primary" hidden>次のカードへ</button><button id="done" class="primary">とじる</button></div>
+<div class="result-foot"><button id="all" class="secondary" hidden>まとめて見る</button><button id="prevPage" class="secondary" hidden>‹ 前へ</button><button id="next" class="primary" hidden>次のカードへ</button><button id="done" class="primary">とじる</button></div>
 </div>
 </dialog>
 </main>
@@ -123,24 +123,24 @@ dialog::backdrop{background:#1c1412bb}
 'use strict';
 const $=id=>document.getElementById(id),machine=$('machine');
 const rarityOrder=['N','R','SR','SSR','UR'],emoji=['🍙','🍊','🍎','🍓','🌌'];
-let count=1,results=[],index=0,flipped=false,active=false,skip=false,releaseWait=null;
+let count=1,results=[],index=0,flipped=false,active=false,skip=false,releaseWait=null,pageIndex=0;
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 function choice(){const r=$('rarity').value;return r==='random'?rarityOrder[Math.floor(Math.random()*5)]:r}
 function effect(rarity){const rank=rarityOrder.indexOf(rarity),n=Math.random();return n<([.98,.95,.78,.18,.08][rank])?'normal':n<([.999,.995,.98,.78,.38][rank])?'chance':'hot'}
 function wait(ms){if(skip||reduce)return Promise.resolve();return new Promise(resolve=>{const timer=setTimeout(()=>{releaseWait=null;resolve()},ms);releaseWait=()=>{clearTimeout(timer);releaseWait=null;resolve()}})}
 function finish(){skip=true;if(releaseWait)releaseWait()}
 function renderResult(){
-const body=$('resultBody');body.replaceChildren();
-const all=results.length>1&&index>=results.length;
-if(all){const grid=document.createElement('div');grid.className='grid';for(const rarity of results.slice(0,10)){const item=document.createElement('div');item.className='mini';item.textContent=emoji[rarityOrder.indexOf(rarity)];const span=document.createElement('span');span.textContent=rarity;item.append(span);grid.append(item)}body.append(grid)}
+const body=$('resultBody');body.replaceChildren();$('prevPage').hidden=true;
+const all=results.length>1&&(results.length===100||index>=results.length);
+if(all){const grid=document.createElement('div');grid.className='grid';for(const rarity of results.slice(pageIndex*10,pageIndex*10+10)){const item=document.createElement('div');item.className='mini';item.textContent=emoji[rarityOrder.indexOf(rarity)];const span=document.createElement('span');span.textContent=rarity;item.append(span);grid.append(item)}body.append(grid)}
 else if(results.length>1&&!flipped){const back=document.createElement('button');back.className='card-back';back.textContent='✦';back.setAttribute('aria-label',(index+1)+'枚目をめくる');back.onclick=()=>{flipped=true;renderResult()};body.append(back)}
 else{const rarity=results[Math.min(index,results.length-1)],front=document.createElement('div');front.className='card-front';front.textContent=emoji[rarityOrder.indexOf(rarity)];const name=document.createElement('small');name.textContent=results.length>1?(index+1)+' / '+results.length+'枚目':'1枚目';const label=document.createElement('b');label.textContent=rarity;front.append(name,label);body.append(front)}
-$('all').hidden=results.length<=1||all;$('next').hidden=results.length<=1||all||!flipped;
-$('next').textContent=index===results.length-1?'一覧を見る':'次のカードへ';
+$('all').hidden=results.length<=1||all;$('prevPage').hidden=results.length!==100||pageIndex===0;$('next').hidden=results.length===100?pageIndex>=9:results.length<=1||all||!flipped;
+$('next').textContent=results.length===100?'次の10枚へ ›':index===results.length-1?'一覧を見る':'次のカードへ';
 $('done').hidden=results.length>1&&!all;
 }
-function show(){index=0;flipped=false;renderResult();$('result').showModal();$('status').textContent=''}
-function next(){if(index<results.length-1){index++;flipped=false}else index=results.length;renderResult()}
+function show(){index=0;pageIndex=0;flipped=false;renderResult();$('result').showModal();$('status').textContent=''}
+function next(){if(results.length===100){pageIndex=Math.min(9,pageIndex+1)}else if(index<results.length-1){index++;flipped=false}else index=results.length;renderResult()}
 async function draw(){
 if(active)return;active=true;skip=false;const version=$('version').value;results=Array.from({length:count},choice);$('draw').disabled=true;$('skip').hidden=version!=='development'||count!==1;machine.dataset.stage='idle';
 try{
@@ -152,7 +152,7 @@ show();
 }finally{active=false;$('draw').disabled=false;$('skip').hidden=true;machine.dataset.stage='idle'}
 }
 for(const button of document.querySelectorAll('[data-count]'))button.onclick=()=>{if(active)return;count=Number(button.dataset.count);for(const tab of document.querySelectorAll('[data-count]'))tab.setAttribute('aria-pressed',String(tab===button));$('draw').textContent='🧪 '+count+'連を試す（未保存）'};
-$('draw').onclick=draw;$('skip').onclick=finish;$('close').onclick=()=>{$('result').close()};$('done').onclick=()=>{$('result').close()};$('next').onclick=next;$('all').onclick=()=>{index=results.length;renderResult()};
+$('draw').onclick=draw;$('skip').onclick=finish;$('close').onclick=()=>{$('result').close()};$('done').onclick=()=>{$('result').close()};$('next').onclick=next;$('prevPage').onclick=()=>{pageIndex=Math.max(0,pageIndex-1);renderResult()};$('all').onclick=()=>{index=results.length;renderResult()};
 $('version').onchange=()=>{$('status').textContent=$('version').value==='development'?'開発版の演出を選択しました。':'本番版の演出を選択しました。'};
 </script>
 </body></html>
