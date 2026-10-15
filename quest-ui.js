@@ -63,3 +63,81 @@ export function mountQuestPages({state,mutate,confirmCompletion,notice}){
     if(activeCount(q)<10)makeEditor(body,null);
     else body.append(node('p','上限10件です。卒業・削除すると新規登録できます。','small'));
   }
+
+  async function change(id,status){
+    const t=state().quests.tasks[id];if(!t)return;
+    if(status==='graduated'&&!confirm('「'+t.name+'」を卒業しますか？ 記録と最高記録は残ります。'))return;
+    if(await mutate('status',id,status)){
+      refresh();notice(status==='graduated'?'🎓 卒業しました！ これまでの積み重ねに拍手。':status==='paused'?'お休みにしました。':'再開しました。');
+      if(status==='graduated'&&detail.dialog.open){
+        const banner=node('div','🎓 卒業おめでとう！','quest-graduation');detail.body.prepend(banner);
+        setTimeout(()=>banner.remove(),2000);
+      }
+    }
+  }
+  async function move(id,direction){
+    const q=state().quests,ids=Object.entries(q.tasks).filter(([,t])=>taskStatus(t)==='active').sort((a,b)=>(a[1].order||0)-(b[1].order||0)).map(([key])=>key);
+    const i=ids.indexOf(id),j=i+direction;if(i<0||j<0||j>=ids.length)return;
+    [ids[i],ids[j]]=[ids[j],ids[i]];
+    if(await mutate('reorder',id,ids))refresh();
+  }
+  async function remove(id){
+    const t=state().quests.tasks[id];if(!t)return;
+    if(!confirm('「'+t.name+'」と達成履歴を削除しますか？ 元に戻せません。獲得済み報酬は残ります。'))return;
+    if(!confirm('最終確認：本当に完全削除しますか？'))return;
+    if(await mutate('delete',id)){
+      fromManager=false;detail.dialog.close();refresh();notice('クエストと達成履歴を削除しました。');
+    }
+  }
+  async function cancel(id){
+    if(!confirm('今日の達成を取り消しますか？ 今回獲得した報酬も精算されます。'))return;
+    if(await mutate('cancel',id)){refresh();notice('今日の達成を取り消しました。');}
+  }
+  async function editToday(id){
+    const {quests:q}=state(),t=q.tasks[id],day=localDay(),key=day+':'+id;
+    const input=prompt('今日の'+t.fieldLabel+'（空欄で値を削除）',q.values?.[key]||'');
+    if(input===null)return;const value=input.trim();
+    if(value.length>120||t.fieldType==='number'&&value!==''&&!Number.isFinite(Number(value))){notice('入力値を確認してください。');return;}
+    if(await mutate('value',id,value)){refresh();notice('今日の入力を変更しました。');}
+  }
+  function renderDetail(){
+    const q=state().quests,id=selected,t=q.tasks[id],body=detail.body;
+    body.replaceChildren();if(!t)return;
+    const status=taskStatus(t),day=localDay(),done=(q.days[day]||[]).includes(id);
+    detail.heading.textContent=t.name;
+    body.append(node('p',({active:'🌱 挑戦中',paused:'🌙 お休み中',graduated:'🎓 卒業済み'})[status],'small'));
+    const metrics=node('div','','quest-detail-metrics');
+    for(const [label,value] of [['連続',streakFor(q.days,id,day,q)+'日'],['累計',totalDone(q,id)+'回'],['最高',bestStreak(q,id)+'日']]){
+      const tile=node('div','','metric');tile.append(node('strong',value),node('span',label));metrics.append(tile);
+    }
+    body.append(metrics);
+    const next=nextMilestone(q.days,id,day,q);
+    if(next&&status==='active')body.append(node('p','次の報酬：あと'+next.remaining+'日で '+next.coins+'コイン','small'));
+    const controls=node('div','','button-row');
+    if(status==='active'){
+      if(done){controls.append(button('今日の達成を取り消す',()=>void cancel(id)));if(t.fieldLabel)controls.append(button('今日の入力を編集',()=>void editToday(id)));}
+      else controls.append(button('今日できた！',()=>confirmCompletion(id,t.name),'primary'));
+    }
+    if(controls.childElementCount)body.append(controls);
+    const edit=node('details','','quest-edit-details');edit.append(node('summary','名前・入力欄を編集'));
+    makeEditor(edit,id);body.append(edit);
+    const actions=node('div','','quest-detail-actions');
+    if(status==='active')actions.append(button('お休みにする',()=>void change(id,'paused')));
+    if(status!=='graduated')actions.append(button('卒業する',()=>void change(id,'graduated')));
+    if(status!=='active')actions.append(button('再開する',()=>void change(id,'active')));
+    actions.append(button('削除する',()=>void remove(id)));body.append(actions);
+    body.append(node('h3','達成履歴'));
+    const history=node('ul','','quest-history'),dates=new Set(Object.keys(q.days).filter(d=>(q.days[d]||[]).includes(id)));
+    for(const d of Object.keys(t.pauseDays||{}))dates.add(d);
+    const sorted=[...dates].sort().reverse();
+    for(const d of sorted){
+      const key=d+':'+id,v=q.values?.[key],meta=q.valueMeta?.[key];
+      const li=node('li',d+' · '+((q.days[d]||[]).includes(id)?'✓ 達成':'お休み'));
+      if(v!==undefined)li.append(node('span',' · '+(meta?.label||t.fieldLabel||'記録')+'：'+v+(meta?.unit||'')));
+      history.append(li);
+    }
+    if(!sorted.length)history.append(node('li','まだ記録がありません。'));
+    body.append(history);
+  }
+  return {openDetail,openManage,refresh};
+}
