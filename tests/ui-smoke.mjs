@@ -73,26 +73,36 @@ try{
     await page.waitForFunction(()=>window.cloudWrites.length===1);
     const entry=await page.evaluate(()=>window.cloudWrites[0]);assert.equal(entry.profile,uid);assert.equal(entry.foodNote,'りんご');
     await page.locator('.game-nav [data-target="home"]').click();
-    await page.locator('.habit-manager > summary').click();
-    await page.locator('#questName').fill('体重を測る');
-    await page.locator('#questExtraEnabled').check();
-    await page.locator('#questExtraLabel').fill('体重');
-    await page.locator('#questAdd').click();
+    assert.equal(await page.locator('#questForm').count(),0); // Home never shows registration.
+    await page.locator('#questManage').click();
+    await page.locator('.quest-screen[open] .quest-editor input[type=text]').first().fill('体重を測る');
+    await page.locator('.quest-screen[open] .quest-editor input[type=checkbox]').check();
+    await page.locator('.quest-screen[open] .quest-extra-fields input[type=text]').first().fill('体重');
+    await page.locator('.quest-screen[open] .quest-extra-fields select').selectOption('number');
+    await page.locator('.quest-screen[open] .quest-extra-fields input[type=text]').last().fill('kg');
+    await page.locator('.quest-screen[open] .quest-editor button[type=submit]').click();
+    await page.waitForFunction(()=>Object.keys(window.testQuests.tasks).length===1);
+    await page.locator('.quest-screen[open] .quest-screen-head button').click();
     const habit=page.locator('#questList .quest-row').filter({hasText:'体重を測る'});
     await habit.getByRole('button',{name:'できた！'}).click();
-    await page.locator('#questConfirm input').fill('52.5kg');
+    await page.locator('#questConfirm input').fill('52.5');
     await page.locator('#questConfirm').getByRole('button',{name:'完了する'}).click();
-    await page.waitForFunction(()=>Object.values(window.testQuests.values||{}).includes('52.5kg'));
+    await page.waitForFunction(()=>Object.values(window.testQuests.values||{}).includes('52.5'));
     await page.locator('.game-nav [data-target="calendar"]').click();
     const day=await page.evaluate(()=>Object.keys(window.testQuests.days)[0]);
     await page.locator('#calendarGrid [data-day="'+day+'"]').click();
     assert.match(await page.locator('#stampDetails').textContent(),/体重.*52\.5kg/);
     await page.locator('#stampDetails').getByRole('button',{name:'閉じる'}).click();
     await page.locator('.game-nav [data-target="home"]').click();
-    page.once('dialog',dialog=>dialog.accept());
-    await habit.getByRole('button',{name:'削除する'}).click();
+    await habit.getByRole('button',{name:'体重を測る'}).click();
+    assert.match(await page.locator('.quest-screen[open]').textContent(),/達成履歴/);
+    page.on('dialog',dialog=>dialog.accept());
+    await page.locator('.quest-screen[open]').getByRole('button',{name:'今日の達成を取り消す'}).click();
+    await page.waitForFunction(()=>!Object.values(window.testQuests.days).flat().some(id=>id!=='meal'));
+    await page.locator('.quest-screen[open]').getByRole('button',{name:'削除する'}).click();
     await page.waitForFunction(()=>Object.keys(window.testQuests.tasks).length===0);
-    assert.equal(await page.evaluate(()=>Object.values(window.testQuests.days).flat().length)>0,true);
+    assert.equal(await page.evaluate(()=>Object.values(window.testQuests.days).flat().length),0);
+    // Accept the explicit confirmation, then verify today's record is removed.
     for(const width of [320,768]){
       await page.setViewportSize({width,height:844});
       await page.locator('.game-nav [data-target="menu"]').click();
