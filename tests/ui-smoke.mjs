@@ -71,7 +71,7 @@ try{
       await page.locator('.game-nav [data-target="bonus"]').click();
       const before=await page.evaluate(()=>({writes:window.gameWrites,coins:document.querySelector('#headerCoins').textContent,tickets:document.querySelector('#headerTickets').textContent}));
       // Single-pull animated prototype: expectation and hatch cues must be cosmetic only.
-      await page.locator('#gameCoinDraw').click();
+      await page.locator('#gameFreeDraw').click();
       await page.waitForSelector('#gachaMachine.stage-search');
       assert.match(await page.locator('#gachaMachine').getAttribute('data-expectation'),/^(normal|chance|hot)$/);
       assert.match(await page.locator('#gachaMachine').getAttribute('data-hatch'),/^(normal|chance|hot)$/);
