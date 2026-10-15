@@ -43,10 +43,24 @@ try{
       await page.locator('.game-nav [data-target="home"]').click();
     }
     await page.locator('.game-nav [data-target="bonus"]').click();
+    assert.equal(await page.locator('#gachaMachine').getAttribute('data-draw-count'),'1');
+    await page.locator('.gacha-mode-switch [data-gacha-count="10"]').click();
+    assert.equal(await page.locator('[data-gacha-actions="1"]').isVisible(),false);
+    assert.equal(await page.locator('#gameTenDraw').isVisible(),true);
+    await page.locator('.gacha-mode-switch [data-gacha-count="1"]').click();
     await page.locator('#gameCoinDraw').click();
     await page.waitForSelector('#gameResult .draw-result');
+    assert.equal(await page.locator('#gachaResultDialog').evaluate(node=>node.open),true);
+    const bounds=await page.evaluate(()=>{
+      const dialog=document.querySelector('#gachaResultDialog'),card=document.querySelector('#gameResult .card-art');
+      return {dialog:dialog.getBoundingClientRect().toJSON(),card:card.getBoundingClientRect().toJSON(),height:innerHeight,width:innerWidth};
+    });
+    assert.ok(bounds.card.top>=0&&bounds.card.bottom<=bounds.height,'single-card art must fit viewport');
+    assert.ok(bounds.card.left>=0&&bounds.card.right<=bounds.width,'single-card art must fit width');
     assert.match(await page.locator('#gachaMachine').getAttribute('class'),/is-revealed rarity-(n|r|sr|ssr|ur)/);
     assert.equal(await page.locator('#headerCoins').textContent(),'699');
+    await page.locator('#gachaResultDone').click();
+    assert.equal(await page.locator('#gachaResultDialog').evaluate(node=>node.open),false);
     await page.locator('.settings-button').click();
     assert.equal(await page.locator('#devPanel').isVisible(),id==='junsakata0720');
     if(id==='junsakata0720'){

@@ -145,27 +145,53 @@
       <section id="layerLab" class="layer-lab" hidden aria-label="5レイヤーカード動作確認"></section>
   </section>
   <section data-panel="bonus" hidden>
-    <div class="card" id="gachaCard">
-      <h2 class="section-title">🎁 もぐもぐガチャ</h2>
+    <div class="card gacha-card-new" id="gachaCard">
+      <h2 class="section-title">🥚 もぐもぐガチャ</h2>
       <p id="gameStatus" class="small" role="status"></p>
-      <div id="gachaMachine" class="gacha-machine" aria-hidden="true"><div class="machine-stars">✧　✦　✧</div><div class="machine-window"><span class="machine-capsule">🍙</span><span class="machine-glow"></span></div><div class="machine-base"><span class="machine-dial">✦</span><span class="machine-label">どんな仲間に会えるかな</span></div></div>
-      <div class="game-wallet">
-        <div><span>🪙 コイン</span><strong id="gameCoinCount">--</strong></div>
-        <div><span>🎫 ガチャ券</span><strong id="gameTickets">0</strong></div>
-        <div><span>引いた回数</span><strong id="gamePullCount">0</strong></div>
+      <div class="game-wallet gacha-wallet">
+        <div><span>🪙 コイン</span><strong id="gameCoinCount">—</strong></div>
+        <div><span>🎫 ガチャ券</span><strong id="gameTickets">—</strong></div>
+        <div><span>出会った回数</span><strong id="gamePullCount">—</strong></div>
       </div>
-      <button type="button" class="btn primary game-free-button" id="gameFreeDraw" disabled>🔒 今日のクエストを1件達成すると引けます</button>
-      <div class="game-draw-actions">
-        <button type="button" class="btn secondary" id="gameCoinDraw" disabled>100コインで引く</button>
-        <button type="button" class="btn primary" id="gameTicketDraw" disabled>ガチャ券で引く</button>
+      <div id="gachaMachine" class="gacha-machine" data-draw-count="1">
+        <div class="gacha-machine-sign"><span>✦</span> モグモグガチャ <span>✦</span></div>
+        <div class="gacha-machine-window" aria-hidden="true">
+          <div class="gacha-machine-sky"></div>
+          <div class="gacha-claw-rail"></div><div class="gacha-claw"><span class="gacha-claw-head">★</span><span class="gacha-claw-prong left"></span><span class="gacha-claw-prong right"></span></div>
+          <div class="gacha-egg-pile"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+          <div class="gacha-machine-sparkle">✦　✧　✦</div>
+        </div>
+        <div class="gacha-machine-console">
+          <div class="gacha-mode-switch" role="group" aria-label="ガチャ回数を選ぶ">
+            <button type="button" data-gacha-count="1" aria-pressed="true">1連</button>
+            <button type="button" data-gacha-count="10" aria-pressed="false">10連</button>
+            <button type="button" data-gacha-count="100" aria-pressed="false">100連</button>
+          </div>
+          <div class="gacha-action-group" data-gacha-actions="1">
+            <button type="button" class="btn primary game-free-button" id="gameFreeDraw" disabled>今日のごほうびガチャ</button>
+            <div class="game-draw-actions">
+              <button type="button" class="btn secondary" id="gameCoinDraw" disabled>100コインで引く</button>
+              <button type="button" class="btn secondary" id="gameTicketDraw" disabled>ガチャ券で引く</button>
+            </div>
+          </div>
+          <div class="gacha-action-group" data-gacha-actions="10" hidden>
+            <button type="button" class="btn primary gacha-multi-main" id="gameTenDraw" disabled>🔒 10日連続で10連</button>
+          </div>
+          <div class="gacha-action-group" data-gacha-actions="100" hidden>
+            <button type="button" class="btn primary gacha-multi-main" id="gameHundredDraw" disabled>🔒 100日連続で100連</button>
+          </div>
+        </div>
       </div>
-      <div class="game-draw-actions multi-draw-actions"><button type="button" class="btn secondary" id="gameTenDraw" disabled>🔒 10日連続で10連</button><button type="button" class="btn secondary" id="gameHundredDraw" disabled>🔒 100日連続で100連</button></div><p class="small">クエストの連続記録で各1回のごほうび。ごはんの記録も含まれます。</p><div id="gameResult" aria-live="polite"></div>
-
-
-
+      <p class="gacha-help small">クエスト達成で今日の1回が解放。10連・100連は連続記録の特別なごほうびです。</p>
     </div>
-
   </section>
+  <dialog id="gachaResultDialog" class="gacha-result-dialog" aria-label="ガチャの結果">
+    <div class="gacha-result-shell">
+      <div class="gacha-result-header"><strong>🥚 あたらしい仲間との出会い</strong><button id="gachaResultClose" type="button" aria-label="結果を閉じる">✕</button></div>
+      <div id="gameResult" class="gacha-result" aria-live="polite"></div>
+      <div class="gacha-result-footer"><button id="gachaPagePrev" class="btn secondary" type="button" hidden>‹ 前へ</button><span id="gachaPageStatus" aria-live="polite"></span><button id="gachaPageNext" class="btn secondary" type="button" hidden>次へ ›</button><button id="gachaResultDone" class="btn primary" type="button">とじる</button></div>
+    </div>
+  </dialog>
   <p class="warning" id="offlineNotice" hidden></p>
   <p class="footer subtle">毎日の小さな積み重ねが、あなたの力になります。</p>
 </main><div class="toast" id="feedback" role="status" hidden></div>

@@ -35,7 +35,7 @@ function testSummary(){
 window.mogumoguGameManaged=true;
 const rarityRank=['N','R','SR','SSR','UR'];
 initSound();
-let latestResults=[],celebrating=false,collectionKey='',resultKey='',homeKey='';
+let latestResults=[],celebrating=false,collectionKey='',resultKey='',homeKey='',resultPage=0;
 const cardVisibility=typeof IntersectionObserver==='function'?new IntersectionObserver(entries=>{
   for(const entry of entries)entry.target.classList.toggle('card-in-view',entry.isIntersecting);
 },{rootMargin:'80px'}):null;
@@ -255,44 +255,52 @@ function showLatestDraw(){
   if(celebrating)return;
   const target=el('gameResult');
   const results=latestResults.length?latestResults:latestDraw?[latestDraw]:[];
-  const key=JSON.stringify(results);
+  const perPage=results.length>10?10:results.length||1;
+  const pages=Math.max(1,Math.ceil(results.length/perPage));
+  resultPage=Math.max(0,Math.min(resultPage,pages-1));
+  const key=JSON.stringify(results)+'|'+resultPage;
   if(key===resultKey)return;
   resultKey=key;releaseCards(target);target.replaceChildren();
   if(!results.length)return;
   const head=document.createElement('h3');head.className='game-win-title';
   head.textContent=results[0].test?'🧪 テスト結果（未保存）':results.length>1?results.length+'連のごほうび！':results[0].newCard?'あたらしい仲間！':'また会えた！';
   target.append(head);
-  const grid=document.createElement('div');grid.className=results.length>1?'multi-result-grid':'game-reveal';
-  for(const result of results){
+  const grid=document.createElement('div');grid.className=results.length>1?'multi-result-grid gacha-paged-grid':'game-reveal';
+  const visible=results.slice(resultPage*perPage,(resultPage+1)*perPage);
+  const shareActions=[];
+  for(const result of visible){
     const card=BY_ID[result.id],tile=document.createElement('div');tile.className='draw-result reveal-'+card.rarity.toLowerCase();
     const painted=paintCard(card,{copies:result.copies},false,results.length===1);
     if(result.newCard){const badge=document.createElement('span');badge.className='new-badge';badge.textContent='NEW';painted.append(badge);tile.classList.add('first-discovery');}
     tile.append(painted);
     if(!result.test&&['SSR','UR'].includes(card.rarity)){
-      const share=document.createElement('button');share.type='button';share.className='btn secondary share-card';share.textContent='グループにゲットを報告';
-      share.addEventListener('click',()=>window.dispatchEvent(new CustomEvent('mogumogu:share-card',{detail:{id:card.id}})));tile.append(share);
+      const share=document.createElement('button');share.type='button';share.className='btn secondary share-card';share.textContent='グループに報告：'+card.name;
+      share.addEventListener('click',()=>window.dispatchEvent(new CustomEvent('mogumogu:share-card',{detail:{id:card.id}})));shareActions.push(share);
     }
     grid.append(tile);
   }
   target.append(grid);
+  if(shareActions.length){const actions=document.createElement('div');actions.className='gacha-share-actions';actions.append(...shareActions);target.append(actions);}
   if(results.some(r=>r.test)){const hint=document.createElement('p');hint.className='game-test-warning';hint.textContent='練習ガチャです。コインやコレクションは変わりません。';target.append(hint);}
+  el('gachaPagePrev').hidden=pages===1||resultPage===0;
+  el('gachaPageNext').hidden=pages===1||resultPage===pages-1;
+  el('gachaPageStatus').textContent=pages>1?(resultPage+1)+' / '+pages:results.length+'枚';
 }
 async function preview(){
   celebrating=true;playSound('start');
   const machine=el('gachaMachine');machine.className='gacha-machine is-rolling';
+  el('gachaResultDialog').close?.();
   const target=el('gameResult');resultKey='';releaseCards(target);target.replaceChildren();
-  const hint=document.createElement('p');hint.className='gacha-preview-status';hint.setAttribute('role','status');hint.textContent='仲間を探しています…';target.append(hint);
-  machine.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'center'});
-  if(!matchMedia('(prefers-reduced-motion: reduce)').matches){await delay(650);playSound('confirm');await delay(650);}
+  status('🥚 タマゴを探しています…');
+  if(!matchMedia('(prefers-reduced-motion: reduce)').matches){await delay(350);playSound('confirm');await delay(300);}
 }
 async function reveal(results){
   const rank=Math.max(...results.map(r=>rarityRank.indexOf(BY_ID[r.id].rarity))),rarity=rarityRank[rank];
   el('gachaMachine').className='gacha-machine is-revealed rarity-'+rarity.toLowerCase();
   el('gameResult').className='gacha-result result-'+rarity.toLowerCase();
-  if(rarity==='UR'&&!matchMedia('(prefers-reduced-motion: reduce)').matches)await delay(400);
-  celebrating=false;latestResults=results;latestDraw=results[0];showLatestDraw();
-  playSound('reveal',rarity);
-  if(!matchMedia('(prefers-reduced-motion: reduce)').matches)await delay([180,280,420,650,850][rank]);
+  celebrating=false;resultPage=0;latestResults=results;latestDraw=results[0];showLatestDraw();
+  const dialog=el('gachaResultDialog');if(!dialog.open)dialog.showModal();
+  status('');playSound('reveal',rarity);
   if(results.some(r=>r.newCard))playSound('new');
 }
 function render(){
@@ -317,7 +325,7 @@ async function testPull(){
   testDrawCount++;
   latestDraw={id:card.id,copies:testInventory[card.id],newCard:testInventory[card.id]===1,test:true};
   await reveal([latestDraw]);setBusy(false);renderCollection();
-  el('gameResult').scrollIntoView({behavior:'smooth',block:'center'});
+  // Results are shown in a standalone viewport-sized dialog.
 }
 async function pull(mode){
   if(mode==='free'&&isTesting()){void testPull();return;}
@@ -361,13 +369,27 @@ if(devAvailable){
     message('テスト結果をリセットしました。');
   });
 }
+for(const button of document.querySelectorAll('[data-gacha-count]')){
+  if(button.tagName!=='BUTTON')continue;
+  button.addEventListener('click',()=>{
+    const count=button.dataset.gachaCount;
+    el('gachaMachine').dataset.drawCount=count;
+    for(const tab of document.querySelectorAll('.gacha-mode-switch button'))tab.setAttribute('aria-pressed',String(tab===button));
+    for(const group of document.querySelectorAll('[data-gacha-actions]'))group.hidden=group.dataset.gachaActions!==count;
+  });
+}
+const closeResult=()=>{const dialog=el('gachaResultDialog');if(dialog.open)dialog.close();};
+el('gachaResultClose').addEventListener('click',closeResult);
+el('gachaResultDone').addEventListener('click',closeResult);
+el('gachaPagePrev').addEventListener('click',()=>{if(resultPage>0){resultPage--;showLatestDraw();}});
+el('gachaPageNext').addEventListener('click',()=>{if(resultPage<Math.ceil(latestResults.length/10)-1){resultPage++;showLatestDraw();}});
 el('gameFreeDraw').addEventListener('click',()=>void pull('free'));
 el('gameCoinDraw').addEventListener('click',()=>void pull('coin'));
 el('gameTicketDraw').addEventListener('click',()=>void pull('ticket'));
 el('gameTenDraw').addEventListener('click',()=>void pull('multi10'));
 el('gameHundredDraw').addEventListener('click',()=>void pull('multi100'));
 el('collectionFilter').addEventListener('change',renderCollection);
-window.addEventListener('mogumogu:panel',event=>{if(event.detail.name==='collection')renderCollection();if(event.detail.name==='home')renderHome();});
+window.addEventListener('mogumogu:panel',event=>{closeResult();if(event.detail.name==='collection')renderCollection();if(event.detail.name==='home')renderHome();});
 window.addEventListener('focus',renderHeader);
 window.addEventListener('visibilitychange',()=>{if(!document.hidden)renderHeader();});
 setInterval(()=>{if(!document.hidden)renderHeader();},60000);
