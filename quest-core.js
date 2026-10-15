@@ -124,6 +124,7 @@ export function completeQuest(quests,game,taskId,day,at=new Date().toISOString()
   if(taskId!=='meal'){
     const t=q.tasks[taskId];
     if(t.pauseDays)delete t.pauseDays[day];
+    if(t.resumeIgnoreDay===day)delete t.resumeIgnoreDay;
     t.totalDone=Math.max(t.totalDone||0,Object.values(q.days).filter(ids=>ids.includes(taskId)).length);
     t.bestStreak=Math.max(t.bestStreak||0,streakFor(q.days,taskId,day,q));
     if(value!==''){
