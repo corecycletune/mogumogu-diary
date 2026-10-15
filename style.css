@@ -932,3 +932,28 @@ button.collection-card{font:inherit;text-align:left;color:inherit;width:100%;cur
 @media(min-width:700px){.gacha-result-shell{padding-top:24px;padding-bottom:24px}.gacha-result-dialog .multi-result-grid.gacha-paged-grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
 @media(max-height:680px){.gacha-result-shell{gap:2px;padding-top:5px;padding-bottom:5px}.gacha-result-header{min-height:30px}.gacha-result-dialog .game-win-title{margin-bottom:3px}.gacha-result-footer{min-height:42px}.gacha-result-footer .btn{min-height:38px}.gacha-result-dialog .multi-result-grid.gacha-paged-grid{max-width:min(560px,100%)}}
 @media(prefers-reduced-motion:reduce){.gacha-result-dialog .draw-result,.gacha-machine *{animation:none!important}}
+
+
+/* Ten-pull reveal: one card is mounted at a time, followed by the existing 10-card grid. */
+.gacha-flip-stage{width:min(300px,72vw,calc((100dvh - 210px)*.7));max-width:100%;perspective:1100px;margin:0 auto;flex:0 1 auto}
+.gacha-flip-card{position:relative;width:100%;aspect-ratio:4/5.45;transform-style:preserve-3d;transition:transform .56s cubic-bezier(.25,.72,.25,1);will-change:transform}
+.gacha-flip-card.is-flipped{transform:rotateY(180deg)}
+.gacha-flip-back,.gacha-flip-front{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:17px;overflow:hidden}
+.gacha-flip-back{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:14px;padding:16px;border:9px double #f5d78e;color:#fff6ce;background:radial-gradient(circle at 50% 42%,#8abda4 0%,#427e76 50%,#235f61 100%);box-shadow:inset 0 0 0 5px #296b65,0 9px 24px #354b3a55}
+.gacha-flip-back::before{content:"✦　✧　✦";position:absolute;top:8%;font-size:19px;letter-spacing:7px;color:#ffe6a7}
+.gacha-flip-back::after{content:"✦　✧　✦";position:absolute;bottom:7%;font-size:19px;letter-spacing:7px;color:#ffe6a7}
+.gacha-flip-emblem{display:grid;place-items:center;width:55%;aspect-ratio:1;border:3px solid #e8c982;border-radius:50%;background:radial-gradient(circle,#e2eed2,#87b9a5);font-size:clamp(54px,13vw,95px);box-shadow:0 0 0 7px #e7ca8550,0 5px 15px #204b4a70}
+.gacha-flip-mark{font-size:clamp(12px,3vw,18px);font-weight:900;letter-spacing:.09em;text-shadow:0 2px 3px #204b4a}
+.gacha-flip-invite{font-size:clamp(12px,2.8vw,15px);font-weight:800;animation:gacha-back-pulse 1.4s ease-in-out infinite}
+.gacha-flip-back:disabled{cursor:default}
+.gacha-flip-front{transform:rotateY(180deg);display:flex;align-items:center;justify-content:center;padding:2px;background:#fff9e9}
+.gacha-flip-front .collection-card{width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;padding:4px}
+.gacha-flip-front .card-art{width:100%;max-height:100%;flex:0 1 auto}
+.gacha-flip-front .card-lore{display:none}
+.gacha-flip-front .card-subtitle{font-size:11px}
+.gacha-flip-front .card-name{font-size:clamp(12px,3vw,17px)}
+.gacha-result-dialog .gacha-flip-stage~.game-test-warning{flex:none;margin:4px 0;padding:4px 9px;font-size:11px}
+.gacha-result-footer #gachaFlipNext,.gacha-result-footer #gachaFlipSkip{min-width:120px}
+@keyframes gacha-back-pulse{50%{opacity:.58;transform:scale(1.035)}}
+@media(max-height:620px){.gacha-flip-stage{width:min(230px,60vw,calc((100dvh - 165px)*.7))}.gacha-flip-back{gap:7px}.gacha-flip-back::before,.gacha-flip-back::after{font-size:13px}}
+@media(prefers-reduced-motion:reduce){.gacha-flip-card{transition:none;will-change:auto}.gacha-flip-invite{animation:none}}
