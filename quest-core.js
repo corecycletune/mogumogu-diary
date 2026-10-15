@@ -133,7 +133,7 @@ export function completeQuest(quests,game,taskId,day,at=new Date().toISOString()
     q.rewards['extra:'+day]=used+coins;
   }
   if(prior?.status!=='cancelled')for(const [kind,id,table] of [['overall',null,QUEST_BALANCE.overall],['individual',taskId,QUEST_BALANCE.individual]]){
-    const streak=streakFor(q.days,id,day),reward=table[streak];
+    const streak=streakFor(q.days,id,day,q),reward=table[streak];
     const key=kind+':'+(id||'any')+':'+day+':'+streak;
     if(reward&&!q.rewards[key]){coins+=reward;q.rewards[key]=reward;}
   }
