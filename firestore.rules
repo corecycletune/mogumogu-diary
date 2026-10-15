@@ -149,7 +149,7 @@ service cloud.firestore {
           exists(/databases/$(database)/documents/users/$(uid)/progress/quests) &&
           day in get(/databases/$(database)/documents/users/$(uid)/progress/quests).data.days &&
           get(/databases/$(database)/documents/users/$(uid)/progress/quests).data.days[day].size() > 0;
-        allow delete: if false;
+        allow delete: if hasAccount(uid) && (!exists(/databases/$(database)/documents/users/$(uid)/progress/quests) || !(day in get(/databases/$(database)/documents/users/$(uid)/progress/quests).data.days) || get(/databases/$(database)/documents/users/$(uid)/progress/quests).data.days[day].size() == 0);
       }
       match /friendRequests/{sender} {
         allow get: if hasAccount(uid) || hasAccount(sender);
@@ -252,7 +252,7 @@ service cloud.firestore {
           exists(/databases/$(database)/documents/users/$(request.auth.uid)/progress/quests) &&
           request.resource.data.day in get(/databases/$(database)/documents/users/$(request.auth.uid)/progress/quests).data.days &&
           get(/databases/$(database)/documents/users/$(request.auth.uid)/progress/quests).data.days[request.resource.data.day].size() > 0;
-        allow delete: if false;
+        allow delete: if isMember(fid) && resource.data.uid == request.auth.uid && (!exists(/databases/$(database)/documents/users/$(request.auth.uid)/progress/quests) || !(resource.data.day in get(/databases/$(database)/documents/users/$(request.auth.uid)/progress/quests).data.days) || get(/databases/$(database)/documents/users/$(request.auth.uid)/progress/quests).data.days[resource.data.day].size() == 0);
       }
     }
   }
