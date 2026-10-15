@@ -38,7 +38,16 @@ export function nextMilestone(days,taskId,day=localDay(),quests=null){
 }
 
 export function totalDone(q,id){return Math.max(q.tasks?.[id]?.totalDone||0,Object.values(q.days||{}).filter(ids=>ids.includes(id)).length);}
-export function bestStreak(q,id){return Math.max(q.tasks?.[id]?.bestStreak||0,streakFor(q.days,id,localDay(),q));}
+export function bestStreak(q,id){
+  const t=q.tasks?.[id],dates=Object.keys(q.days||{}).filter(day=>q.days[day].includes(id)).sort();
+  let best=t?.bestStreak||0,run=0,previous='';
+  for(const day of dates){
+    let connected=previous&&dayBefore(day)===previous;
+    if(previous&&!connected){let cursor=dayBefore(day),steps=0;connected=true;while(cursor>previous&&steps++<5000){if(!isPausedDay(t,cursor)){connected=false;break;}cursor=dayBefore(cursor);}}
+    run=connected?run+1:1;best=Math.max(best,run);previous=day;
+  }
+  return best;
+}
 export function creditReward(game,kind,amount){
   if(!Number.isSafeInteger(amount)||amount<0)throw new Error('invalid-reward');
   const field=kind==='tickets'?'tickets':'coins',debt=kind==='tickets'?'pendingTickets':'pendingCoins';
