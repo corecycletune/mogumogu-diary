@@ -11,12 +11,12 @@ try{
       import {emptyQuests} from './quest-core.js';
       const uid=${JSON.stringify(uid)},id=${JSON.stringify(id)},account={user:{uid},data:{accountId:id,profile:'unusedOldValue'}};
       let game={...freshGame(uid),coins:789,tickets:4,inventory:{rice_n:{copies:9}}},quests=emptyQuests(uid),meals=[];window.testQuests=quests;
-      const gameListeners=[],questListeners=[],mealListeners=[],meta={fromCache:false,hasPendingWrites:false};window.cloudWrites=[];
+      const gameListeners=[],questListeners=[],mealListeners=[],meta={fromCache:false,hasPendingWrites:false};window.cloudWrites=[];window.gameWrites=0;
       const ctx={uid,profile:uid,isAccount:true,ready:async()=>{},
         watchGame:fn=>{gameListeners.push(fn);fn(game,meta);return ()=>{};},
         watchQuests:fn=>{questListeners.push(fn);fn(quests,meta);return ()=>{};},
-        updateGame:async fn=>{const next=fn(game);if(next){game=next;for(const cb of gameListeners)cb(game,meta);}return next;},
-        updateAdventure:async fn=>{const next=fn(quests,game);if(next){quests=next.quests;window.testQuests=quests;if(next.game)game=next.game;for(const cb of gameListeners)cb(game,meta);for(const cb of questListeners)cb(quests,meta);}return next;},
+        updateGame:async fn=>{const next=fn(game);if(next){window.gameWrites++;game=next;for(const cb of gameListeners)cb(game,meta);}return next;},
+        updateAdventure:async fn=>{const next=fn(quests,game);if(next){window.gameWrites++;quests=next.quests;window.testQuests=quests;if(next.game)game=next.game;for(const cb of gameListeners)cb(game,meta);for(const cb of questListeners)cb(quests,meta);}return next;},
         watch:fn=>{mealListeners.push(fn);fn(meals,{fromCache:false,confirmedIds:meals.map(m=>m.id)});return ()=>{};},
         saveMeal:async entry=>{window.cloudWrites.push(entry);meals.push(entry);for(const fn of mealListeners)fn(meals,{fromCache:false,confirmedIds:meals.map(m=>m.id)});},
         deleteMeal:async()=>{}};
@@ -64,6 +64,42 @@ try{
     await page.locator('.settings-button').click();
     assert.equal(await page.locator('#devPanel').isVisible(),id==='junsakata0720');
     if(id==='junsakata0720'){
+      // Dev mode 10/100-pull previews must never spend coins/tickets or write game state.
+      await page.locator('#devPanel summary').click();
+      await page.locator('#devModeToggle').check();
+      await page.locator('.game-nav [data-target="bonus"]').click();
+      const before=await page.evaluate(()=>({writes:window.gameWrites,coins:document.querySelector('#headerCoins').textContent,tickets:document.querySelector('#headerTickets').textContent}));
+      await page.locator('.gacha-mode-switch [data-gacha-count="10"]').click();
+      assert.equal(await page.locator('#gameTenDraw').isEnabled(),true);
+      assert.match(await page.locator('#gameTenDraw').textContent(),/10連テスト/);
+      await page.locator('#gameTenDraw').click();
+      await page.waitForFunction(()=>document.querySelectorAll('#gameResult .draw-result').length===10);
+      assert.equal(await page.locator('#gachaResultDialog').evaluate(node=>node.open),true);
+      assert.match(await page.locator('.game-win-title').textContent(),/テスト結果/);
+      assert.equal(await page.locator('#gachaPageNext').isVisible(),false);
+      await page.locator('#gachaResultDone').click();
+      await page.locator('.gacha-mode-switch [data-gacha-count="100"]').click();
+      assert.equal(await page.locator('#gameHundredDraw').isEnabled(),true);
+      assert.match(await page.locator('#gameHundredDraw').textContent(),/100連テスト/);
+      await page.locator('#gameHundredDraw').click();
+      await page.waitForFunction(()=>document.querySelectorAll('#gameResult .draw-result').length===10);
+      assert.equal(await page.locator('#gachaPageStatus').textContent(),'1 / 10');
+      for(let i=0;i<9;i++)await page.locator('#gachaPageNext').click();
+      assert.equal(await page.locator('#gachaPageStatus').textContent(),'10 / 10');
+      assert.equal(await page.locator('#gachaPageNext').isVisible(),false);
+      await page.locator('#gachaPagePrev').click();
+      assert.equal(await page.locator('#gachaPageStatus').textContent(),'9 / 10');
+      await page.locator('#gachaResultDone').click();
+      assert.equal(await page.locator('#headerCoins').textContent(),before.coins);
+      assert.equal(await page.locator('#headerTickets').textContent(),before.tickets);
+      assert.equal(await page.evaluate(()=>window.gameWrites),before.writes);
+      await page.locator('.settings-button').click();
+      assert.match(await page.locator('#devDrawCount').textContent(),/110回/);
+      await page.locator('#devModeToggle').uncheck();
+      await page.locator('.game-nav [data-target="bonus"]').click();
+      await page.locator('.gacha-mode-switch [data-gacha-count="10"]').click();
+      assert.equal(await page.locator('#gameTenDraw').isEnabled(),false);
+      await page.locator('.settings-button').click();
       await page.waitForFunction(()=>document.querySelector('#ssrPrismTrial .card-full-art')?.naturalWidth>0);
       assert.match(await page.locator('#ssrPrismTrial .card-full-art').getAttribute('src'),/rousseau_jungle_ssr\.webp/);
       await page.locator('#prismTrialMode').selectOption('ssr-stardust');

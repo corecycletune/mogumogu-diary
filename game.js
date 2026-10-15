@@ -244,9 +244,9 @@ function renderHeader(){
   el('gameTicketDraw').textContent='ガチャ券で引く（'+state.tickets+'枚）';
   for(const size of [10,100]){
     const button=el(size===10?'gameTenDraw':'gameHundredDraw'),value=multiStatus(state,size);
-    button.disabled=busy||testing||!ready||value!=='available';
+    button.disabled=busy||(!testing&&(!ready||value!=='available'));
     button.classList.toggle('reward-available',value==='available');
-    button.textContent=value==='available'?'🎁 '+size+'連を引く（権利1回分）':value==='used'?'✓ '+size+'連のごほうびは使用済み':'🔒 '+size+'日連続で'+size+'連';
+    button.textContent=testing?'🧪 '+size+'連テスト（未保存）':value==='available'?'🎁 '+size+'連を引く（権利1回分）':value==='used'?'✓ '+size+'連のごほうびは使用済み':'🔒 '+size+'日連続で'+size+'連';
   }
   if(el('headerCoins')){el('headerCoins').textContent=ready?String(state.coins):'—';el('headerTickets').textContent=ready?String(state.tickets):'—';el('homeTickets').textContent=ready?state.tickets+'枚':'—';el('homeQuestReward').textContent=!ready||!dailyQuestsReady?'準備中':already?'使用済み':questCleared?'1回引ける':'解放待ち';el('homeMulti').textContent=[10,100].map(size=>size+'連：'+({available:'権利1回分あり',used:'使用済み',locked:size+'日連続で解放'}[multiStatus(state,size)]||size+'日連続で解放')).join(' ／ ');renderHome();}
   testSummary();
@@ -306,29 +306,47 @@ async function reveal(results){
 function render(){
   renderHeader();renderCollection();showLatestDraw();
 }
-async function testPull(){
-  if(!isTesting()||busy)return;
+async function testPull(count=1){
+  if(!isTesting()||busy||![1,10,100].includes(count))return;
   const choice=el('devRarity').value;
   const chosenId=el('devCharacter').value;
-  let card;
-  if(chosenId!=='random'&&BY_ID[chosenId])card=BY_ID[chosenId];
-  else if(choice==='random')card=drawCharacter();
-  else{
-    const pool=CATALOG.filter(x=>x.rarity===choice);
-    if(!pool.length){message('選択したレア度のキャラクターがありません。');return;}
+  const selected=chosenId!=='random'?BY_ID[chosenId]:null;
+  const pool=choice==='random'?null:CATALOG.filter(x=>x.rarity===choice);
+  if(!selected&&pool&&!pool.length){message('選択したレア度のキャラクターがありません。');return;}
+  // The simulation never calls updateGame/updateAdventure or modifies the saved state.
+  // Fixed character/rarity choices apply to every slot; random uses real draw odds.
+  const characters=Array.from({length:count},()=>{
+    if(selected)return selected;
+    if(!pool)return drawCharacter();
     const random=new Uint32Array(1);
     crypto.getRandomValues(random);
-    card=pool[random[0]%pool.length];
+    return pool[random[0]%pool.length];
+  });
+  setBusy(true);
+  try{
+    await preview();
+    const results=characters.map(card=>{
+      const copies=(testInventory[card.id]||0)+1;
+      testInventory[card.id]=copies;
+      return {id:card.id,copies,newCard:copies===1,test:true};
+    });
+    testDrawCount+=count;
+    await reveal(results);
+    renderCollection();
+  }catch(e){
+    status('テストガチャを表示できませんでした。もう一度お試しください。',true);
+  }finally{
+    celebrating=false;
+    el('gachaMachine').classList.remove('is-rolling');
+    setBusy(false);
   }
-  setBusy(true);await preview();
-  testInventory[card.id]=(testInventory[card.id]||0)+1;
-  testDrawCount++;
-  latestDraw={id:card.id,copies:testInventory[card.id],newCard:testInventory[card.id]===1,test:true};
-  await reveal([latestDraw]);setBusy(false);renderCollection();
-  // Results are shown in a standalone viewport-sized dialog.
 }
 async function pull(mode){
-  if(mode==='free'&&isTesting()){void testPull();return;}
+  if(isTesting()){
+    const count=mode==='multi10'?10:mode==='multi100'?100:1;
+    await testPull(count);
+    return;
+  }
   if(busy||!ctx||!ready){message('まだ準備中です。もう一度お試しください。');return;}
   const count=mode==='multi10'?10:mode==='multi100'?100:1;
   // Draw once outside the transaction: retries must keep the same random outcomes.
