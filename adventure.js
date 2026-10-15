@@ -42,6 +42,7 @@ if(mount){
   }
   async function mutate(kind,id,data){
     if(!ctx||!confirmed||working)return false;
+    const previousDays=quests.days;
     working=true;render();
     try{
       const result=await ctx.updateAdventure((current,game)=>{
@@ -64,7 +65,17 @@ if(mount){
         }else return null;
         q.updatedAt=new Date().toISOString();return {quests:q};
       });
-      if(result){quests=result.quests;return true;}return false;
+      if(result){
+        quests=result.quests;
+        if(kind==='delete'){
+          const emptied=Object.keys(previousDays).filter(day=>previousDays[day].includes(id)&&!result.quests.days[day]?.length);
+          if(emptied.length)try{
+            const api=await import('./firebase-sync.js');
+            await Promise.all(emptied.map(day=>api.publishActivity(result.quests,day)));
+          }catch{notice('削除しましたが、共有記録の同期に失敗しました。再接続後に確認してください。');}
+        }
+        return true;
+      }return false;
     }catch(e){notice(e.message==='limit'?'挑戦中とお休み中は10件までです。':'保存できませんでした。通信を確認してください。');return false;}
     finally{working=false;render();}
   }
