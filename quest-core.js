@@ -12,7 +12,7 @@ export function activeCount(q){return Object.values(q.tasks||{}).filter(t=>taskS
 export function isPausedDay(task,day){return !!task?.pauseDays?.[day]||!!task?.pausePeriods?.some(p=>p.start<=day&&(!p.end||day<=p.end));}
 export function streakFor(days,taskId,day=localDay(),quests=null){
   const task=taskId?quests?.tasks?.[taskId]:null;
-  const done=d=>taskId?(days[d]||[]).includes(taskId):(days[d]||[]).length>0;
+  const done=d=>taskId?((days[d]||[]).includes(taskId)&&task?.resumeIgnoreDay!==d):(days[d]||[]).length>0;
   let current=done(day)||isPausedDay(task,day)?day:dayBefore(day),count=0;
   for(let i=0;i<10000;i++){
     if(task?.segmentStart&&current<task.segmentStart)break;
@@ -66,7 +66,7 @@ export function cancelToday(quests,game,taskId,day=localDay()){
   q.days[day]=q.days[day].filter(id=>id!==taskId);
   if(!q.days[day].length)delete q.days[day];
   delete q.values?.[key];delete q.valueMeta?.[key];
-  if(q.tasks[taskId])q.tasks[taskId].totalDone=Math.max(0,(q.tasks[taskId].totalDone||0)-1);
+  if(q.tasks[taskId]){q.tasks[taskId].totalDone=Math.max(0,(q.tasks[taskId].totalDone||0)-1);if(q.tasks[taskId].resumeIgnoreDay===day)delete q.tasks[taskId].resumeIgnoreDay;}
   const event=q.rewardEvents?.[key];
   if(event?.status==='active'){
     reclaimReward(g,'coins',event.coins||0);reclaimReward(g,'tickets',event.tickets||0);
@@ -89,7 +89,7 @@ export function setTaskStatus(quests,id,status,day=localDay()){
   if(status==='graduated'){
     t.graduatedAt=day;t.bestStreak=bestStreak(q,id);t.totalDone=totalDone(q,id);
   }
-  if(before==='graduated'&&status==='active'){t.segmentStart=day;delete t.graduatedAt;}
+  if(before==='graduated'&&status==='active'){t.segmentStart=day;if((q.days[day]||[]).includes(id))t.resumeIgnoreDay=day;else delete t.resumeIgnoreDay;delete t.graduatedAt;}
   t.status=status;t.archived=status!=='active';q.updatedAt=new Date().toISOString();return q;
 }
 export function deleteQuest(quests,id){
