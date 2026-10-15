@@ -258,8 +258,8 @@ function updateResultControls(){
   el('gachaFlipNext').textContent=tenRevealIndex===9?'10枚を並べる':'次のカードへ';
   el('gachaResultDone').hidden=flipping;
   el('gachaPageStatus').hidden=flipping;
-  el('gachaPagePrev').hidden=flipping;
-  el('gachaPageNext').hidden=flipping;
+  // Pagination visibility for the grid is decided by showLatestDraw().
+  if(flipping){el('gachaPagePrev').hidden=true;el('gachaPageNext').hidden=true;}
 }
 function showTenReveal(){
   const target=el('gameResult'),result=latestResults[tenRevealIndex],card=BY_ID[result.id];
