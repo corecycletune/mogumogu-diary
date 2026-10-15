@@ -241,6 +241,11 @@ try{
   assert.equal(await preview.locator('#prevPage').isVisible(),true);
   await preview.locator('#prevPage').click();
   assert.equal(await preview.locator('#prevPage').isVisible(),false);
+  await preview.locator('#done').click();
+  for(const width of [320,390,768,1024]){
+    await preview.setViewportSize({width,height:844});
+    assert.equal(await preview.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'preview horizontal overflow at '+width);
+  }
   assert.deepEqual(previewErrors,[]);
   await preview.close();
   console.log('PASS: common mobile page, old URL redirect, two UID-specific accounts and meals, no profile selection');
