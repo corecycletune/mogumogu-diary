@@ -35,7 +35,7 @@ function testSummary(){
 window.mogumoguGameManaged=true;
 const rarityRank=['N','R','SR','SSR','UR'];
 initSound();
-let latestResults=[],celebrating=false,collectionKey='',resultKey='',homeKey='',resultPage=0;
+let latestResults=[],celebrating=false,collectionKey='',resultKey='',homeKey='',resultPage=0,tenRevealActive=false,tenRevealIndex=0,tenRevealFlipped=false;
 const cardVisibility=typeof IntersectionObserver==='function'?new IntersectionObserver(entries=>{
   for(const entry of entries)entry.target.classList.toggle('card-in-view',entry.isIntersecting);
 },{rootMargin:'80px'}):null;
@@ -251,8 +251,55 @@ function renderHeader(){
   if(el('headerCoins')){el('headerCoins').textContent=ready?String(state.coins):'—';el('headerTickets').textContent=ready?String(state.tickets):'—';el('homeTickets').textContent=ready?state.tickets+'枚':'—';el('homeQuestReward').textContent=!ready||!dailyQuestsReady?'準備中':already?'使用済み':questCleared?'1回引ける':'解放待ち';el('homeMulti').textContent=[10,100].map(size=>size+'連：'+({available:'権利1回分あり',used:'使用済み',locked:size+'日連続で解放'}[multiStatus(state,size)]||size+'日連続で解放')).join(' ／ ');renderHome();}
   testSummary();
 }
+function updateResultControls(){
+  const flipping=tenRevealActive&&latestResults.length===10;
+  el('gachaFlipSkip').hidden=!flipping;
+  el('gachaFlipNext').hidden=!flipping||!tenRevealFlipped;
+  el('gachaFlipNext').textContent=tenRevealIndex===9?'10枚を並べる':'次のカードへ';
+  el('gachaResultDone').hidden=flipping;
+  el('gachaPageStatus').hidden=flipping;
+  // Pagination visibility for the grid is decided by showLatestDraw().
+  if(flipping){el('gachaPagePrev').hidden=true;el('gachaPageNext').hidden=true;}
+}
+function showTenReveal(){
+  const target=el('gameResult'),result=latestResults[tenRevealIndex],card=BY_ID[result.id];
+  const key=JSON.stringify(latestResults)+'|flip|'+tenRevealIndex+'|'+tenRevealFlipped;
+  if(key===resultKey)return;
+  resultKey=key;
+  releaseCards(target);target.replaceChildren();
+  const heading=document.createElement('h3');heading.className='game-win-title';
+  heading.textContent=(result.test?'🧪 テスト結果　':'')+(tenRevealIndex+1)+' / 10枚目';
+  target.append(heading);
+  const stage=document.createElement('div');stage.className='gacha-flip-stage';
+  const cardWrap=document.createElement('div');cardWrap.className='gacha-flip-card'+(tenRevealFlipped?' is-flipped':'');
+  const back=document.createElement('button');back.type='button';back.className='gacha-flip-back';back.inert=tenRevealFlipped;
+  back.setAttribute('aria-label',(tenRevealIndex+1)+'枚目のカードをめくる');
+  back.innerHTML='<span class="gacha-flip-emblem" aria-hidden="true">🥚</span><span class="gacha-flip-mark" aria-hidden="true">✦ MOGUMOGU ✦</span><span class="gacha-flip-invite">タップしてめくる</span>';
+  back.addEventListener('click',()=>{
+    if(tenRevealFlipped)return;
+    tenRevealFlipped=true;
+    cardWrap.classList.add('is-flipped');
+    back.disabled=true;back.inert=true;front.inert=false;
+    updateResultControls();
+    playSound('reveal',card.rarity);
+    if(result.newCard)playSound('new');
+  });
+  const front=document.createElement('div');front.className='gacha-flip-front';front.inert=!tenRevealFlipped;
+  const painted=paintCard(card,{copies:result.copies},false,true);
+  if(result.newCard){const badge=document.createElement('span');badge.className='new-badge';badge.textContent='NEW';painted.append(badge);}
+  front.append(painted);
+  cardWrap.append(back,front);stage.append(cardWrap);target.append(stage);
+  if(result.test){const hint=document.createElement('p');hint.className='game-test-warning';hint.textContent='練習ガチャです。保存されません。';target.append(hint);}
+  updateResultControls();
+}
+function finishTenReveal(){
+  if(!tenRevealActive)return;
+  tenRevealActive=false;tenRevealFlipped=false;resultKey='';
+  showLatestDraw();
+}
 function showLatestDraw(){
   if(celebrating)return;
+  if(tenRevealActive&&latestResults.length===10){showTenReveal();return;}
   const target=el('gameResult');
   const results=latestResults.length?latestResults:latestDraw?[latestDraw]:[];
   const perPage=results.length>10?10:results.length||1;
@@ -285,6 +332,7 @@ function showLatestDraw(){
   el('gachaPagePrev').hidden=pages===1||resultPage===0;
   el('gachaPageNext').hidden=pages===1||resultPage===pages-1;
   el('gachaPageStatus').textContent=pages>1?(resultPage+1)+' / '+pages:results.length+'枚';
+  updateResultControls();
 }
 async function preview(){
   celebrating=true;playSound('start');
@@ -298,10 +346,11 @@ async function reveal(results){
   const rank=Math.max(...results.map(r=>rarityRank.indexOf(BY_ID[r.id].rarity))),rarity=rarityRank[rank];
   el('gachaMachine').className='gacha-machine is-revealed rarity-'+rarity.toLowerCase();
   el('gameResult').className='gacha-result result-'+rarity.toLowerCase();
-  celebrating=false;resultPage=0;latestResults=results;latestDraw=results[0];showLatestDraw();
+  celebrating=false;resultPage=0;latestResults=results;latestDraw=results[0];
+  tenRevealActive=results.length===10;tenRevealIndex=0;tenRevealFlipped=false;resultKey='';showLatestDraw();
   const dialog=el('gachaResultDialog');if(!dialog.open)dialog.showModal();
-  status('');playSound('reveal',rarity);
-  if(results.some(r=>r.newCard))playSound('new');
+  status('');
+  if(results.length!==10){playSound('reveal',rarity);if(results.some(r=>r.newCard))playSound('new');}
 }
 function render(){
   renderHeader();renderCollection();showLatestDraw();
@@ -377,13 +426,13 @@ if(devAvailable){
   toggle.addEventListener('change',()=>{
     el('devControls').hidden=!toggle.checked;
     // Never keep simulated cards after leaving test mode.
-    testInventory={};testDrawCount=0;latestDraw=null;latestResults=[];
+    testInventory={};testDrawCount=0;latestDraw=null;latestResults=[];tenRevealActive=false;resultKey='';
     if(toggle.checked)el('collectionFilter').value='all';
     render();
     if(toggle.checked)message('テストモードです。抽選は何度でもできますが保存されません。');
   });
   el('devReset').addEventListener('click',()=>{
-    testDrawCount=0;testInventory={};latestDraw=null;latestResults=[];render();
+    testDrawCount=0;testInventory={};latestDraw=null;latestResults=[];tenRevealActive=false;resultKey='';render();
     message('テスト結果をリセットしました。');
   });
 }
@@ -396,7 +445,14 @@ for(const button of document.querySelectorAll('[data-gacha-count]')){
     for(const group of document.querySelectorAll('[data-gacha-actions]'))group.hidden=group.dataset.gachaActions!==count;
   });
 }
-const closeResult=()=>{const dialog=el('gachaResultDialog');if(dialog.open)dialog.close();};
+const closeResult=()=>{const dialog=el('gachaResultDialog');if(dialog.open)dialog.close();tenRevealActive=false;tenRevealFlipped=false;resultKey='';};
+el('gachaResultDialog').addEventListener('close',()=>{tenRevealActive=false;tenRevealFlipped=false;resultKey='';});
+el('gachaFlipSkip').addEventListener('click',finishTenReveal);
+el('gachaFlipNext').addEventListener('click',()=>{
+  if(!tenRevealActive||!tenRevealFlipped)return;
+  if(tenRevealIndex===9){finishTenReveal();return;}
+  tenRevealIndex++;tenRevealFlipped=false;resultKey='';showTenReveal();
+});
 el('gachaResultClose').addEventListener('click',closeResult);
 el('gachaResultDone').addEventListener('click',closeResult);
 el('gachaPagePrev').addEventListener('click',()=>{if(resultPage>0){resultPage--;showLatestDraw();}});

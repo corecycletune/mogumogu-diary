@@ -73,10 +73,28 @@ try{
       assert.equal(await page.locator('#gameTenDraw').isEnabled(),true);
       assert.match(await page.locator('#gameTenDraw').textContent(),/10連テスト/);
       await page.locator('#gameTenDraw').click();
-      await page.waitForFunction(()=>document.querySelectorAll('#gameResult .draw-result').length===10);
+      await page.waitForSelector('#gameResult .gacha-flip-back');
       assert.equal(await page.locator('#gachaResultDialog').evaluate(node=>node.open),true);
       assert.match(await page.locator('.game-win-title').textContent(),/テスト結果/);
+      assert.equal(await page.locator('#gameResult .draw-result').count(),0,'do not show the grid before flipping');
+      assert.equal(await page.locator('#gachaFlipNext').isVisible(),false);
+      for(let i=0;i<10;i++){
+        assert.match(await page.locator('.game-win-title').textContent(),new RegExp((i+1)+' \\/ 10枚目'));
+        await page.locator('#gameResult .gacha-flip-back').click();
+        assert.equal(await page.locator('.gacha-flip-card').getAttribute('class'),'gacha-flip-card is-flipped');
+        assert.equal(await page.locator('#gachaFlipNext').isVisible(),true);
+        if(i===9)assert.equal(await page.locator('#gachaFlipNext').textContent(),'10枚を並べる');
+        await page.locator('#gachaFlipNext').click();
+      }
+      await page.waitForFunction(()=>document.querySelectorAll('#gameResult .draw-result').length===10);
+      assert.equal(await page.locator('#gachaFlipSkip').isVisible(),false);
       assert.equal(await page.locator('#gachaPageNext').isVisible(),false);
+      await page.locator('#gachaResultDone').click();
+      // A new ten-pull may also jump directly to the grid.
+      await page.locator('#gameTenDraw').click();
+      await page.waitForSelector('#gameResult .gacha-flip-back');
+      await page.locator('#gachaFlipSkip').click();
+      assert.equal(await page.locator('#gameResult .draw-result').count(),10);
       await page.locator('#gachaResultDone').click();
       await page.locator('.gacha-mode-switch [data-gacha-count="100"]').click();
       assert.equal(await page.locator('#gameHundredDraw').isEnabled(),true);
@@ -94,7 +112,7 @@ try{
       assert.equal(await page.locator('#headerTickets').textContent(),before.tickets);
       assert.equal(await page.evaluate(()=>window.gameWrites),before.writes);
       await page.locator('.settings-button').click();
-      assert.match(await page.locator('#devDrawCount').textContent(),/110回/);
+      assert.match(await page.locator('#devDrawCount').textContent(),/120回/);
       await page.locator('#devModeToggle').uncheck();
       await page.locator('.game-nav [data-target="bonus"]').click();
       await page.locator('.gacha-mode-switch [data-gacha-count="10"]').click();
