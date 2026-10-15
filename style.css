@@ -994,3 +994,6 @@ button.collection-card{font:inherit;text-align:left;color:inherit;width:100%;cur
 @keyframes gacha-hatch-flash{0%,25%{opacity:0}56%{opacity:1}100%{opacity:0}}
 @keyframes gacha-hot-glow{from{filter:brightness(1)}to{filter:brightness(1.35)}}
 @media(prefers-reduced-motion:reduce){.gacha-machine.is-rolling .gacha-claw,.gacha-machine.is-rolling .gacha-claw-rail,.gacha-machine .gacha-claw-prong,.gacha-picked-egg,.gacha-egg-crack{transition:none!important}.gacha-machine.stage-search .gacha-claw,.gacha-machine.stage-grab .gacha-egg-pile,.gacha-machine.stage-hatch .gacha-picked-egg,.gacha-machine.stage-hatch .gacha-hatch-glow,.gacha-machine.effect-hot .gacha-claw-head{animation:none!important}}
+
+.gacha-version-indicator{width:fit-content;max-width:100%;margin:8px auto 12px;padding:5px 14px;border:1px solid #b78456;border-radius:18px;background:#fff5dc;color:#805237;text-align:center;font-size:13px;font-weight:800}
+.gacha-version-indicator[hidden]{display:none!important}
