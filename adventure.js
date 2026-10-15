@@ -278,7 +278,7 @@ if(mount){
       notice(confirmed?'今日も、自分のペースでひとつずつ。':'準備しています…');void recordMeal();
       window.dispatchEvent(new CustomEvent('mogumogu:quest',{detail:{days:quests.days,tasks:quests.tasks,deletedTasks:quests.deletedTasks||{},values:quests.values||{},valueMeta:quests.valueMeta||{}}}));
       const day=localDay(),signature=day+':'+(quests.days[day]||[]).join(',');
-      if(confirmed&&quests.days[day]?.length&&lastPublished!==signature){lastPublished=signature;void import('./firebase-sync.js').then(api=>api.publishActivity(quests,day)).then(()=>{if(chatCtx)void selectChat(chatCtx);void refreshFriends();}).catch(()=>{lastPublished='';});}
+      if(confirmed&&lastPublished!==signature){lastPublished=signature;void import('./firebase-sync.js').then(api=>api.publishActivity(quests,day)).then(()=>{if(chatCtx)void selectChat(chatCtx);void refreshFriends();}).catch(()=>{lastPublished='';});}
     },()=>{if(seq!==connectionSeq)return;confirmed=false;notice('習慣を読み込めませんでした。もう一度お試しください。');render();});
 
   }
