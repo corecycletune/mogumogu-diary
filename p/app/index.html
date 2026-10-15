@@ -123,6 +123,12 @@
         <label class="dev-switch"><input type="checkbox" id="devModeToggle"> <span>動作確認モードをONにする</span></label>
         <div id="devControls" hidden>
           <p class="small"><strong>テスト専用：</strong>ガチャ画面で1連・10連・100連を何度でも確認できます。コイン・ガチャ券・コレクション・連続記録は変わりません。</p>
+          <label class="label" for="devGachaVersion">ガチャの演出バージョン</label>
+          <select class="field" id="devGachaVersion">
+            <option value="production">本番版（現行の演出）</option>
+            <option value="development">開発版（UFOキャッチャー演出）</option>
+          </select>
+          <p class="small">演出だけを切り替えます。どちらも未保存のテスト抽選で、接続先データは切り替えません。</p>
           <label class="label" for="devRarity">出したいレア度</label>
           <select class="field" id="devRarity">
             <option value="random">通常確率でランダム</option>
@@ -153,6 +159,7 @@
         <div><span>🎫 ガチャ券</span><strong id="gameTickets">—</strong></div>
         <div><span>出会った回数</span><strong id="gamePullCount">—</strong></div>
       </div>
+      <p id="gachaVersionIndicator" class="gacha-version-indicator" hidden></p>
       <div id="gachaMachine" class="gacha-machine" data-draw-count="1">
         <div class="gacha-machine-sign"><span>✦</span> モグモグガチャ <span>✦</span></div>
         <div class="gacha-machine-window" aria-hidden="true">
