@@ -819,3 +819,36 @@ button.collection-card{font:inherit;text-align:left;color:inherit;width:100%;cur
 @keyframes machine-charge{0%,20%{opacity:0}65%{opacity:.55}100%{opacity:1}}
 @keyframes machine-stars{0%{opacity:.4;transform:scale(.8)}65%{opacity:1;transform:scale(1.2)}100%{opacity:.5}}
 @media(prefers-reduced-motion:reduce){.gacha-machine *{animation:none!important}.gacha-machine.is-rolling .machine-capsule{opacity:1;transform:none}}
+
+
+/* Quest pages: compact home rows and true full-viewport management/detail screens. */
+.quest-row.quest-compact{display:flex;flex-wrap:nowrap;gap:10px;align-items:center;padding:10px 0}
+.quest-compact .quest-row-label{flex:1;min-width:0}
+.quest-compact .quest-name-button{width:100%;text-align:left}
+.quest-compact>.btn{flex-shrink:0;min-width:90px}
+.quest-name-button{border:0;background:none;color:#285c45;font:inherit;font-weight:700;padding:8px 2px;cursor:pointer;text-align:left;overflow-wrap:anywhere}
+.quest-name-button:hover,.quest-name-button:focus-visible{text-decoration:underline}
+.quest-manage-button{margin-top:14px;width:100%}
+.quest-screen{position:fixed;inset:0;margin:0;padding:0;border:0;border-radius:0;width:100%;max-width:none;height:100%;max-height:none;background:#fffaf1;color:#2b382d;overflow:auto}
+.quest-screen::backdrop{background:#17231d88}
+.quest-screen-head{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:12px;padding:14px 16px;background:#fffaf1;border-bottom:1px solid #e7dfd1}
+.quest-screen-head h2{font-size:1.2rem;margin:0}
+.quest-screen-content{max-width:760px;margin:auto;padding:20px 16px 60px}
+.quest-manage-section{margin:18px 0;padding:14px;border:1px solid #e8dfd0;border-radius:14px;background:#fff}
+.quest-manage-section h3{margin:0 0 8px}
+.quest-manage-row{display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid #eee7dc}
+.quest-manage-row .quest-name-button{flex:1}
+.quest-manage-row .btn{min-height:40px;padding:8px 12px}
+.quest-editor{margin:20px 0;padding:16px;background:#fff;border-radius:14px;border:1px solid #e8dfd0}
+.quest-form-field{display:flex;flex-direction:column;gap:6px;margin:12px 0;font-weight:600}
+.quest-form-field:has(input[type=checkbox]){flex-direction:row;align-items:center}
+.quest-extra-fields[hidden]{display:none}
+.quest-detail-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:16px 0}
+.quest-detail-metrics .metric{min-width:0;padding:12px 4px;text-align:center;background:#fff;border-radius:12px}
+.quest-detail-actions{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0}
+.quest-history{padding:0;list-style:none}
+.quest-history li{padding:12px 8px;border-bottom:1px solid #e6ddcf;overflow-wrap:anywhere}
+.quest-graduation{padding:18px;border-radius:14px;background:#fff0c6;text-align:center;font-weight:700;animation:questCelebrate 2s ease-out}
+@keyframes questCelebrate{0%{transform:scale(.96);opacity:0}20%{transform:scale(1.03);opacity:1}100%{opacity:0}}
+@media(prefers-reduced-motion:reduce){.quest-graduation{animation:none}}
+@media(max-width:360px){.quest-compact>.btn{min-width:78px;padding:9px}.quest-screen-content{padding:12px}}
