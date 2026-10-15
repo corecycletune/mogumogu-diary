@@ -21,6 +21,12 @@ const devAvailable=!!el('devModeToggle')&&isDevModeEnabled(window.MogumoguAccoun
 if(devAvailable)el('devPanel').hidden=false;
 if(devAvailable){const select=el('devCharacter');select.replaceChildren(new Option('ランダム抽選を使う','random'),...CATALOG.map(card=>new Option(card.rarity+'：'+card.name,card.id)));}
 function isTesting(){return devAvailable&&el('devModeToggle').checked;}
+function isDevelopmentGacha(){return !isTesting()||el('devGachaVersion').value==='development';}
+function renderGachaVersion(){
+  const indicator=el('gachaVersionIndicator');
+  indicator.hidden=!isTesting();
+  if(!indicator.hidden)indicator.textContent=el('devGachaVersion').value==='development'?'🧪 動作確認：開発版（新演出）':'🧪 動作確認：本番版（現行演出）';
+}
 function testSummary(){
   if(!devAvailable)return;
   el('devDrawCount').textContent='テスト抽選：'+testDrawCount+'回（未保存）';
@@ -36,6 +42,7 @@ window.mogumoguGameManaged=true;
 const rarityRank=['N','R','SR','SSR','UR'];
 initSound();
 let latestResults=[],celebrating=false,collectionKey='',resultKey='',homeKey='',resultPage=0,tenRevealActive=false,tenRevealIndex=0,tenRevealFlipped=false;
+let skipGachaAnimation=false,finishGachaStage=null;
 const cardVisibility=typeof IntersectionObserver==='function'?new IntersectionObserver(entries=>{
   for(const entry of entries)entry.target.classList.toggle('card-in-view',entry.isIntersecting);
 },{rootMargin:'80px'}):null;
@@ -229,6 +236,7 @@ function renderHome(){
   if(!preview.length){const empty=document.createElement('p');empty.className='card-empty';empty.textContent='？　はじめての仲間に会いにいこう';target.append(empty);}
 }
 function renderHeader(){
+  renderGachaVersion();
   el('gameCoinCount').textContent=ready?String(state.coins):'—';
   el('gameTickets').textContent=ready?String(state.tickets):'—';
   el('gamePullCount').textContent=ready?String(state.drawCount):'—';
@@ -334,13 +342,69 @@ function showLatestDraw(){
   el('gachaPageStatus').textContent=pages>1?(resultPage+1)+' / '+pages:results.length+'枚';
   updateResultControls();
 }
-async function preview(){
+// These effects are selected after the rarity draw. They never change draw odds.
+// Hot is not a guarantee; its frequency rises with rarity.
+function pickGachaEffect(rarity,phase){
+  const weights={
+    N:phase==='claw'?[97,2.9,.1]:[96,3.9,.1],
+    R:phase==='claw'?[97,2.9,.1]:[96,3.9,.1],
+    SR:phase==='claw'?[70,29,1]:[68,31,1],
+    SSR:phase==='claw'?[12,60,28]:[15,57,28],
+    UR:phase==='claw'?[5,30,65]:[6,27,67]
+  }[rarity]||[100,0,0];
+  const roll=Math.random()*100;
+  return roll<weights[0]?'normal':roll<weights[0]+weights[1]?'chance':'hot';
+}
+function skipCurrentGachaStage(){
+  skipGachaAnimation=true;
+  if(finishGachaStage){const finish=finishGachaStage;finishGachaStage=null;finish();}
+}
+function gachaStageWait(ms){
+  if(skipGachaAnimation||matchMedia('(prefers-reduced-motion: reduce)').matches)return Promise.resolve();
+  return new Promise(resolve=>{
+    const timer=setTimeout(()=>{finishGachaStage=null;resolve();},ms);
+    finishGachaStage=()=>{clearTimeout(timer);resolve();};
+  });
+}
+async function preview(characters=[]){
   celebrating=true;playSound('start');
-  const machine=el('gachaMachine');machine.className='gacha-machine is-rolling';
+  const machine=el('gachaMachine');
+  const single=characters.length===1;
+  const animated=single&&isDevelopmentGacha();
+  const rarity=single?characters[0].rarity:null;
+  const clawEffect=single?pickGachaEffect(rarity,'claw'):'normal';
+  const eggEffect=single?pickGachaEffect(rarity,'egg'):'normal';
+  machine.dataset.expectation=clawEffect;
+  machine.dataset.hatch=eggEffect;
+  machine.className='gacha-machine is-rolling';
+  skipGachaAnimation=false;finishGachaStage=null;
+  el('gachaAnimationSkip').hidden=!animated;
   el('gachaResultDialog').close?.();
   const target=el('gameResult');resultKey='';releaseCards(target);target.replaceChildren();
-  status('🥚 タマゴを探しています…');
-  if(!matchMedia('(prefers-reduced-motion: reduce)').matches){await delay(350);playSound('confirm');await delay(300);}
+  try{
+    if(!animated){
+      status('🥚 タマゴを探しています…');
+      await delay(350);playSound('confirm');await delay(300);
+      return;
+    }
+    const steps=[
+      ['search',450,'🥚 タマゴを探しています…'],
+      ['drop',550,'🦾 アームがタマゴに近づいています…'],
+      ['grab',380,'✨ タマゴをつかまえた！'],
+      ['lift',620,clawEffect==='hot'?'🌈 激アツ！ アームが虹色に輝いた！':clawEffect==='chance'?'✨ チャンス！ アームが光っている！':'🥚 タマゴを運んでいます…'],
+      ['hatch',650,eggEffect==='hot'?'🌈 タマゴから虹色の光！':eggEffect==='chance'?'✨ タマゴが金色に輝いた！':'🥚 タマゴが割れそう…']
+    ];
+    for(const [step,duration,caption] of steps){
+      if(skipGachaAnimation)break;
+      machine.className='gacha-machine is-rolling stage-'+step+' effect-'+clawEffect+' egg-'+eggEffect;
+      status(caption);
+      if(step==='grab')playSound('confirm');
+      await gachaStageWait(duration);
+    }
+  }finally{
+    finishGachaStage=null;
+    el('gachaAnimationSkip').hidden=true;
+  }
 }
 async function reveal(results){
   const rank=Math.max(...results.map(r=>rarityRank.indexOf(BY_ID[r.id].rarity))),rarity=rarityRank[rank];
@@ -373,7 +437,7 @@ async function testPull(count=1){
   });
   setBusy(true);
   try{
-    await preview();
+    await preview(characters);
     const results=characters.map(card=>{
       const copies=(testInventory[card.id]||0)+1;
       testInventory[card.id]=copies;
@@ -387,6 +451,7 @@ async function testPull(count=1){
   }finally{
     celebrating=false;
     el('gachaMachine').classList.remove('is-rolling');
+    el('gachaAnimationSkip').hidden=true;
     setBusy(false);
   }
 }
@@ -403,7 +468,7 @@ async function pull(mode){
   const d=today(),at=new Date().toISOString(),activeContext=ctx,seq=connectionSeq;
   setBusy(true);let displayed=false;
   try{
-    await preview();let chosen;
+    await preview(characters);let chosen;
     let saved;
     if(mode==='free'){
       const bundle=await activeContext.updateAdventure((q,g)=>{
@@ -419,7 +484,7 @@ async function pull(mode){
     if(!saved){message('今日のクエスト達成と、ごほうび・コイン・券の残りを確認してください。');return;}
     state=saved;await reveal(chosen);displayed=true;renderHeader();renderCollection();
   }catch(e){gameError(e);}
-  finally{celebrating=false;el('gachaMachine').classList.remove('is-rolling');setBusy(false);if(!displayed)showLatestDraw();}
+  finally{celebrating=false;el('gachaMachine').classList.remove('is-rolling');el('gachaAnimationSkip').hidden=true;setBusy(false);if(!displayed)showLatestDraw();}
 }
 if(devAvailable){
   const toggle=el('devModeToggle');
@@ -428,8 +493,15 @@ if(devAvailable){
     // Never keep simulated cards after leaving test mode.
     testInventory={};testDrawCount=0;latestDraw=null;latestResults=[];tenRevealActive=false;resultKey='';
     if(toggle.checked)el('collectionFilter').value='all';
+    renderGachaVersion();
     render();
     if(toggle.checked)message('テストモードです。抽選は何度でもできますが保存されません。');
+  });
+  el('devGachaVersion').addEventListener('change',()=>{
+    if(busy)return;
+    el('gachaMachine').className='gacha-machine';
+    renderGachaVersion();
+    message(el('devGachaVersion').value==='development'?'開発版の演出を選択しました。':'本番版の演出を選択しました。');
   });
   el('devReset').addEventListener('click',()=>{
     testDrawCount=0;testInventory={};latestDraw=null;latestResults=[];tenRevealActive=false;resultKey='';render();
@@ -447,6 +519,7 @@ for(const button of document.querySelectorAll('[data-gacha-count]')){
 }
 const closeResult=()=>{const dialog=el('gachaResultDialog');if(dialog.open)dialog.close();tenRevealActive=false;tenRevealFlipped=false;resultKey='';};
 el('gachaResultDialog').addEventListener('close',()=>{tenRevealActive=false;tenRevealFlipped=false;resultKey='';});
+el('gachaAnimationSkip').addEventListener('click',skipCurrentGachaStage);
 el('gachaFlipSkip').addEventListener('click',finishTenReveal);
 el('gachaFlipNext').addEventListener('click',()=>{
   if(!tenRevealActive||!tenRevealFlipped)return;

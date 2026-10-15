@@ -67,8 +67,34 @@ try{
       // Dev mode 10/100-pull previews must never spend coins/tickets or write game state.
       await page.locator('#devPanel summary').click();
       await page.locator('#devModeToggle').check();
+      await page.locator('#devRarity').selectOption('UR');
       await page.locator('.game-nav [data-target="bonus"]').click();
       const before=await page.evaluate(()=>({writes:window.gameWrites,coins:document.querySelector('#headerCoins').textContent,tickets:document.querySelector('#headerTickets').textContent}));
+      // Both versions are simulated and never write to Firestore.
+      assert.match(await page.locator('#gachaVersionIndicator').textContent(),/本番版/);
+      await page.locator('#gameFreeDraw').click();
+      await page.waitForSelector('#gameResult .draw-result');
+      assert.equal(await page.locator('#gachaAnimationSkip').isVisible(),false);
+      await page.locator('#gachaResultDone').click();
+      await page.locator('.settings-button').click();
+      await page.locator('#devGachaVersion').selectOption('development');
+      await page.locator('.game-nav [data-target="bonus"]').click();
+      assert.match(await page.locator('#gachaVersionIndicator').textContent(),/開発版/);
+      // Single-pull animated prototype: expectation and hatch cues must be cosmetic only.
+      await page.locator('#gameFreeDraw').click();
+      await page.waitForSelector('#gachaMachine.stage-search');
+      assert.match(await page.locator('#gachaMachine').getAttribute('data-expectation'),/^(normal|chance|hot)$/);
+      assert.match(await page.locator('#gachaMachine').getAttribute('data-hatch'),/^(normal|chance|hot)$/);
+      assert.equal(await page.locator('#gachaAnimationSkip').isVisible(),true);
+      await page.locator('#gachaAnimationSkip').click();
+      await page.waitForSelector('#gameResult .draw-result');
+      assert.equal(await page.locator('#gachaResultDialog').evaluate(node=>node.open),true);
+      assert.equal(await page.locator('#gachaAnimationSkip').isVisible(),false);
+      await page.locator('#gachaResultDone').click();
+      assert.equal(await page.evaluate(()=>window.gameWrites),before.writes);
+      await page.locator('.settings-button').click();
+      await page.locator('#devRarity').selectOption('random');
+      await page.locator('.game-nav [data-target="bonus"]').click();
       await page.locator('.gacha-mode-switch [data-gacha-count="10"]').click();
       assert.equal(await page.locator('#gameTenDraw').isEnabled(),true);
       assert.match(await page.locator('#gameTenDraw').textContent(),/10連テスト/);
@@ -112,7 +138,7 @@ try{
       assert.equal(await page.locator('#headerTickets').textContent(),before.tickets);
       assert.equal(await page.evaluate(()=>window.gameWrites),before.writes);
       await page.locator('.settings-button').click();
-      assert.match(await page.locator('#devDrawCount').textContent(),/120回/);
+      assert.match(await page.locator('#devDrawCount').textContent(),/122回/);
       await page.locator('#devModeToggle').uncheck();
       await page.locator('.game-nav [data-target="bonus"]').click();
       await page.locator('.gacha-mode-switch [data-gacha-count="10"]').click();
@@ -182,5 +208,45 @@ try{
   }
   const page=await browser.newPage();await page.route('**/firebase-sync.js',route=>route.fulfill({contentType:'text/javascript',body:'export async function currentAccount(){return null;} export async function ensureAccount(){} export async function loginAccount(){} export async function registerAccount(){}'}));
   await page.goto('http://127.0.0.1:8765/account.html');await page.locator('#accountSwitch').click();assert.equal(await page.locator('#accountConfirm').isVisible(),true);assert.equal(await page.locator('#legacyProfile,#accountImport').count(),0);
+  // Standalone preview must work on mobile without credentials, Firebase or storage.
+  const preview=await browser.newPage({viewport:{width:390,height:844}});
+  const previewErrors=[];
+  preview.on('pageerror',e=>previewErrors.push(e.message));
+  await preview.goto('http://127.0.0.1:8765/preview/gacha.html');
+  assert.equal(await preview.locator('#version').inputValue(),'production');
+  await preview.locator('#draw').click();
+  await preview.waitForFunction(()=>document.querySelector('#result').open);
+  assert.equal(await preview.locator('#skip').isVisible(),false);
+  await preview.locator('#done').click();
+  await preview.locator('#version').selectOption('development');
+  await preview.locator('#rarity').selectOption('UR');
+  await preview.locator('#draw').click();
+  await preview.waitForFunction(()=>document.querySelector('#machine').dataset.stage==='search');
+  await preview.locator('#skip').click();
+  await preview.waitForFunction(()=>document.querySelector('#result').open);
+  assert.match(await preview.locator('.card-front b').textContent(),/UR/);
+  await preview.locator('#done').click();
+  await preview.locator('[data-count="10"]').click();
+  await preview.locator('#draw').click();
+  await preview.waitForFunction(()=>document.querySelector('#result').open);
+  assert.equal(await preview.locator('.card-back').count(),1);
+  await preview.locator('#all').click();
+  assert.equal(await preview.locator('.grid .mini').count(),10);
+  await preview.locator('#done').click();
+  await preview.locator('[data-count="100"]').click();
+  await preview.locator('#draw').click();
+  await preview.waitForFunction(()=>document.querySelector('#result').open);
+  assert.equal(await preview.locator('.grid .mini').count(),10);
+  await preview.locator('#next').click();
+  assert.equal(await preview.locator('#prevPage').isVisible(),true);
+  await preview.locator('#prevPage').click();
+  assert.equal(await preview.locator('#prevPage').isVisible(),false);
+  await preview.locator('#done').click();
+  for(const width of [320,390,768,1024]){
+    await preview.setViewportSize({width,height:844});
+    assert.equal(await preview.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'preview horizontal overflow at '+width);
+  }
+  assert.deepEqual(previewErrors,[]);
+  await preview.close();
   console.log('PASS: common mobile page, old URL redirect, two UID-specific accounts and meals, no profile selection');
 }finally{await browser.close();}

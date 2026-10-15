@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f6e7cb">
+<title>モグモグガチャ｜演出プレビュー</title>
+<style>
+:root{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;color:#5e4434;background:#f6e7cb}
+*{box-sizing:border-box}body{margin:0;min-height:100dvh;background:radial-gradient(circle at 20% 0%,#fff8e8,#f3dfc3 75%)}button,select{font:inherit}button{cursor:pointer;touch-action:manipulation}
+[hidden]{display:none!important}
+main{max-width:850px;margin:auto;padding:16px 14px 48px}
+h1{font-size:clamp(20px,5vw,29px);margin:8px 0 6px;text-align:center;color:#88553e}
+.subtitle{margin:0 auto 16px;max-width:570px;font-size:13px;line-height:1.65;text-align:center}
+.controls{max-width:470px;margin:0 auto 16px;padding:15px;background:#fffaf0;border:2px solid #d7b186;border-radius:20px;box-shadow:0 4px 14px #895b2b22}
+.field{display:grid;gap:6px;font-weight:700;font-size:13px;margin-bottom:11px}
+select{width:100%;padding:11px;border-radius:10px;border:1px solid #c89e74;background:#fff}
+.notice{font-size:12px;line-height:1.5;margin:0;color:#7b6050}
+.machine{position:relative;max-width:425px;margin:0 auto;padding:10px 12px 15px;border:7px solid #b97943;border-radius:26px 26px 21px 21px;background:linear-gradient(90deg,#ac6a3d,#f2c383 9%,#e3a663 24%,#f9d99b 50%,#df9e5e 78%,#9c5a34);box-shadow:inset 0 0 0 3px #fff1c8,0 11px 0 #875132,0 16px 22px #6845233b;isolation:isolate}
+.sign{max-width:84%;margin:0 auto 10px;padding:8px 2px;text-align:center;font-size:clamp(17px,5vw,23px);font-weight:900;color:#8d4934;text-shadow:1px 2px #fff8e6;border:3px solid #b47b45;border-radius:42% 42% 16px 16px;background:linear-gradient(#fff5cf,#f2c785);box-shadow:inset 0 2px #fff,0 3px #86552f}
+.window{position:relative;height:clamp(210px,58vw,315px);overflow:hidden;border:7px solid #b87b47;border-radius:16px 16px 27px 27px;background:radial-gradient(circle at 25% 25%,#fff9e8 0 9%,transparent 28%),linear-gradient(140deg,#c1e0d9,#c1d8b2 58%,#8fb9a0);box-shadow:inset 0 0 0 3px #fff4ce}
+.rail{position:absolute;top:-2px;left:50%;width:11px;height:37%;transform:translateX(-50%);border:2px solid #92613d;border-top:0;background:linear-gradient(90deg,#ac7447,#f8db92,#b67e4e);transition:height .45s ease-in-out}
+.claw{position:absolute;top:27%;left:50%;width:80px;height:77px;transform:translateX(-50%);z-index:3;transition:top .45s ease-in-out}
+.head{position:absolute;left:18px;top:0;width:44px;height:43px;display:grid;place-items:center;font-size:20px;color:#fff0ba;border:4px solid #a36b38;border-radius:50%;background:radial-gradient(circle at 35% 22%,#fff0ae,#d49a45 68%);box-shadow:0 3px 4px #503c2766}
+.prong{position:absolute;top:29px;width:14px;height:45px;border:3px solid #966336;background:linear-gradient(90deg,#bd8047,#ffe2a2,#c28745);border-radius:8px 8px 13px 13px;transition:transform .25s}
+.prong.left{left:8px;transform:rotate(26deg);transform-origin:top right}.prong.right{right:8px;transform:rotate(-26deg);transform-origin:top left}
+.pile{position:absolute;bottom:-10px;left:4%;right:4%;height:43%;z-index:2}
+.pile span{position:absolute;width:30%;aspect-ratio:4/5;border-radius:50% 50% 44% 44% / 60% 60% 38% 38%;border:2px solid #ffffffb5;box-shadow:inset -9px -10px 12px #996da422,0 5px 5px #4f684a40;background:linear-gradient(135deg,#ffd4e1,#f8a7c7)}
+.pile span::after{content:"★";position:absolute;top:30%;left:30%;font-size:clamp(12px,4vw,22px);color:#fff4bd}
+.pile span:nth-child(1){left:0;bottom:0;transform:rotate(-18deg);background:linear-gradient(135deg,#fce7a1,#f4c477)}
+.pile span:nth-child(2){left:17%;bottom:20%;transform:rotate(9deg);background:linear-gradient(135deg,#b5ddf8,#83b8e8)}
+.pile span:nth-child(3){left:39%;bottom:29%;transform:rotate(-8deg);background:linear-gradient(135deg,#ffdfb3,#f5a8c2)}
+.pile span:nth-child(4){right:13%;bottom:22%;transform:rotate(15deg);background:linear-gradient(135deg,#e6d1ff,#bda7e9)}
+.pile span:nth-child(5){right:0;bottom:0;transform:rotate(20deg);background:linear-gradient(135deg,#c5f2bd,#91d4b5)}
+.pile span:nth-child(6){left:27%;bottom:-15%;transform:rotate(-12deg);background:linear-gradient(135deg,#ffd2e8,#efa0b9)}
+.pile span:nth-child(7){right:22%;bottom:-20%;transform:rotate(16deg);background:linear-gradient(135deg,#b6dff4,#84bfe1)}
+.egg{position:absolute;z-index:4;left:50%;bottom:6%;width:68px;height:88px;opacity:0;transform:translateX(-50%) scale(.85);border:3px solid #fff6df;border-radius:50% 50% 43% 43% / 60% 60% 40% 40%;background:radial-gradient(circle at 30% 24%,#fff9e9 0 10%,transparent 27%),linear-gradient(130deg,#ffe8c2,#f4a6c7);box-shadow:inset -9px -9px 14px #b56c8a4a,0 6px 13px #58452c5c;pointer-events:none;transition:bottom .55s ease-in-out,transform .5s ease-in-out,opacity .18s}
+.egg::before{content:"✦";position:absolute;top:28%;left:29%;font-size:31px;color:#fff7ce;text-shadow:0 1px 4px #c58d59}
+.egg::after{content:"";position:absolute;inset:0;opacity:0;background:linear-gradient(120deg,transparent 42%,#fff4c9 44% 47%,transparent 49%)}
+.glow{position:absolute;inset:0;z-index:5;opacity:0;pointer-events:none;background:radial-gradient(circle at 50% 47%,#fffdf4 0%,#fff3b1d4 15%,#ffcc8b88 31%,transparent 67%)}
+.machine[data-stage="search"] .claw{animation:search .5s ease-in-out both}
+.machine[data-stage="drop"] .claw,.machine[data-stage="grab"] .claw{top:54%}
+.machine[data-stage="drop"] .rail,.machine[data-stage="grab"] .rail{height:65%}
+.machine[data-stage="grab"] .prong.left,.machine[data-stage="lift"] .prong.left,.machine[data-stage="hatch"] .prong.left{transform:rotate(5deg)}
+.machine[data-stage="grab"] .prong.right,.machine[data-stage="lift"] .prong.right,.machine[data-stage="hatch"] .prong.right{transform:rotate(-5deg)}
+.machine[data-stage="grab"] .egg{opacity:1}
+.machine[data-stage="lift"] .claw,.machine[data-stage="hatch"] .claw{top:8%}
+.machine[data-stage="lift"] .rail,.machine[data-stage="hatch"] .rail{height:19%}
+.machine[data-stage="lift"] .egg{opacity:1;bottom:48%}
+.machine[data-stage="hatch"] .egg{opacity:1;bottom:31%;animation:hatch .65s ease-in both}
+.machine[data-stage="hatch"] .egg::after{opacity:1}
+.machine[data-stage="hatch"] .glow{animation:flash .65s ease-out both}
+.machine[data-effect="chance"][data-stage="lift"] .window,.machine[data-effect="chance"][data-stage="hatch"] .window{box-shadow:inset 0 0 0 3px #fff4ce,0 0 22px 5px #fbdc84}
+.machine[data-effect="hot"][data-stage="lift"] .window,.machine[data-effect="hot"][data-stage="hatch"] .window{box-shadow:inset 0 0 0 3px #fff4ce,0 0 27px 7px #ed9fe3}
+.machine[data-effect="hot"][data-stage="lift"] .head{background:conic-gradient(#ffc6db,#d3b4ff,#a5e9ec,#f7ecaa,#ffc6db)}
+.machine[data-hatch="chance"][data-stage="hatch"] .egg{background:linear-gradient(135deg,#fff9d4,#f1a54c)}
+.machine[data-hatch="hot"][data-stage="hatch"] .egg{background:conic-gradient(#ff9fbc,#ffe4a2,#a5e9c4,#9fc8ff,#d6a3fc,#ff9fbc)}
+@keyframes search{0%{transform:translateX(-70%)}45%{transform:translateX(-28%)}100%{transform:translateX(-50%)}}
+@keyframes hatch{0%,48%{opacity:1}70%{transform:translateX(-50%) scale(1.5);opacity:1}100%{transform:translateX(-50%) scale(1.75);opacity:0}}
+@keyframes flash{0%,25%{opacity:0}56%{opacity:1}100%{opacity:0}}
+.console{margin-top:12px;padding:12px 10px 9px;border:3px solid #a36b3e;border-radius:17px;background:linear-gradient(#fff0c7,#edc88f);box-shadow:inset 0 3px #fff8df}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:10px}
+.tabs button{min-height:42px;border:2px solid #cf9865;border-radius:12px;background:#fff8e9;color:#805d46;font-weight:900}
+.tabs button[aria-pressed="true"]{background:linear-gradient(#f78f93,#d95870);border-color:#a95258;color:#fff;box-shadow:inset 0 2px #ffc8bf}
+.primary,.secondary{width:100%;min-height:48px;border-radius:25px;font-weight:900}
+.primary{background:linear-gradient(#f68c90,#d94f66);border:2px solid #b67e4f;color:white}
+.secondary{background:#fff8e8;border:2px solid #b67e4f;color:#845f46}
+#skip{display:block;max-width:250px;margin:13px auto}
+#status{min-height:24px;text-align:center;font-size:14px;font-weight:700}
+dialog{position:fixed;inset:0;margin:auto;border:0;padding:0;width:100vw;max-width:none;height:100dvh;max-height:none;background:#fff9ed;color:#694a37}
+dialog::backdrop{background:#1c1412bb}
+.result-shell{display:flex;flex-direction:column;height:100%;max-width:650px;margin:auto;padding:calc(env(safe-area-inset-top) + 16px) 14px calc(env(safe-area-inset-bottom) + 14px)}
+.result-head,.result-foot{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.result-head strong{font-size:16px}.result-head button{width:36px;height:36px;border:0;border-radius:50%;background:#edd8b8;font-size:22px}
+.result-body{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:auto;padding:12px 0}
+.card-back,.card-front{display:flex;flex-direction:column;align-items:center;justify-content:center;width:min(75vw,260px);aspect-ratio:2/3;border:8px solid #e6b46d;border-radius:18px;box-shadow:0 8px 25px #80532a44}
+.card-back{background:repeating-linear-gradient(45deg,#d88785,#d88785 14px,#edc1aa 14px,#edc1aa 28px);font-size:68px;color:#fff9e8}
+.card-front{background:radial-gradient(circle at 50% 35%,#fff6cf,#f4d7ab);font-size:68px}
+.card-front small{font-size:18px;font-weight:900;margin-top:16px}
+.card-front b{font-size:25px;margin-top:8px}
+.result-foot button{flex:1;min-height:45px;max-width:240px}
+.grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;width:100%}
+.grid .mini{min-width:0;aspect-ratio:2/3;border:3px solid #d8a76e;border-radius:8px;background:#fff1d1;display:grid;place-items:center;font-size:clamp(16px,6vw,32px);text-align:center}
+.grid .mini span{display:block;font-size:clamp(8px,2.2vw,12px);font-weight:900}
+@media(max-height:610px){.result-body{padding:4px 0}.card-back,.card-front{width:min(53vw,175px)}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<main>
+<h1>🥚 モグモグガチャ｜演出プレビュー</h1>
+<p class="subtitle">iPhone・iPadで新旧の演出を比較するための<strong>独立したデモ</strong>です。ログイン・Firebase接続・コイン消費・記録保存は一切ありません。</p>
+<section class="controls" aria-label="動作確認モード">
+<label class="field">演出バージョン
+<select id="version"><option value="production">本番版（現行演出）</option><option value="development">開発版（UFOキャッチャー演出）</option></select></label>
+<label class="field">出したいレア度
+<select id="rarity"><option value="random">ランダム</option><option>N</option><option>R</option><option>SR</option><option>SSR</option><option>UR</option></select></label>
+<p class="notice">表示用の仮カードで演出を確認します。実際のキャラクター画像や本番ガチャの抽選結果とは連動しません。</p>
+</section>
+<section class="machine" id="machine" data-stage="idle" aria-label="ガチャ筐体">
+<div class="sign">✦ モグモグガチャ ✦</div>
+<div class="window" aria-hidden="true">
+<div class="rail"></div><div class="claw"><span class="head">★</span><span class="prong left"></span><span class="prong right"></span></div>
+<div class="pile"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+<div class="egg"></div><div class="glow"></div>
+</div>
+<div class="console">
+<div class="tabs" role="group" aria-label="回数"><button data-count="1" aria-pressed="true">1連</button><button data-count="10" aria-pressed="false">10連</button><button data-count="100" aria-pressed="false">100連</button></div>
+<button id="draw" class="primary">🧪 1連を試す（未保存）</button>
+</div>
+</section>
+<p id="status" role="status">演出を選んでガチャを試してください。</p>
+<button id="skip" class="secondary" hidden>演出をスキップ ›</button>
+<dialog id="result" aria-label="ガチャ結果">
+<div class="result-shell">
+<div class="result-head"><strong>🥚 ガチャ結果（デモ）</strong><button id="close" aria-label="閉じる">×</button></div>
+<div id="resultBody" class="result-body"></div>
+<div class="result-foot"><button id="all" class="secondary" hidden>まとめて見る</button><button id="prevPage" class="secondary" hidden>‹ 前へ</button><button id="next" class="primary" hidden>次のカードへ</button><button id="done" class="primary">とじる</button></div>
+</div>
+</dialog>
+</main>
+<script>
+'use strict';
+const $=id=>document.getElementById(id),machine=$('machine');
+const rarityOrder=['N','R','SR','SSR','UR'],emoji=['🍙','🍊','🍎','🍓','🌌'];
+let count=1,results=[],index=0,flipped=false,active=false,skip=false,releaseWait=null,pageIndex=0;
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function choice(){const r=$('rarity').value;return r==='random'?rarityOrder[Math.floor(Math.random()*5)]:r}
+function effect(rarity){const rank=rarityOrder.indexOf(rarity),n=Math.random();return n<([.98,.95,.78,.18,.08][rank])?'normal':n<([.999,.995,.98,.78,.38][rank])?'chance':'hot'}
+function wait(ms){if(skip||reduce)return Promise.resolve();return new Promise(resolve=>{const timer=setTimeout(()=>{releaseWait=null;resolve()},ms);releaseWait=()=>{clearTimeout(timer);releaseWait=null;resolve()}})}
+function finish(){skip=true;if(releaseWait)releaseWait()}
+function renderResult(){
+const body=$('resultBody');body.replaceChildren();$('prevPage').hidden=true;
+const all=results.length>1&&(results.length===100||index>=results.length);
+if(all){const grid=document.createElement('div');grid.className='grid';for(const rarity of results.slice(pageIndex*10,pageIndex*10+10)){const item=document.createElement('div');item.className='mini';item.textContent=emoji[rarityOrder.indexOf(rarity)];const span=document.createElement('span');span.textContent=rarity;item.append(span);grid.append(item)}body.append(grid)}
+else if(results.length>1&&!flipped){const back=document.createElement('button');back.className='card-back';back.textContent='✦';back.setAttribute('aria-label',(index+1)+'枚目をめくる');back.onclick=()=>{flipped=true;renderResult()};body.append(back)}
+else{const rarity=results[Math.min(index,results.length-1)],front=document.createElement('div');front.className='card-front';front.textContent=emoji[rarityOrder.indexOf(rarity)];const name=document.createElement('small');name.textContent=results.length>1?(index+1)+' / '+results.length+'枚目':'1枚目';const label=document.createElement('b');label.textContent=rarity;front.append(name,label);body.append(front)}
+$('all').hidden=results.length<=1||all;$('prevPage').hidden=results.length!==100||pageIndex===0;$('next').hidden=results.length===100?pageIndex>=9:results.length<=1||all||!flipped;
+$('next').textContent=results.length===100?'次の10枚へ ›':index===results.length-1?'一覧を見る':'次のカードへ';
+$('done').hidden=results.length>1&&!all;
+}
+function show(){index=0;pageIndex=0;flipped=false;renderResult();$('result').showModal();$('status').textContent=''}
+function next(){if(results.length===100){pageIndex=Math.min(9,pageIndex+1)}else if(index<results.length-1){index++;flipped=false}else index=results.length;renderResult()}
+async function draw(){
+if(active)return;active=true;skip=false;const version=$('version').value;results=Array.from({length:count},choice);$('draw').disabled=true;$('skip').hidden=version!=='development'||count!==1;machine.dataset.stage='idle';
+try{
+if(version==='development'&&count===1){
+const rarity=results[0];machine.dataset.effect=effect(rarity);machine.dataset.hatch=effect(rarity);
+for(const [stage,time,caption] of [['search',450,'🥚 タマゴを探しています…'],['drop',550,'🦾 アームが降りてきた！'],['grab',380,'✨ タマゴをつかまえた！'],['lift',620,'🥚 タマゴを持ち上げた！'],['hatch',650,'✨ タマゴが光っている！']]){if(skip)break;machine.dataset.stage=stage;$('status').textContent=caption;await wait(time)}
+}else{$('status').textContent='🥚 タマゴを探しています…';await wait(650)}
+show();
+}finally{active=false;$('draw').disabled=false;$('skip').hidden=true;machine.dataset.stage='idle'}
+}
+for(const button of document.querySelectorAll('[data-count]'))button.onclick=()=>{if(active)return;count=Number(button.dataset.count);for(const tab of document.querySelectorAll('[data-count]'))tab.setAttribute('aria-pressed',String(tab===button));$('draw').textContent='🧪 '+count+'連を試す（未保存）'};
+$('draw').onclick=draw;$('skip').onclick=finish;$('close').onclick=()=>{$('result').close()};$('done').onclick=()=>{$('result').close()};$('next').onclick=next;$('prevPage').onclick=()=>{pageIndex=Math.max(0,pageIndex-1);renderResult()};$('all').onclick=()=>{index=results.length;renderResult()};
+$('version').onchange=()=>{$('status').textContent=$('version').value==='development'?'開発版の演出を選択しました。':'本番版の演出を選択しました。'};
+</script>
+</body></html>
