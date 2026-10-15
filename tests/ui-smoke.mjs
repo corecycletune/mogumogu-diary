@@ -65,6 +65,7 @@ try{
     assert.equal(await page.locator('#devPanel').isVisible(),id==='junsakata0720');
     if(id==='junsakata0720'){
       // Dev mode 10/100-pull previews must never spend coins/tickets or write game state.
+      await page.locator('#devPanel summary').click();
       await page.locator('#devModeToggle').check();
       await page.locator('.game-nav [data-target="bonus"]').click();
       const before=await page.evaluate(()=>({writes:window.gameWrites,coins:document.querySelector('#headerCoins').textContent,tickets:document.querySelector('#headerTickets').textContent}));
