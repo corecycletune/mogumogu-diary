@@ -46,6 +46,15 @@ try{
   const existing=(await assertSucceeds(getDoc(doc(a,'users',uid,'progress','game')))).data();assert.deepEqual(existing,original);
   await assertSucceeds(setDoc(doc(a,'users',uid,'progress','game'),{...existing,profile:uid}));
   const normalized=(await getDoc(doc(a,'users',uid,'progress','game'))).data();assert.deepEqual({...normalized,profile:'oldProfile'},original);
+  // Game documents created before reward-debt / freeze fields existed must still be writable.
+  const {pendingCoins,pendingTickets,freezeTickets,...legacyGame}=normalized;
+  await env.withSecurityRulesDisabled(async c=>{
+    await setDoc(doc(c.firestore(),'users',uid,'progress','game'),legacyGame);
+  });
+  await assertSucceeds(setDoc(doc(a,'users',uid,'progress','game'),{...legacyGame,coins:legacyGame.coins-100,drawCount:legacyGame.drawCount+1}));
+  await assertSucceeds(setDoc(doc(a,'users',uid,'progress','game'),{...legacyGame,pendingCoins:0,pendingTickets:0,freezeTickets:0}));
+  await assertFails(updateDoc(doc(a,'users',uid,'progress','game'),{pendingCoins:-1}));
+
   await assertSucceeds(setDoc(doc(a,'users',uid,'progress','quests'),emptyQuests(uid)));
   const achieved=emptyQuests(uid);achieved.tasks.habit={name:'確認',archived:false};achieved.days['2026-10-13']=['habit'];
   achieved.values['2026-10-13:habit']='private value';

@@ -253,9 +253,11 @@ function renderHeader(){
 }
 function updateResultControls(){
   const flipping=tenRevealActive&&latestResults.length===10;
-  el('gachaFlipSkip').hidden=!flipping;
-  el('gachaFlipNext').hidden=!flipping||!tenRevealFlipped;
-  el('gachaFlipNext').textContent=tenRevealIndex===9?'10枚を並べる':'次のカードへ';
+  if(el('gachaFlipSkip'))el('gachaFlipSkip').hidden=!flipping;
+  if(el('gachaFlipNext')){
+    el('gachaFlipNext').hidden=!flipping||!tenRevealFlipped;
+    el('gachaFlipNext').textContent=tenRevealIndex===9?'10枚を並べる':'次のカードへ';
+  }
   el('gachaResultDone').hidden=flipping;
   el('gachaPageStatus').hidden=flipping;
   // Pagination visibility for the grid is decided by showLatestDraw().
@@ -347,7 +349,8 @@ async function reveal(results){
   el('gachaMachine').className='gacha-machine is-revealed rarity-'+rarity.toLowerCase();
   el('gameResult').className='gacha-result result-'+rarity.toLowerCase();
   celebrating=false;resultPage=0;latestResults=results;latestDraw=results[0];
-  tenRevealActive=results.length===10;tenRevealIndex=0;tenRevealFlipped=false;resultKey='';showLatestDraw();
+  // Older PWA shells lack the flip controls; display the already-saved results as a grid instead.
+  tenRevealActive=results.length===10&&!!el('gachaFlipSkip')&&!!el('gachaFlipNext');tenRevealIndex=0;tenRevealFlipped=false;resultKey='';showLatestDraw();
   const dialog=el('gachaResultDialog');if(!dialog.open)dialog.showModal();
   status('');
   if(results.length!==10){playSound('reveal',rarity);if(results.some(r=>r.newCard))playSound('new');}
@@ -447,8 +450,8 @@ for(const button of document.querySelectorAll('[data-gacha-count]')){
 }
 const closeResult=()=>{const dialog=el('gachaResultDialog');if(dialog.open)dialog.close();tenRevealActive=false;tenRevealFlipped=false;resultKey='';};
 el('gachaResultDialog').addEventListener('close',()=>{tenRevealActive=false;tenRevealFlipped=false;resultKey='';});
-el('gachaFlipSkip').addEventListener('click',finishTenReveal);
-el('gachaFlipNext').addEventListener('click',()=>{
+el('gachaFlipSkip')?.addEventListener('click',finishTenReveal);
+el('gachaFlipNext')?.addEventListener('click',()=>{
   if(!tenRevealActive||!tenRevealFlipped)return;
   if(tenRevealIndex===9){finishTenReveal();return;}
   tenRevealIndex++;tenRevealFlipped=false;resultKey='';showTenReveal();

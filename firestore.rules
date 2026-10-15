@@ -72,7 +72,7 @@ service cloud.firestore {
       return request.resource.data.keys().hasAll([
             'profile','version','coins','tickets','drawCount',
             'lastFreeDay','lastLoginDay','loginDays','inventory','history',
-            'mealRewardDays','streakRewardKeys','pendingCoins','pendingTickets','freezeTickets','updatedAt'
+            'mealRewardDays','streakRewardKeys','updatedAt'
           ]) &&
           request.resource.data.keys().hasOnly([
             'profile','version','coins','tickets','drawCount',
