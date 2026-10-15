@@ -67,10 +67,10 @@ try{
       // Dev mode 10/100-pull previews must never spend coins/tickets or write game state.
       await page.locator('#devPanel summary').click();
       await page.locator('#devModeToggle').check();
+      await page.locator('#devRarity').selectOption('UR');
       await page.locator('.game-nav [data-target="bonus"]').click();
       const before=await page.evaluate(()=>({writes:window.gameWrites,coins:document.querySelector('#headerCoins').textContent,tickets:document.querySelector('#headerTickets').textContent}));
       // Single-pull animated prototype: expectation and hatch cues must be cosmetic only.
-      await page.locator('#devRarity').selectOption('UR');
       await page.locator('#gameCoinDraw').click();
       await page.waitForSelector('#gachaMachine.stage-search');
       assert.match(await page.locator('#gachaMachine').getAttribute('data-expectation'),/^(normal|chance|hot)$/);
@@ -82,7 +82,9 @@ try{
       assert.equal(await page.locator('#gachaAnimationSkip').isVisible(),false);
       await page.locator('#gachaResultDone').click();
       assert.equal(await page.evaluate(()=>window.gameWrites),before.writes);
+      await page.locator('.settings-button').click();
       await page.locator('#devRarity').selectOption('random');
+      await page.locator('.game-nav [data-target="bonus"]').click();
       await page.locator('.gacha-mode-switch [data-gacha-count="10"]').click();
       assert.equal(await page.locator('#gameTenDraw').isEnabled(),true);
       assert.match(await page.locator('#gameTenDraw').textContent(),/10連テスト/);
