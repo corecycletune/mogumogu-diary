@@ -213,7 +213,7 @@ function changePanel(name){
   window.dispatchEvent(new CustomEvent('mogumogu:panel',{detail:{name:name}}));
   window.scrollTo({top:0,behavior:'auto'});
 }
-window.addEventListener('mogumogu:quest',function(event){window.mogumoguQuestDays=event.detail.days||{};window.mogumoguQuestTasks=event.detail.tasks||{};window.mogumoguDeletedTasks=event.detail.deletedTasks||{};window.mogumoguQuestValues=event.detail.values||{};renderCalendar();});
+window.addEventListener('mogumogu:quest',function(event){window.mogumoguQuestDays=event.detail.days||{};window.mogumoguQuestTasks=event.detail.tasks||{};window.mogumoguDeletedTasks=event.detail.deletedTasks||{};window.mogumoguQuestValues=event.detail.values||{};window.mogumoguQuestValueMeta=event.detail.valueMeta||{};renderCalendar();});
 el('calendarGrid').addEventListener('click',function(event){
   var day=event.target.closest('[data-day]')?.dataset.day;if(!day)return;
   var details=el('stampDetails'),list=el('stampDetailsList');
@@ -221,7 +221,7 @@ el('calendarGrid').addEventListener('click',function(event){
   (window.mogumoguQuestDays?.[day]||[]).forEach(function(id){
     var item=document.createElement('li'),task=window.mogumoguQuestTasks?.[id]||window.mogumoguDeletedTasks?.[id];
     item.textContent=id==='meal'?'ごはんを記録':(task?.name||'過去の習慣');
-    var value=window.mogumoguQuestValues?.[day+':'+id];if(value){var extra=document.createElement('span');extra.textContent=' · '+(task?.fieldLabel||'記録')+'：'+value;item.append(extra);}
+    var value=window.mogumoguQuestValues?.[day+':'+id],meta=window.mogumoguQuestValueMeta?.[day+':'+id];if(value!==undefined){var extra=document.createElement('span');extra.textContent=' · '+(meta?.label||task?.fieldLabel||'記録')+'：'+value+(meta?.unit||'');item.append(extra);}
     list.append(item);
   });
   allMeals.filter(function(m){return m.date===day;}).forEach(function(m){

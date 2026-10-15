@@ -1,7 +1,7 @@
 import {isDevModeEnabled} from './developer-access.js';
 import {applyDraw,multiStatus,grantMultiRewards} from './multi-draw.js';
 import {initSound,playSound} from './sound.js';
-import {localDay} from './quest-core.js';
+import {localDay,creditReward} from './quest-core.js';
 import {freshGame} from './progress-store.js';
 import {openCardDetails,putCardName} from './card-details.js';
 import {CATALOG,BY_ID,levelForCopies,drawCharacter} from './game-catalog.js';
@@ -56,7 +56,7 @@ async function awardLogin(){
     const awarded=await ctx.updateGame(current=>{
       const st=clone(current);
       if(st.lastLoginDay===d)return null;
-      st.lastLoginDay=d;st.loginDays+=1;st.coins+=10;st.updatedAt=new Date().toISOString();
+      st.lastLoginDay=d;st.loginDays+=1;creditReward(st,'coins',10);st.updatedAt=new Date().toISOString();
       return st;
     });
     if(awarded)message('ログインボーナス ＋10コイン！');

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {emptyQuests,completeQuest,streakFor,dayBefore,stampForDay,nextMilestone,localDay} from '../quest-core.js';
+import {emptyQuests,completeQuest,streakFor,dayBefore,stampForDay,nextMilestone,localDay,cancelToday,setTaskStatus,deleteQuest,activeCount,creditReward,freezeCandidates} from '../quest-core.js';
 import {CATALOG} from '../game-catalog.js';
 import {detailsForCard} from '../card-details.js';
 let q=emptyQuests('jun'),g={coins:0,tickets:0};
@@ -36,4 +36,61 @@ assert.equal(withValue.game.tickets,3);
 assert.equal(completeQuest(withValue.quests,withValue.game,'task','2026-10-13',undefined,'another'),null);
 assert.equal(localDay(new Date('2026-10-13T15:01:00Z')),'2026-10-14');
 assert.equal(CATALOG.length,63);
+
+const now=localDay();
+let life=emptyQuests('uid-test'),wallet={coins:0,tickets:0};
+life.tasks.walk={name:'歩く',archived:false,fieldLabel:'歩数',fieldType:'number',fieldUnit:'歩'};
+let first=completeQuest(life,wallet,'walk',now,new Date().toISOString(),'12.5');
+assert.equal(first.quests.valueMeta[now+':walk'].unit,'歩');
+assert.equal(first.quests.tasks.walk.totalDone,1);
+assert.equal(cancelToday(first.quests,first.game,'walk','2020-01-01'),null);
+let undone=cancelToday(first.quests,first.game,'walk',now);
+assert.ok(undone);assert.equal(undone.quests.days[now],undefined);
+assert.equal(undone.quests.values[now+':walk'],undefined);
+assert.equal(undone.quests.rewardEvents[now+':walk'].status,'cancelled');
+assert.equal(cancelToday(undone.quests,undone.game,'walk',now),null);
+let restored=completeQuest(undone.quests,undone.game,'walk',now);
+assert.equal(restored.quests.rewardEvents[now+':walk'].status,'active');
+assert.equal(restored.game.coins,first.game.coins);
+life=first.quests;
+life=setTaskStatus(life,'walk','paused',dayBefore(now));
+assert.equal(streakFor(life.days,'walk',now,life),1);
+life=setTaskStatus(life,'walk','graduated',now);
+assert.equal(activeCount(life),0);
+life=setTaskStatus(life,'walk','active',now);
+assert.equal(streakFor(life.days,'walk',dayBefore(now),life),0);
+assert.equal(streakFor(life.days,'walk',now,life),0); // same-day graduation/restart does not count old completion
+assert.equal(life.tasks.walk.totalDone,1);
+const deleted=deleteQuest(first.quests,'walk');
+assert.equal(deleted.tasks.walk,undefined);
+assert.equal(deleted.days[now],undefined);
+assert.equal(deleted.values[now+':walk'],undefined);
+assert.equal(deleted.rewardEvents[now+':walk'],undefined);
+assert.equal(first.game.coins,0);
+const bonus=emptyQuests('uid-test');bonus.tasks.a={name:'A'};bonus.tasks.b={name:'B'};
+const aDone=completeQuest(bonus,{coins:0,tickets:0},'a',now);
+const bDone=completeQuest(aDone.quests,aDone.game,'b',now);
+assert.equal(bDone.coins,20);
+const spent={...bDone.game,coins:0};
+const bCancelled=cancelToday(bDone.quests,spent,'b',now);
+assert.equal(bCancelled.game.pendingCoins,20);
+creditReward(bCancelled.game,'coins',10);
+assert.equal(bCancelled.game.pendingCoins,10);
+const bAgain=completeQuest(bCancelled.quests,bCancelled.game,'b',now);
+assert.equal(bAgain.game.pendingCoins,0);
+assert.equal(bAgain.game.coins,10);
+
+importedTest();
+function importedTest(){
+  const before={coins:0,tickets:0,pendingCoins:7};
+  assert.equal(creditReward(before,'coins',5),0);
+  assert.equal(before.pendingCoins,2);
+  assert.equal(creditReward(before,'coins',4),2);
+  assert.equal(before.pendingCoins,0);
+}
+const candidate=emptyQuests('uid-test');
+candidate.tasks.walk={name:'歩く'};
+candidate.days[dayBefore(dayBefore(now))]=['walk'];
+assert.equal(freezeCandidates(candidate,now)[0].days.length,1);
+
 console.log('PASS: daily duplicate protection, capped rewards, independent/OR streaks, milestone deduplication, archived tasks, leap dates, all 63 learning descriptions');

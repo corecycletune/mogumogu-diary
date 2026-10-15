@@ -25,6 +25,8 @@ jobs:
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund @playwright/test@1.64.0
       - run: npx playwright install --with-deps chromium
+      - name: Quest core regression tests
+        run: node tests/quest-core.test.mjs
       - name: Run browser smoke against a local app and mocked Firebase boundary
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 &

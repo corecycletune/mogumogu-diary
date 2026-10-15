@@ -210,10 +210,15 @@ export async function removeFriend(pair){
   await deleteDoc(doc(db,'friendships',pair));
 }
 export async function publishActivity(quests,day){
-  if(!quests.days?.[day]?.length)return;
-  const account=await chatAccount(),uid=account.user.uid;
-  await setDoc(doc(db,'users',uid,'activity',day),{done:true});
-  const results=await Promise.allSettled(savedGroups().map(group=>setDoc(doc(db,'families',group.id,'activity',day+'_'+uid),{uid,day,done:true})));
+  const account=await chatAccount(),uid=account.user.uid,done=!!quests.days?.[day]?.length;
+  const personal=doc(db,'users',uid,'activity',day);
+  if(done)await setDoc(personal,{done:true});
+  else if((await getDocFromServer(personal)).exists())await deleteDoc(personal);
+  const results=await Promise.allSettled(savedGroups().map(async group=>{
+    const ref=doc(db,'families',group.id,'activity',day+'_'+uid);
+    if(done)await setDoc(ref,{uid,day,done:true});
+    else if((await getDocFromServer(ref)).exists())await deleteDoc(ref);
+  }));
   if(results.some(r=>r.status==='rejected'))throw new Error('group-activity');
 }
 export async function friendActivity(uid){
