@@ -1,4 +1,4 @@
-import {taskStatus,activeCount,totalDone,bestStreak,streakFor,nextMilestone,localDay} from './quest-core.js';
+import {taskStatus,activeCount,totalDone,bestStreak,streakFor,nextMilestone,localDay,dayBefore,isPausedDay} from './quest-core.js';
 // Dedicated full-screen quest pages. All writes are delegated to the account transaction.
 export function mountQuestPages({state,mutate,confirmCompletion,notice}){
   const node=(tag,value='',className='')=>{const e=document.createElement(tag);e.textContent=value;if(className)e.className=className;return e;};
@@ -129,10 +129,12 @@ export function mountQuestPages({state,mutate,confirmCompletion,notice}){
     body.append(node('h3','達成履歴'));
     const history=node('ul','','quest-history'),dates=new Set(Object.keys(q.days).filter(d=>(q.days[d]||[]).includes(id)));
     for(const d of Object.keys(t.pauseDays||{}))dates.add(d);
+    const end=t.graduatedAt||day,earliest=t.createdDay||[...dates].sort()[0];
+    if(earliest){let cursor=end;for(let i=0;i<60&&cursor>=earliest;i++,cursor=dayBefore(cursor))dates.add(cursor);}
     const sorted=[...dates].sort().reverse();
     for(const d of sorted){
       const key=d+':'+id,v=q.values?.[key],meta=q.valueMeta?.[key];
-      const li=node('li',d+' · '+((q.days[d]||[]).includes(id)?'✓ 達成':'お休み'));
+      const li=node('li',d+' · '+((q.days[d]||[]).includes(id)?'✓ 達成':isPausedDay(t,d)?'お休み':'未達成'));
       if(v!==undefined)li.append(node('span',' · '+(meta?.label||t.fieldLabel||'記録')+'：'+v+(meta?.unit||'')));
       history.append(li);
     }
