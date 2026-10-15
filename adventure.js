@@ -53,7 +53,7 @@ if(mount){
           if(id&&!q.tasks[id])return null;
           if(!id&&activeCount(q)>=10)throw new Error('limit');
           const key=id||crypto.randomUUID(),old=q.tasks[key]||{};
-          q.tasks[key]={...old,...data,status:old.status||'active',archived:old.archived||false,order:old.order??Object.keys(q.tasks).length};
+          q.tasks[key]={...old,...data,status:old.status||'active',archived:old.archived||false,order:old.order??Object.keys(q.tasks).length,createdDay:old.createdDay||now};
         }else if(kind==='reorder'){data.forEach((key,index)=>{if(q.tasks[key])q.tasks[key].order=index;});}
         else if(kind==='value'){
           if(now!==localDay()||!(q.days[now]||[]).includes(id))return null;
