@@ -208,5 +208,40 @@ try{
   }
   const page=await browser.newPage();await page.route('**/firebase-sync.js',route=>route.fulfill({contentType:'text/javascript',body:'export async function currentAccount(){return null;} export async function ensureAccount(){} export async function loginAccount(){} export async function registerAccount(){}'}));
   await page.goto('http://127.0.0.1:8765/account.html');await page.locator('#accountSwitch').click();assert.equal(await page.locator('#accountConfirm').isVisible(),true);assert.equal(await page.locator('#legacyProfile,#accountImport').count(),0);
+  // Standalone preview must work on mobile without credentials, Firebase or storage.
+  const preview=await browser.newPage({viewport:{width:390,height:844}});
+  const previewErrors=[];
+  preview.on('pageerror',e=>previewErrors.push(e.message));
+  await preview.goto('http://127.0.0.1:8765/preview/gacha.html');
+  assert.equal(await preview.locator('#version').inputValue(),'production');
+  await preview.locator('#draw').click();
+  await preview.waitForFunction(()=>document.querySelector('#result').open);
+  assert.equal(await preview.locator('#skip').isVisible(),false);
+  await preview.locator('#done').click();
+  await preview.locator('#version').selectOption('development');
+  await preview.locator('#rarity').selectOption('UR');
+  await preview.locator('#draw').click();
+  await preview.waitForFunction(()=>document.querySelector('#machine').dataset.stage==='search');
+  await preview.locator('#skip').click();
+  await preview.waitForFunction(()=>document.querySelector('#result').open);
+  assert.match(await preview.locator('.card-front b').textContent(),/UR/);
+  await preview.locator('#done').click();
+  await preview.locator('[data-count="10"]').click();
+  await preview.locator('#draw').click();
+  await preview.waitForFunction(()=>document.querySelector('#result').open);
+  assert.equal(await preview.locator('.card-back').count(),1);
+  await preview.locator('#all').click();
+  assert.equal(await preview.locator('.grid .mini').count(),10);
+  await preview.locator('#done').click();
+  await preview.locator('[data-count="100"]').click();
+  await preview.locator('#draw').click();
+  await preview.waitForFunction(()=>document.querySelector('#result').open);
+  assert.equal(await preview.locator('.grid .mini').count(),10);
+  await preview.locator('#next').click();
+  assert.equal(await preview.locator('#prevPage').isVisible(),true);
+  await preview.locator('#prevPage').click();
+  assert.equal(await preview.locator('#prevPage').isVisible(),false);
+  assert.deepEqual(previewErrors,[]);
+  await preview.close();
   console.log('PASS: common mobile page, old URL redirect, two UID-specific accounts and meals, no profile selection');
 }finally{await browser.close();}
