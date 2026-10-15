@@ -1,5 +1,6 @@
 import {groupStorageKey,chatStorageKey} from './account-compat.js';
-import {emptyQuests,completeQuest,localDay,streakFor,stampForDay,nextMilestone} from './quest-core.js';
+import {emptyQuests,completeQuest,cancelToday,setTaskStatus,deleteQuest,taskStatus,activeCount,localDay,streakFor,stampForDay,nextMilestone} from './quest-core.js';
+import {mountQuestPages} from './quest-ui.js';
 import {BY_ID} from './game-catalog.js';
 import {playSound} from './sound.js';
 import {jointProgress,joinedDay} from './social-core.js';
@@ -11,77 +12,95 @@ if(mount){
   window.MogumoguStampForDay=stampForDay;
   function text(tag,value,className){const e=document.createElement(tag);e.textContent=value;if(className)e.className=className;return e;}
   function notice(value){el('questStatus').textContent=value;}
+
   const completionDialog=text('dialog','','quest-confirm');
   completionDialog.id='questConfirm';
-  completionDialog.setAttribute('aria-labelledby','questConfirmTitle');
-  completionDialog.setAttribute('aria-describedby','questConfirmText');
-  const confirmationTitle=text('h2','クエストを完了しますか？');confirmationTitle.id='questConfirmTitle';
-  const confirmationText=text('p','');confirmationText.id='questConfirmText';
-  const extraWrap=text('label','','label');extraWrap.hidden=true;
-  const extraInput=text('input','','field');extraInput.maxLength=120;extraInput.type='text';extraWrap.append(extraInput);
-  const confirmationActions=text('div','','button-row');
-  const cancelCompletion=text('button','キャンセル','btn secondary');cancelCompletion.type='button';cancelCompletion.autofocus=true;
-  const saveCompletion=text('button','完了する','btn primary');saveCompletion.type='button';
-  confirmationActions.append(cancelCompletion,saveCompletion);
-  completionDialog.append(confirmationTitle,confirmationText,extraWrap,confirmationActions);document.body.append(completionDialog);
-  let pendingCompletion=null;
-  cancelCompletion.addEventListener('click',()=>{pendingCompletion=null;completionDialog.close();});
-  completionDialog.addEventListener('cancel',()=>{pendingCompletion=null;});
-  saveCompletion.addEventListener('click',()=>{
-    if(!completionDialog.open)return;
-    const pending=pendingCompletion;pendingCompletion=null;completionDialog.close();
-    if(!pending)return;
-    if(pending.context!==ctx||pending.sequence!==connectionSeq||pending.day!==localDay()){
-      notice('記録する日や接続が変わりました。もう一度「できた！」を押してください。');return;
-    }
-    if(!quests.tasks[pending.id]||quests.tasks[pending.id].archived)return;
-    void finish(pending.id,extraInput.value.trim());
+  const title=text('h2','クエストを完了しますか？'),description=text('p','');
+  const extraLabel=text('label','','label'),extraInput=text('input','','field');
+  extraInput.maxLength=120;extraLabel.append(extraInput);
+  const actions=text('div','','button-row');
+  const cancel=text('button','キャンセル','btn secondary'),save=text('button','完了する','btn primary');
+  cancel.type=save.type='button';actions.append(cancel,save);
+  completionDialog.append(title,description,extraLabel,actions);document.body.append(completionDialog);
+  let pending=null;
+  cancel.addEventListener('click',()=>{pending=null;completionDialog.close();});
+  completionDialog.addEventListener('cancel',()=>{pending=null;});
+  save.addEventListener('click',()=>{
+    if(!extraInput.checkValidity()){extraInput.reportValidity();return;}
+    const p=pending;pending=null;completionDialog.close();
+    if(!p||p.context!==ctx||p.sequence!==connectionSeq||p.day!==localDay())return notice('日付・接続が変わりました。もう一度お試しください。');
+    if(taskStatus(quests.tasks[p.id])==='active')void finish(p.id,extraInput.value.trim());
   });
   function confirmCompletion(id,name){
     if(!ctx||!confirmed||working||completionDialog.open)return;
-    pendingCompletion={id,context:ctx,sequence:connectionSeq,day:localDay()};
-    confirmationText.textContent='「'+name+'」を今日の達成として記録します。';
-    const label=quests.tasks[id]?.fieldLabel;
-    extraWrap.hidden=!label;extraWrap.textContent=label?' '+label+'（空欄でも記録できます）':'';extraWrap.append(extraInput);extraInput.value='';
-    completionDialog.returnValue='';completionDialog.showModal();cancelCompletion.focus();
+    pending={id,context:ctx,sequence:connectionSeq,day:localDay()};
+    description.textContent='「'+name+'」を今日の達成として記録します。';
+    const t=quests.tasks[id];extraLabel.hidden=!t?.fieldLabel;
+    extraLabel.replaceChildren(document.createTextNode((t?.fieldLabel||'')+'（任意）'),extraInput);
+    extraInput.type=t?.fieldType==='number'?'number':'text';extraInput.step='any';extraInput.required=false;extraInput.value='';
+    completionDialog.showModal();cancel.focus();
   }
+  async function mutate(kind,id,data){
+    if(!ctx||!confirmed||working)return false;
+    working=true;render();
+    try{
+      const result=await ctx.updateAdventure((current,game)=>{
+        const q=structuredClone(current||emptyQuests(profile)),now=localDay();
+        if(kind==='cancel')return game?cancelToday(q,game,id,now):null;
+        if(kind==='delete'){const next=deleteQuest(q,id);return next?{quests:next}:null;}
+        if(kind==='status'){const next=setTaskStatus(q,id,data,now);return next?{quests:next}:null;}
+        if(kind==='save'){
+          if(id&&!q.tasks[id])return null;
+          if(!id&&activeCount(q)>=10)throw new Error('limit');
+          const key=id||crypto.randomUUID(),old=q.tasks[key]||{};
+          q.tasks[key]={...old,...data,status:old.status||'active',archived:old.archived||false,order:old.order??Object.keys(q.tasks).length};
+        }else if(kind==='reorder'){data.forEach((key,index)=>{if(q.tasks[key])q.tasks[key].order=index;});}
+        else if(kind==='value'){
+          if(now!==localDay()||!(q.days[now]||[]).includes(id))return null;
+          const key=now+':'+id,t=q.tasks[id];if(!t)return null;
+          q.values=q.values||{};q.valueMeta=q.valueMeta||{};
+          if(data){q.values[key]=data;q.valueMeta[key]={label:t.fieldLabel||'',type:t.fieldType||'text',unit:t.fieldUnit||''};}
+          else{delete q.values[key];delete q.valueMeta[key];}
+        }else return null;
+        q.updatedAt=new Date().toISOString();return {quests:q};
+      });
+      if(result){quests=result.quests;return true;}return false;
+    }catch(e){notice(e.message==='limit'?'挑戦中とお休み中は10件までです。':'保存できませんでした。通信を確認してください。');return false;}
+    finally{working=false;render();}
+  }
+  const pages=mountQuestPages({state:()=>({quests}),mutate,confirmCompletion,notice});
   function render(){
     const day=localDay(),done=quests.days[day]||[];
     el('questStreak').textContent=streakFor(quests.days,null,day)+'日';
     el('headerStreak').textContent=confirmed?String(streakFor(quests.days,null,day)):'—';
     el('questDone').textContent=done.length+'件';
-    const next=nextMilestone(quests.days,null,day);el('questNextReward').textContent=next&&next.remaining<=2?'あと'+next.remaining+'日で '+next.coins+'コイン！':'';el('questNextReward').hidden=!el('questNextReward').textContent;
+    const next=nextMilestone(quests.days,null,day);
+    el('questNextReward').textContent=next&&next.remaining<=2?'あと'+next.remaining+'日で '+next.coins+'コイン！':'';
+    el('questNextReward').hidden=!el('questNextReward').textContent;
     mount.replaceChildren();
-    const list=[['meal',{name:'ごはんを1回記録する'}],...Object.entries(quests.tasks).filter(([,v])=>!v.archived)];
+    const list=[['meal',{name:'ごはんを1回記録する'}],...Object.entries(quests.tasks).filter(([,t])=>taskStatus(t)==='active').sort((a,b)=>(a[1].order||0)-(b[1].order||0))];
     const activeDone=list.filter(([id])=>done.includes(id)).length;
     if(el('homeQuestProgress')){el('homeQuestProgress').max=list.length;el('homeQuestProgress').value=activeDone;el('homeQuestProgress').textContent=activeDone+' / '+list.length;el('homeQuestCount').textContent=activeDone+' / '+list.length;el('homeStreak').textContent=streakFor(quests.days,null,day)+'日';}
-    for(const [id,task] of list){
-      const row=text('div','', 'quest-row');
-      const label=text('div','');label.append(text('strong',task.name),text('small','個別の連続記録 '+streakFor(quests.days,id,day)+'日'));
-      const nextTask=nextMilestone(quests.days,id,day);if(nextTask&&nextTask.remaining<=2)label.append(text('small','あと'+nextTask.remaining+'日で '+nextTask.coins+'コイン！','milestone-hint'));
-      const button=text('button',done.includes(id)?'✓ できた':id==='meal'?'ごはんへ':'できた！','btn '+(done.includes(id)?'secondary':'primary'));
-      button.type='button';button.disabled=working||(!confirmed&&id!=='meal')||done.includes(id);
-      button.addEventListener('click',()=>id==='meal'?document.querySelector('[data-target="timer"]').click():confirmCompletion(id,task.name));
-      row.append(label,button);
-      if(id!=='meal'){
-        const archive=text('button','お休みにする','link-button');archive.type='button';archive.disabled=!confirmed||working;
-        archive.addEventListener('click',()=>void changeTask(id));row.append(archive);
-        const edit=text('button',task.fieldLabel?'入力欄：'+task.fieldLabel+'（変更）':'入力欄を追加','link-button');edit.type='button';edit.disabled=!confirmed||working;
-        edit.addEventListener('click',()=>void editField(id));row.append(edit);
-        const remove=text('button','削除する','link-button');remove.type='button';remove.disabled=!confirmed||working;
-        remove.addEventListener('click',()=>void deleteTask(id));row.append(remove);
-      }
-      mount.append(row);
+    for(const [id,t] of list){
+      const row=text('div','','quest-row quest-compact'),label=text('div','','quest-row-label');
+      const name=text(id==='meal'?'strong':'button',t.name,id==='meal'?'':'quest-name-button');
+      if(id!=='meal'){name.type='button';name.addEventListener('click',()=>pages.openDetail(id));}
+      label.append(name,text('small','連続 '+streakFor(quests.days,id,day,quests)+'日'));
+      const btn=text('button',done.includes(id)?'✓ できた':id==='meal'?'ごはんへ':'できた！','btn '+(done.includes(id)?'secondary':'primary'));
+      btn.type='button';btn.disabled=working||(!confirmed&&id!=='meal')||done.includes(id);
+      btn.addEventListener('click',()=>id==='meal'?document.querySelector('[data-target="timer"]').click():confirmCompletion(id,t.name));
+      row.append(label,btn);mount.append(row);
     }
     const archived=el('questArchived');archived.replaceChildren();
-    for(const [id,task] of Object.entries(quests.tasks).filter(([,v])=>v.archived)){
-      const row=text('div','', 'quest-row');row.append(text('span',task.name));
-      const restart=text('button','再開する','btn secondary');restart.type='button';restart.disabled=working||!confirmed||list.length>=11;
-      restart.addEventListener('click',()=>void changeTask(id,null,true));row.append(restart);archived.append(row);
-      const remove=text('button','削除する','link-button');remove.type='button';remove.disabled=working||!confirmed;
-      remove.addEventListener('click',()=>void deleteTask(id));row.append(remove);
+    for(const [id,t] of Object.entries(quests.tasks).filter(([,v])=>taskStatus(v)==='paused')){
+      const row=text('div','','quest-row quest-compact'),name=text('button',t.name,'quest-name-button'),resume=text('button','再開','btn secondary');
+      name.type=resume.type='button';name.addEventListener('click',()=>pages.openDetail(id));
+      resume.disabled=working||!confirmed;resume.addEventListener('click',()=>void mutate('status',id,'active'));
+      row.append(name,resume);archived.append(row);
     }
-    el('questAdd').disabled=working||!confirmed||list.length>=11||Object.keys(quests.tasks).length>=50;
+    if(!archived.childElementCount)archived.append(text('p','お休み中のクエストはありません。','small'));
+    el('questManage').disabled=working||!confirmed;
+    pages.refresh();
     el('messageSend').disabled=!chatCtx||chatWorking;
     el('chatGroupSelect').disabled=!el('chatGroupSelect').options.length||chatWorking;
     el('chatCreate').disabled=chatWorking;el('chatJoin').disabled=chatWorking;
@@ -90,53 +109,10 @@ if(mount){
     if(!ctx||!confirmed||working)return;
     working=true;render();
     try{
-      const day=localDay();
-      const result=await ctx.updateAdventure((q,g)=>g?completeQuest(q||emptyQuests(profile),g,id,day,new Date().toISOString(),value):null);
-      if(result){quests=result.quests;playSound('success');notice('できた！ '+(result.tickets?'ガチャ券 ＋1枚 ':'')+(result.coins?'コイン ＋'+result.coins:''));window.dispatchEvent(new CustomEvent('mogumogu:quest',{detail:{days:quests.days,tasks:quests.tasks,deletedTasks:quests.deletedTasks||{},values:quests.values||{}}}));}
-      else notice('この習慣は今日すでに達成済みです。');
-    }catch(error){notice('達成を保存できませんでした。通信を確認してもう一度お試しください。');}
-    finally{working=false;render();}
+      const result=await ctx.updateAdventure((q,g)=>g?completeQuest(q||emptyQuests(profile),g,id,localDay(),new Date().toISOString(),value):null);
+      if(result){quests=result.quests;playSound('success');notice('できた！ '+(result.coins?'コイン ＋'+result.coins:''));window.dispatchEvent(new CustomEvent('mogumogu:quest',{detail:{days:quests.days,tasks:quests.tasks,deletedTasks:quests.deletedTasks||{},values:quests.values||{},valueMeta:quests.valueMeta||{}}}));}
+    }catch{notice('達成を保存できませんでした。');}finally{working=false;render();}
   }
-  async function changeTask(id,name,restart=false,fieldLabel=''){
-    if(!ctx||!confirmed||working)return;
-    working=true;render();
-    try{
-      await ctx.updateAdventure((current)=>{
-        const q=structuredClone(current||emptyQuests(profile));
-        if(id){if(!q.tasks[id])return null;if(restart&&Object.values(q.tasks).filter(t=>!t.archived).length>=10)throw new Error('limit');q.tasks[id].archived=!restart;}
-        else{
-          if(Object.values(q.tasks).filter(t=>!t.archived).length>=10)throw new Error('limit');
-          if(Object.keys(q.tasks).length>=50)throw new Error('history-limit');
-          q.tasks[crypto.randomUUID()]={name,archived:false,...(fieldLabel?{fieldLabel}:{})};
-        }
-        q.updatedAt=new Date().toISOString();return {quests:q};
-      });
-      el('questName').value='';el('questExtraLabel').value='';el('questExtraEnabled').checked=false;el('questExtraLabelWrap').hidden=true;
-      notice(id?(restart?'再開しました。':'お休みにしました。これまでの記録は残ります。'):'習慣を登録しました。');
-    }catch(e){notice(e.message==='limit'?'登録は10件までです。':e.message==='history-limit'?'お休み中の習慣から再開できます。':'習慣を保存できませんでした。');}
-    finally{working=false;render();}
-  }
-  async function deleteTask(id){
-    const task=quests.tasks[id];if(!task||!confirm('「'+task.name+'」を削除しますか？ 過去の達成・獲得済み報酬は残ります。'))return;
-    working=true;render();
-    try{
-      await ctx.updateAdventure(current=>{
-        const q=structuredClone(current||emptyQuests(profile));if(!q.tasks[id])return null;
-        if(Object.values(q.days).some(day=>day.includes(id)))q.deletedTasks={...(q.deletedTasks||{}),[id]:{name:q.tasks[id].name,fieldLabel:q.tasks[id].fieldLabel||''}};
-        delete q.tasks[id];q.updatedAt=new Date().toISOString();return {quests:q};
-      });notice('削除しました。過去の達成と報酬は残ります。');
-    }catch{notice('削除を保存できませんでした。');}finally{working=false;render();}
-  }
-  async function editField(id){
-    const task=quests.tasks[id];if(!task)return;
-    const input=prompt('達成時に記録する項目の名前（空欄で入力欄を解除）',task.fieldLabel||'');if(input===null)return;
-    const label=input.trim();if(label.length>40){notice('入力欄の名前は40文字までです。');return;}
-    working=true;render();
-    try{await ctx.updateAdventure(current=>{const q=structuredClone(current||emptyQuests(profile));if(!q.tasks[id])return null;if(label)q.tasks[id].fieldLabel=label;else delete q.tasks[id].fieldLabel;q.updatedAt=new Date().toISOString();return {quests:q};});notice('入力欄を更新しました。');}
-    catch{notice('入力欄を保存できませんでした。');}finally{working=false;render();}
-  }
-  el('questExtraEnabled').addEventListener('change',()=>{el('questExtraLabelWrap').hidden=!el('questExtraEnabled').checked;el('questExtraLabel').required=el('questExtraEnabled').checked;});
-  el('questForm').addEventListener('submit',e=>{e.preventDefault();const name=el('questName').value.trim(),label=el('questExtraEnabled').checked?el('questExtraLabel').value.trim():'';if(name&&name.length<=60&&(!el('questExtraEnabled').checked||label))void changeTask(null,name,false,label);});
   async function recordMeal(){
     const bridge=window.MogumoguGameBridge;
     if(confirmed&&bridge?.getLocalMeals&&bridge.getLocalMeals().some(m=>m.date===localDay()&&m.mealType!=='snack')&&!(quests.days[localDay()]||[]).includes('meal'))await finish('meal');
@@ -300,7 +276,7 @@ if(mount){
       if(seq!==connectionSeq)return;
       quests=value||emptyQuests(profile);confirmed=!meta.fromCache&&!meta.hasPendingWrites;render();
       notice(confirmed?'今日も、自分のペースでひとつずつ。':'準備しています…');void recordMeal();
-      window.dispatchEvent(new CustomEvent('mogumogu:quest',{detail:{days:quests.days,tasks:quests.tasks,deletedTasks:quests.deletedTasks||{},values:quests.values||{}}}));
+      window.dispatchEvent(new CustomEvent('mogumogu:quest',{detail:{days:quests.days,tasks:quests.tasks,deletedTasks:quests.deletedTasks||{},values:quests.values||{},valueMeta:quests.valueMeta||{}}}));
       const day=localDay(),signature=day+':'+(quests.days[day]||[]).join(',');
       if(confirmed&&quests.days[day]?.length&&lastPublished!==signature){lastPublished=signature;void import('./firebase-sync.js').then(api=>api.publishActivity(quests,day)).then(()=>{if(chatCtx)void selectChat(chatCtx);void refreshFriends();}).catch(()=>{lastPublished='';});}
     },()=>{if(seq!==connectionSeq)return;confirmed=false;notice('習慣を読み込めませんでした。もう一度お試しください。');render();});
