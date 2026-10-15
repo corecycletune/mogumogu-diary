@@ -70,6 +70,16 @@ try{
       await page.locator('#devRarity').selectOption('UR');
       await page.locator('.game-nav [data-target="bonus"]').click();
       const before=await page.evaluate(()=>({writes:window.gameWrites,coins:document.querySelector('#headerCoins').textContent,tickets:document.querySelector('#headerTickets').textContent}));
+      // Both versions are simulated and never write to Firestore.
+      assert.match(await page.locator('#gachaVersionIndicator').textContent(),/本番版/);
+      await page.locator('#gameFreeDraw').click();
+      await page.waitForSelector('#gameResult .draw-result');
+      assert.equal(await page.locator('#gachaAnimationSkip').isVisible(),false);
+      await page.locator('#gachaResultDone').click();
+      await page.locator('.settings-button').click();
+      await page.locator('#devGachaVersion').selectOption('development');
+      await page.locator('.game-nav [data-target="bonus"]').click();
+      assert.match(await page.locator('#gachaVersionIndicator').textContent(),/開発版/);
       // Single-pull animated prototype: expectation and hatch cues must be cosmetic only.
       await page.locator('#gameFreeDraw').click();
       await page.waitForSelector('#gachaMachine.stage-search');
@@ -128,7 +138,7 @@ try{
       assert.equal(await page.locator('#headerTickets').textContent(),before.tickets);
       assert.equal(await page.evaluate(()=>window.gameWrites),before.writes);
       await page.locator('.settings-button').click();
-      assert.match(await page.locator('#devDrawCount').textContent(),/121回/);
+      assert.match(await page.locator('#devDrawCount').textContent(),/122回/);
       await page.locator('#devModeToggle').uncheck();
       await page.locator('.game-nav [data-target="bonus"]').click();
       await page.locator('.gacha-mode-switch [data-gacha-count="10"]').click();
