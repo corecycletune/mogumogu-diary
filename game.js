@@ -272,19 +272,19 @@ function showTenReveal(){
   target.append(heading);
   const stage=document.createElement('div');stage.className='gacha-flip-stage';
   const cardWrap=document.createElement('div');cardWrap.className='gacha-flip-card'+(tenRevealFlipped?' is-flipped':'');
-  const back=document.createElement('button');back.type='button';back.className='gacha-flip-back';
+  const back=document.createElement('button');back.type='button';back.className='gacha-flip-back';back.inert=tenRevealFlipped;
   back.setAttribute('aria-label',(tenRevealIndex+1)+'枚目のカードをめくる');
   back.innerHTML='<span class="gacha-flip-emblem" aria-hidden="true">🥚</span><span class="gacha-flip-mark" aria-hidden="true">✦ MOGUMOGU ✦</span><span class="gacha-flip-invite">タップしてめくる</span>';
   back.addEventListener('click',()=>{
     if(tenRevealFlipped)return;
     tenRevealFlipped=true;
     cardWrap.classList.add('is-flipped');
-    back.disabled=true;
+    back.disabled=true;back.inert=true;front.inert=false;
     updateResultControls();
     playSound('reveal',card.rarity);
     if(result.newCard)playSound('new');
   });
-  const front=document.createElement('div');front.className='gacha-flip-front';
+  const front=document.createElement('div');front.className='gacha-flip-front';front.inert=!tenRevealFlipped;
   const painted=paintCard(card,{copies:result.copies},false,true);
   if(result.newCard){const badge=document.createElement('span');badge.className='new-badge';badge.textContent='NEW';painted.append(badge);}
   front.append(painted);
