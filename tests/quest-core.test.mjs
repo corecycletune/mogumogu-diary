@@ -59,6 +59,7 @@ life=setTaskStatus(life,'walk','graduated',now);
 assert.equal(activeCount(life),0);
 life=setTaskStatus(life,'walk','active',now);
 assert.equal(streakFor(life.days,'walk',dayBefore(now),life),0);
+assert.equal(streakFor(life.days,'walk',now,life),0); // same-day graduation/restart does not count old completion
 assert.equal(life.tasks.walk.totalDone,1);
 const deleted=deleteQuest(first.quests,'walk');
 assert.equal(deleted.tasks.walk,undefined);
@@ -66,7 +67,19 @@ assert.equal(deleted.days[now],undefined);
 assert.equal(deleted.values[now+':walk'],undefined);
 assert.equal(deleted.rewardEvents[now+':walk'],undefined);
 assert.equal(first.game.coins,0);
-const debt={coins:3,tickets:0};
+const bonus=emptyQuests('uid-test');bonus.tasks.a={name:'A'};bonus.tasks.b={name:'B'};
+const aDone=completeQuest(bonus,{coins:0,tickets:0},'a',now);
+const bDone=completeQuest(aDone.quests,aDone.game,'b',now);
+assert.equal(bDone.coins,20);
+const spent={...bDone.game,coins:0};
+const bCancelled=cancelToday(bDone.quests,spent,'b',now);
+assert.equal(bCancelled.game.pendingCoins,20);
+creditReward(bCancelled.game,'coins',10);
+assert.equal(bCancelled.game.pendingCoins,10);
+const bAgain=completeQuest(bCancelled.quests,bCancelled.game,'b',now);
+assert.equal(bAgain.game.pendingCoins,0);
+assert.equal(bAgain.game.coins,10);
+
 importedTest();
 function importedTest(){
   const before={coins:0,tickets:0,pendingCoins:7};
