@@ -21,6 +21,12 @@ const devAvailable=!!el('devModeToggle')&&isDevModeEnabled(window.MogumoguAccoun
 if(devAvailable)el('devPanel').hidden=false;
 if(devAvailable){const select=el('devCharacter');select.replaceChildren(new Option('ランダム抽選を使う','random'),...CATALOG.map(card=>new Option(card.rarity+'：'+card.name,card.id)));}
 function isTesting(){return devAvailable&&el('devModeToggle').checked;}
+function isDevelopmentGacha(){return !isTesting()||el('devGachaVersion').value==='development';}
+function renderGachaVersion(){
+  const indicator=el('gachaVersionIndicator');
+  indicator.hidden=!isTesting();
+  if(!indicator.hidden)indicator.textContent=el('devGachaVersion').value==='development'?'🧪 動作確認：開発版（新演出）':'🧪 動作確認：本番版（現行演出）';
+}
 function testSummary(){
   if(!devAvailable)return;
   el('devDrawCount').textContent='テスト抽選：'+testDrawCount+'回（未保存）';
@@ -230,6 +236,7 @@ function renderHome(){
   if(!preview.length){const empty=document.createElement('p');empty.className='card-empty';empty.textContent='？　はじめての仲間に会いにいこう';target.append(empty);}
 }
 function renderHeader(){
+  renderGachaVersion();
   el('gameCoinCount').textContent=ready?String(state.coins):'—';
   el('gameTickets').textContent=ready?String(state.tickets):'—';
   el('gamePullCount').textContent=ready?String(state.drawCount):'—';
@@ -363,6 +370,7 @@ async function preview(characters=[]){
   celebrating=true;playSound('start');
   const machine=el('gachaMachine');
   const single=characters.length===1;
+  const animated=single&&isDevelopmentGacha();
   const rarity=single?characters[0].rarity:null;
   const clawEffect=single?pickGachaEffect(rarity,'claw'):'normal';
   const eggEffect=single?pickGachaEffect(rarity,'egg'):'normal';
@@ -370,11 +378,11 @@ async function preview(characters=[]){
   machine.dataset.hatch=eggEffect;
   machine.className='gacha-machine is-rolling';
   skipGachaAnimation=false;finishGachaStage=null;
-  el('gachaAnimationSkip').hidden=!single;
+  el('gachaAnimationSkip').hidden=!animated;
   el('gachaResultDialog').close?.();
   const target=el('gameResult');resultKey='';releaseCards(target);target.replaceChildren();
   try{
-    if(!single){
+    if(!animated){
       status('🥚 タマゴを探しています…');
       await delay(350);playSound('confirm');await delay(300);
       return;
@@ -485,8 +493,15 @@ if(devAvailable){
     // Never keep simulated cards after leaving test mode.
     testInventory={};testDrawCount=0;latestDraw=null;latestResults=[];tenRevealActive=false;resultKey='';
     if(toggle.checked)el('collectionFilter').value='all';
+    renderGachaVersion();
     render();
     if(toggle.checked)message('テストモードです。抽選は何度でもできますが保存されません。');
+  });
+  el('devGachaVersion').addEventListener('change',()=>{
+    if(busy)return;
+    el('gachaMachine').className='gacha-machine';
+    renderGachaVersion();
+    message(el('devGachaVersion').value==='development'?'開発版の演出を選択しました。':'本番版の演出を選択しました。');
   });
   el('devReset').addEventListener('click',()=>{
     testDrawCount=0;testInventory={};latestDraw=null;latestResults=[];tenRevealActive=false;resultKey='';render();
