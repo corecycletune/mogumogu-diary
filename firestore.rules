@@ -56,25 +56,28 @@ service cloud.firestore {
     function validAdventure(gameProfile) {
       let d=request.resource.data;
       return d.keys().hasAll(['profile','version','tasks','days','rewards','updatedAt']) &&
-        d.keys().hasOnly(['profile','version','tasks','days','rewards','values','deletedTasks','updatedAt']) &&
+        d.keys().hasOnly(['profile','version','tasks','days','rewards','values','deletedTasks','rewardEvents','valueMeta','freezeDays','updatedAt']) &&
         d.profile == gameProfile && d.version == 1 &&
-        d.tasks is map && d.tasks.size() <= 50 &&
-        d.days is map && d.days.size() <= 400 &&
+        d.tasks is map && d.tasks.size() <= 500 &&
+        d.days is map && d.days.size() <= 5000 &&
         d.rewards is map && d.rewards.size() <= 5000 &&
         (!('values' in d) || d.values is map && d.values.size() <= 5000) &&
         (!('deletedTasks' in d) || d.deletedTasks is map && d.deletedTasks.size() <= 5000) &&
+        (!('rewardEvents' in d) || d.rewardEvents is map && d.rewardEvents.size() <= 5000) &&
+        (!('valueMeta' in d) || d.valueMeta is map && d.valueMeta.size() <= 5000) &&
+        (!('freezeDays' in d) || d.freezeDays is map && d.freezeDays.size() <= 5000) &&
         d.updatedAt is string && d.updatedAt.size() <= 40;
     }
     function validGame(gameProfile) {
       return request.resource.data.keys().hasAll([
             'profile','version','coins','tickets','drawCount',
             'lastFreeDay','lastLoginDay','loginDays','inventory','history',
-            'mealRewardDays','streakRewardKeys','updatedAt'
+            'mealRewardDays','streakRewardKeys','pendingCoins','pendingTickets','freezeTickets','updatedAt'
           ]) &&
           request.resource.data.keys().hasOnly([
             'profile','version','coins','tickets','drawCount',
             'lastFreeDay','lastLoginDay','loginDays','inventory','history',
-            'mealRewardDays','streakRewardKeys','updatedAt'
+            'mealRewardDays','streakRewardKeys','pendingCoins','pendingTickets','freezeTickets','updatedAt'
           ]) &&
           request.resource.data.profile == gameProfile &&
           request.resource.data.version == 1 &&
@@ -82,6 +85,9 @@ service cloud.firestore {
           request.resource.data.coins >= 0 && request.resource.data.coins <= 2147483647 &&
           request.resource.data.tickets is int &&
           request.resource.data.tickets >= 0 && request.resource.data.tickets <= 2147483647 &&
+          (!('pendingCoins' in request.resource.data) || request.resource.data.pendingCoins is int && request.resource.data.pendingCoins >= 0 && request.resource.data.pendingCoins <= 2147483647) &&
+          (!('pendingTickets' in request.resource.data) || request.resource.data.pendingTickets is int && request.resource.data.pendingTickets >= 0 && request.resource.data.pendingTickets <= 2147483647) &&
+          (!('freezeTickets' in request.resource.data) || request.resource.data.freezeTickets is int && request.resource.data.freezeTickets >= 0 && request.resource.data.freezeTickets <= 2147483647) &&
           request.resource.data.drawCount is int &&
           request.resource.data.drawCount >= 0 && request.resource.data.drawCount <= 2147483647 &&
           request.resource.data.lastFreeDay is string && request.resource.data.lastFreeDay.size() <= 10 &&
