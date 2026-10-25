@@ -1,53 +1,42 @@
-# グループチャット新着プッシュ通知（設計・実装チェックリスト）
+# グループチャット Web Push通知 — 設計と進捗
 
-## 優先順位
-最初にグループチャットの新着通知を実装する。クエストのリマインダーは対象外。
+## 決定事項
+- **Firebase Spark無料プランを維持**。Cloud Functionsは使用しない。
+- 既存のCloudflareアカウントに**モグモグ専用Workers Free**をデプロイする。CCT Labなどの既存サイトは変更しない。
+- iPhone/iPad（ホーム画面追加済みPWA）・Android（対応ブラウザ/PWA）を対象に、Web Push標準を使う。
+- 通知対象は**自分以外のグループメンバーの新規メッセージ**。いいねは通知しない。
+- 本文はロック画面に表示しない。通知例「グループ名：〇〇さんから新着メッセージ」。
+- 通知をタップするとログイン状態に応じて対象グループのチャットへ移動する。
+- 同じUIDの複数端末は別々に購読登録できる。通知ON/OFFは端末ごと。
 
-## 対象環境
-- iPhone/iPad: iOS/iPadOS 16.4以降のホーム画面追加済みPWA（Safari系）
-- Android: Push API対応ブラウザ／PWA
-- 同じユーザーの複数端末に個別に購読を登録
-- GitHub Pages + Firebase Authentication + Firestore を維持
+## 実装構成
+1. `firebase-sync.js` が既存のFirestore `families/{fid}/messages/{messageId}` に投稿を保存し、成功後にWorkerへFirebase IDトークン・グループID・メッセージIDを送信する。
+2. WorkerはGoogle公開鍵でFirebase IDトークンの署名を検証し、Firestore REST APIで投稿者・メンバーシップ・投稿日時を検証する。受信者をブラウザ側に指定させない。
+3. Workerはサービスアカウントを用いて `users/{uid}/pushSubscriptions/{deviceId}` から購読を取得し、VAPID署名とAES128GCM暗号化によるWeb Pushを送る。
+4. Firestore `pushDispatches/{fid}_{messageId}` で同一投稿の重複送信を抑制する。予約後にWorkerが停止した場合は通知が欠落する可能性がある（ベストエフォート）。
+5. `sw.js` がプッシュを表示し、通知クリック時に `p/app/?chatGroup=<fid>` を開く。チャット画面側が対象グループを選択する。
+6. 設定画面の通知許可・解除はユーザー操作時のみ。iOSではホーム画面追加を案内する。
 
-## 現状調査（main）
-- メッセージ: `families/{fid}/messages/{messageId}`。送信は `firebase-sync.js` の `chatContext.sendMessage()`。
-- 本文は `text`、送信者は `senderUid`, `senderId`、添付カードは `cardId`。
-- 「いいね」は同じ messages に `_like_...` ID / `__mogumogu_like_v1__` 本文で保存。**通知対象から必ず除外**。
-- メンバーは `families/{fid}/members/{uid}`。**送信時点のメンバーのみ通知**。
-- 現行 `sw.js` はオフラインキャッシュのみで push/notificationclick ハンドラなし。
-- チャットUIは `p/app/` の `data-panel=family`、`chatGroupSelect` でグループを切り替える。
-- Firestore Rules は `users/{uid}` 直下更新を禁止。購読用サブコレクションの専用ルールが必要。
+## 現在の状態
+- [x] Service Workerのpush/notificationclick
+- [x] 通知から対象グループを開くリンクとログイン後復帰
+- [x] Workerの送信API、Firebase認証検証、Firestore照合、Web Push暗号化
+- [x] FirestoreのUID別購読ルールとエミュレータテスト
+- [x] 端末別購読登録・解除UI、投稿後Worker呼び出し
+- [x] Workerの構文・単体テスト・暗号化の復号検証
+- [ ] Cloudflare Secretsにサービスアカウント鍵とVAPID鍵を登録
+- [ ] Cloudflare Workers Freeへデプロイ
+- [ ] `push-config.js` に実際のWorker URLを設定
+- [ ] iPhone/iPad/Android実機で投稿・受信・通知拒否・複数端末・ログアウト・退出・再送を確認
+- [ ] 本番のFirestore Rulesを反映（明示承認後）
+- [ ] 本番mainへマージ（明示承認後）
 
-## 実装方針
-1. Web Push標準（Push API + VAPID + Service Worker）。iOSでFirebase Web Messaging SDKに依存しない。
-2. `users/{uid}/pushSubscriptions/{deviceId}` に購読の endpoint、p256dh、auth、作成/更新時刻、enabled を保存。端末IDは推測困難なランダム値。所有者のみ登録/解除可。購読情報は個人情報相当として扱いログ出力しない。
-3. Firebase Cloud Functions v2 の Firestore `onDocumentCreated('families/{fid}/messages/{messageId}')` で配信。投稿者本人・いいねを除外。送信者の会員情報をサーバー側で検証し、メンバー一覧から送信者以外の受信者を確定。端末購読を取得しWeb Push送信。
-4. 通知本文は初期設定で **「〇〇さんから新着メッセージ」** とし、チャット本文をロック画面に露出させない。グループ名は通知タイトル。サーバー側で文字数制限・安全なURL生成。
-5. SW `push` イベントで `showNotification`、`notificationclick` で `p/app/?chatGroup=<fid>` を開く（同一origin・同一scopeのURLのみ）。アプリ起動後 `family` パネルと対象グループを選択。ログインしていなければログイン画面経由で復帰。
-6. 設定画面に「チャット通知を許可」「通知を停止」「この端末にテスト通知」を設置。OSの許可ダイアログはボタン操作時のみ。拒否・非対応・未インストールを分かりやすく表示。
-7. 無効購読（404/410）はサーバーで削除。ログアウト時にはその端末の購読を解除。グループ退出後は送らない。二重配信対策として messageId+deviceId で冪等性を確保。
-8. Firebaseの課金設定（Cloud Functionsを使用するためBlazeプラン要確認）、VAPID秘密鍵のSecret Manager管理、GitHub Actionsのデプロイ権限を事前確認。**鍵はGitHub・Firestore・ブラウザのソースに置かない**。
+## 重要な制約
+- Workerの外部通信やCPU時間、Pushサービス、OS設定に依存するため、通知の必達・秒単位の到着は保証しない。
+- 投稿はFirebaseに保存されるため、通知の障害がチャット投稿の障害にならないようにする。
+- サービスアカウント秘密鍵とVAPID秘密鍵はGitHub・Firebase Firestore・ブラウザには保存しない。Cloudflare Secretsで管理する。
+- 送信対象のPushサービスはApple、Google、Mozilla、Microsoftの既知のHTTPSエンドポイントに限定する。
+- 現在は**開発ブランチのみ**で、本番の通知はまだ動作していない。
 
-
-## 2026-10-26: 無料 Spark 維持の決定（この節が以前の Cloud Functions 案より優先）
-
-- **Firebase Spark のまま**。Cloud Functions はデプロイしない。Blaze へのアップグレードも行わない。
-- **第一候補: Cloudflare Workers Free + Web Push標準**。通知APIは投稿成功後に呼び出すか、投稿処理を認証済みWorker経由に一本化する。投稿成功後の別リクエスト方式には通知漏れの可能性があるため、採用時は失敗時再試行とサーバー側の冪等性を設計する。
-- **セキュリティ必須**: WorkerでFirebase IDトークンを検証し、Firestoreに保存済みの投稿の送信者とメンバーシップをサーバー側で照合する。クライアント指定の受信者やメッセージ本文を信用しない。Firestore管理権限・VAPID秘密鍵はCloudflare Secretsで保護し、GitHubやブラウザに公開しない。
-- **通知二重送信対策**: messageIdとdeviceIdの組み合わせで送信記録・再試行方針を設計する。いいねは通知しない。グループ退出後は送らない。
-- **運用制約**: Workers Freeは10万リクエスト/日、10ms CPU/呼び出し、50外部サブリクエスト/呼び出しなどの制限がある。大量メンバーの場合は分割配信を検討。通知のOS到着時間は保証されない。
-- **代替案**: 外部アカウントを増やしたくない場合はGitHub Actions定期実行によるポーリングも可能だが、数分以上の遅延や実行遅れがあり、チャット向けの第一候補にはしない。
-- **未完了**: Cloudflareアカウント接続、秘密鍵設定、Workerデプロイ、iOS/Android実機検証。設計段階で通知はまだ届かない。
-
-## 実装・検証順
-- [ ] Cloudflare Workers Freeアカウント・無料枠・設定権限を確認
-- [ ] VAPID公開鍵/秘密鍵生成と秘密鍵の安全な登録
-- [ ] Workers・Firestoreルール・認証・配信冪等性のテスト
-- [ ] SWのpush/notificationclickとキャッシュ更新
-- [ ] PWA通知設定UIとUID別購読登録・解除
-- [ ] 通知リンクからのグループ選択
-- [ ] iPhone・iPad・Android実機で送信/受信、未ログイン、別UID、退出、いいね、複数端末、通知拒否、重複を検証
-- [ ] ユーザー承認後のみmainへマージ、Firebase側デプロイ
-
-## 現段階の制限
-このファイルは仕様の確定記録。プッシュ送信はまだ動作しない。開発ブランチを本番へマージしない。
+## セットアップ
+`worker/README.md` を参照。既存Cloudflareアカウントで、専用Workerだけを作成する。
