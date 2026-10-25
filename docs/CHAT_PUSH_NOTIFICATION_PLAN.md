@@ -28,10 +28,21 @@
 7. 無効購読（404/410）はサーバーで削除。ログアウト時にはその端末の購読を解除。グループ退出後は送らない。二重配信対策として messageId+deviceId で冪等性を確保。
 8. Firebaseの課金設定（Cloud Functionsを使用するためBlazeプラン要確認）、VAPID秘密鍵のSecret Manager管理、GitHub Actionsのデプロイ権限を事前確認。**鍵はGitHub・Firestore・ブラウザのソースに置かない**。
 
+
+## 2026-10-26: 無料 Spark 維持の決定（この節が以前の Cloud Functions 案より優先）
+
+- **Firebase Spark のまま**。Cloud Functions はデプロイしない。Blaze へのアップグレードも行わない。
+- **第一候補: Cloudflare Workers Free + Web Push標準**。通知APIは投稿成功後に呼び出すか、投稿処理を認証済みWorker経由に一本化する。投稿成功後の別リクエスト方式には通知漏れの可能性があるため、採用時は失敗時再試行とサーバー側の冪等性を設計する。
+- **セキュリティ必須**: WorkerでFirebase IDトークンを検証し、Firestoreに保存済みの投稿の送信者とメンバーシップをサーバー側で照合する。クライアント指定の受信者やメッセージ本文を信用しない。Firestore管理権限・VAPID秘密鍵はCloudflare Secretsで保護し、GitHubやブラウザに公開しない。
+- **通知二重送信対策**: messageIdとdeviceIdの組み合わせで送信記録・再試行方針を設計する。いいねは通知しない。グループ退出後は送らない。
+- **運用制約**: Workers Freeは10万リクエスト/日、10ms CPU/呼び出し、50外部サブリクエスト/呼び出しなどの制限がある。大量メンバーの場合は分割配信を検討。通知のOS到着時間は保証されない。
+- **代替案**: 外部アカウントを増やしたくない場合はGitHub Actions定期実行によるポーリングも可能だが、数分以上の遅延や実行遅れがあり、チャット向けの第一候補にはしない。
+- **未完了**: Cloudflareアカウント接続、秘密鍵設定、Workerデプロイ、iOS/Android実機検証。設計段階で通知はまだ届かない。
+
 ## 実装・検証順
-- [ ] FirebaseプロジェクトのCloud Functions利用可否と費用・請求上限/アラートを確認
+- [ ] Cloudflare Workers Freeアカウント・無料枠・設定権限を確認
 - [ ] VAPID公開鍵/秘密鍵生成と秘密鍵の安全な登録
-- [ ] Functions・Firestoreルール・エミュレータテスト
+- [ ] Workers・Firestoreルール・認証・配信冪等性のテスト
 - [ ] SWのpush/notificationclickとキャッシュ更新
 - [ ] PWA通知設定UIとUID別購読登録・解除
 - [ ] 通知リンクからのグループ選択
