@@ -1,4 +1,4 @@
-const CACHE_NAME='mogumogu-static-v56';
+const CACHE_NAME='mogumogu-static-v57';
 const ART_CACHE='mogumogu-art-v1';
 // Only the app shell is eagerly cached. Card art is loaded when requested.
 const ASSETS=["./assets/audio/success.m4a","./assets/audio/confirm.m4a","./assets/audio/error.m4a","./assets/audio/flowerbed-fields.m4a","./social-core.js","./account-compat.js","./manifest.webmanifest","./p/app/","./account.html","./account-id.js","./developer-access.js","./account-entry.js","./account-bootstrap.js","./stamp-art.js","./pwa-guide.html","./design.css","./room-view.js","./multi-draw.js","./sound.js","./progress-store.js","./card-profiles.js","./nutrition-models.js","./ssr-prism-trial.js","./quest-core.js","./quest-ui.js","./adventure.js","./card-details.js","./","./index.html","./style.css","./app.js","./firebase-sync.js","./game.js","./game-catalog.js","./card-layer-manifest.js","./card-layer-lab.js","./sw.js","./icons/icon.svg","./p/ichika/","./p/jun/","./p/sato/","./manifest-ichika.webmanifest","./manifest-jun.webmanifest","./manifest-sato.webmanifest"];
@@ -48,4 +48,40 @@ self.addEventListener('fetch',event=>{
  })();
  event.respondWith(work.then(value=>value.response));
  event.waitUntil(work.then(value=>value.copy?value.cache.put(req,value.copy):undefined).catch(()=>{}));
+});
+
+// Web Push is registered separately from the offline cache lifecycle.
+// The server controls who may receive a push; never accept an arbitrary URL from payloads.
+self.addEventListener('push',event=>{
+  event.waitUntil((async()=>{
+    let data={};
+    try{data=event.data?.json()||{};}catch{data={};}
+    const groupId=typeof data.groupId==='string'&&/^[A-Za-z0-9_-]{24}$/.test(data.groupId)?data.groupId:'';
+    const title=typeof data.groupName==='string'&&data.groupName.length<=60?data.groupName:'モグモグのおしゃべり';
+    const sender=typeof data.sender==='string'&&data.sender.length<=40?data.sender:'メンバー';
+    await self.registration.showNotification(title,{
+      body:sender+'さんから新着メッセージ',
+      icon:new URL('./icons/onigiri-192.png',self.registration.scope).href,
+      badge:new URL('./icons/onigiri-192.png',self.registration.scope).href,
+      tag:groupId?'mogumogu-chat-'+groupId:'mogumogu-chat',
+      data:{groupId},
+    });
+  })());
+});
+self.addEventListener('notificationclick',event=>{
+  event.notification.close();
+  event.waitUntil((async()=>{
+    const groupId=event.notification.data?.groupId;
+    const url=new URL('./p/app/',self.registration.scope);
+    if(typeof groupId==='string'&&/^[A-Za-z0-9_-]{24}$/.test(groupId))url.searchParams.set('chatGroup',groupId);
+    const windows=await self.clients.matchAll({type:'window',includeUncontrolled:true});
+    for(const client of windows){
+      const current=new URL(client.url);
+      if(current.origin===url.origin&&current.pathname===url.pathname){
+        await client.navigate(url.href);
+        return client.focus();
+      }
+    }
+    return self.clients.openWindow(url.href);
+  })());
 });
