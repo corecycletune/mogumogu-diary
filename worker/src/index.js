@@ -65,7 +65,8 @@ async function firestore(env,path,options={}){
     if(response.status===409)return {alreadyExists:true};
     throw Error('Firestore HTTP '+response.status);
   }
-  return response.json();
+  if(response.status===204)return {};
+  const body=await response.text();return body?JSON.parse(body):{};
 }
 const docValue=d=>{if(!d?.fields)return null;const f=d.fields,out={};for(const [k,v] of Object.entries(f))out[k]=v.stringValue??v.booleanValue??v.timestampValue??v.integerValue??null;return out;};
 async function listDocs(env,path,max=100){
@@ -178,9 +179,14 @@ async function handleNotify(request,env){
 export default {
   async fetch(request,env){
     const origin=env.APP_ORIGIN||'https://corecycletune.github.io';
-    const cors={'access-control-allow-origin':origin,'access-control-allow-methods':'POST, OPTIONS','access-control-allow-headers':'authorization, content-type','vary':'Origin'};
+    const cors={'access-control-allow-origin':origin,'access-control-allow-methods':'GET, POST, OPTIONS','access-control-allow-headers':'authorization, content-type','vary':'Origin'};
     if(request.headers.get('origin')!==origin)return err(403,'origin not allowed');
     if(request.method==='OPTIONS')return new Response(null,{status:204,headers:cors});
+    if(request.method==='GET'&&new URL(request.url).pathname==='/config'){
+      return new Response(JSON.stringify({vapidPublicKey:env.VAPID_PUBLIC_KEY||''}),{
+        headers:{...cors,'content-type':'application/json; charset=utf-8','cache-control':'no-store'}
+      });
+    }
     if(request.method!=='POST'||new URL(request.url).pathname!=='/notify')return err(404,'not found');
     try{
       const response=await handleNotify(request,env);
