@@ -24,6 +24,17 @@ try{
   await assertFails(setDoc(doc(a,'roles',uid),{admin:true}));
   await assertSucceeds(setDoc(doc(dbFor('thirdUid','admin'),'users','thirdUid'),{accountId:'admin',createdAt:serverTimestamp()}));
   await assertSucceeds(setDoc(doc(b,'users',uid2),{accountId:'any_id_123',createdAt:serverTimestamp()}));
+  // Push subscription belongs to the logged-in UID, never to another family member.
+  const pushId='a'.repeat(32),pushRef=doc(a,'users',uid,'pushSubscriptions',pushId);
+  const pushData={endpoint:'https://fcm.googleapis.com/fcm/send/abcdefghijklmnopqrstuvwxyz',p256dh:'A'.repeat(87),auth:'B'.repeat(22),enabled:true,updatedAt:serverTimestamp()};
+  await assertSucceeds(setDoc(pushRef,pushData));
+  await assertSucceeds(getDoc(pushRef));
+  await assertFails(getDoc(doc(b,'users',uid,'pushSubscriptions',pushId)));
+  await assertFails(setDoc(doc(b,'users',uid,'pushSubscriptions',pushId),pushData));
+  await assertFails(setDoc(doc(a,'users',uid,'pushSubscriptions','bad-id'),pushData));
+  await assertFails(setDoc(doc(a,'users',uid,'pushSubscriptions','b'.repeat(32)),{...pushData,enabled:false}));
+  await assertFails(setDoc(doc(a,'users',uid,'pushSubscriptions','b'.repeat(32)),{...pushData,extra:'forbidden'}));
+  await assertSucceeds(deleteDoc(pushRef));
   await assertSucceeds(setDoc(doc(b,'families',fid3),{createdBy:uid2,createdAt:serverTimestamp()}));
   await assertSucceeds(setDoc(doc(b,'families',fid3,'members',uid2),{uid:uid2,joinedAt:serverTimestamp()}));
   await assertSucceeds(setDoc(doc(b,'users',uid2,'groups',fid3),{name:'旧端末互換'}));
