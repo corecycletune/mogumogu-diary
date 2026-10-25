@@ -132,6 +132,21 @@ service cloud.firestore {
         allow update: if hasAccount(uid) && validMeal(mealId) &&
           request.resource.data.createdAt == resource.data.createdAt;
       }
+      match /pushSubscriptions/{deviceId} {
+        allow get, delete: if hasAccount(uid) && deviceId.matches('^[a-f0-9]{32}$');
+        allow list: if false;
+        allow create, update: if hasAccount(uid) && deviceId.matches('^[a-f0-9]{32}$') &&
+          request.resource.data.keys().hasAll(['endpoint','p256dh','auth','enabled','updatedAt']) &&
+          request.resource.data.keys().hasOnly(['endpoint','p256dh','auth','enabled','updatedAt']) &&
+          request.resource.data.endpoint is string && request.resource.data.endpoint.size() >= 40 &&
+          request.resource.data.endpoint.size() <= 2048 &&
+          request.resource.data.endpoint.matches('^https://[^ ]+$') &&
+          request.resource.data.p256dh is string &&
+          request.resource.data.p256dh.matches('^[A-Za-z0-9_-]{80,100}$') &&
+          request.resource.data.auth is string &&
+          request.resource.data.auth.matches('^[A-Za-z0-9_-]{20,32}$') &&
+          request.resource.data.enabled == true && request.resource.data.updatedAt == request.time;
+      }
       match /groups/{fid} {
         allow get, list: if hasAccount(uid);
         allow create, update: if hasAccount(uid) && validGroup(fid);
