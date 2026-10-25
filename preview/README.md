@@ -1,22 +1,19 @@
-# モグモグガチャ｜独立プレビュー
+# モグモグガチャ：独立プレビュー
 
-## プレビュー
-- [ブラウザで試す（raw.githack）](https://raw.githack.com/corecycletune/mogumogu-diary/preview-gacha-20261022/preview/gacha-live.html)
-- [GitHub上のHTMLソース](https://github.com/corecycletune/mogumogu-diary/blob/preview-gacha-20261022/preview/gacha-live.html)
+[最新のプレビュー（開発ブランチ）](https://raw.githack.com/corecycletune/mogumogu-diary/preview-gacha-20261022/preview/gacha-live.html)
 
-HTMLには画像パーツを埋め込んでおり、Firebase・ログイン・保存処理はありません。結果カード画像のみ既存mainの公開素材を参照します。
+[アーム修正版・固定コミット](https://raw.githack.com/corecycletune/mogumogu-diary/0dc42318eb901078b7433b64bd4c0d9543f66d34/preview/gacha-live.html)
 
-## 操作
-「通常」「チャンス」「激アツ」を選択し「ガチャを引く」を押します。演出中はスキップ可能。結果表示後は「もう一度試す」。1連の演出確認用で、10連・100連は対象外です。
+## アーム v2 の修正内容
+- アーム画像の背景色混入を除去（頭・左右の爪）
+- アームの下降・上昇に吊り棒の長さを連動
+- 探索時の吊り棒とアームの横移動を同期
+- タマゴをアームの子要素にし、掴んだ後の移動で位置ずれしないよう修正
+- 爪の回転角度を15°から11°に調整
 
-## 保持すべき仕様
-- 既存承認済みの木製フレーム・ヘッダー・フッター・ボタン配置・iPhone/iPad構成を維持
-- アーム、タマゴ、発光を独立レイヤーで動かす
-- つかむまでは共通、つかんだ後に通常（N/R）、チャンス（SR/SSR）、激アツ（UR）へ分岐
-- 本番アプリ、Firestore/Auth、コイン・チケット・抽選ロジックに影響させない
-
-## 検証状況
-- GitHubのブランチへHTML配置済み
-- JavaScript構文チェックと模擬DOMによる「開始→演出→結果→閉じる→スキップ」の検証済み
-- **実際のiPhone Safari表示・raw.githack経由の配信は未確認**。ユーザー実機確認待ち
-- 本番mainへのマージ禁止（ユーザー承認前）
+## 注意
+- 承認済みの木製フレーム・画面構成は変更しない
+- Firebase/ログイン/DB/本番抽選ロジックなし
+- JS構文検査・GitHubファイルSHA確認済み
+- Safari実機・raw.githack経由の実描画確認は未完了
+- ユーザー承認までmainへのマージ禁止
