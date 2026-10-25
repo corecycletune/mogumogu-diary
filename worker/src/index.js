@@ -87,7 +87,7 @@ async function hkdf(secret,salt,info,size){
   const key=await crypto.subtle.importKey('raw',secret,'HKDF',false,['deriveBits']);
   return new Uint8Array(await crypto.subtle.deriveBits({name:'HKDF',hash:'SHA-256',salt,info:encoder.encode(info)},key,size*8));
 }
-async function encryptPush(subscription,payload){
+export async function encryptPush(subscription,payload){
   const receiver=fromB64(subscription.p256dh),auth=fromB64(subscription.auth);
   if(receiver.length!==65||receiver[0]!==4||auth.length!==16)throw Error('invalid subscription keys');
   const ephemeral=await crypto.subtle.generateKey({name:'ECDH',namedCurve:'P-256'},true,['deriveBits']);
@@ -106,7 +106,7 @@ async function encryptPush(subscription,payload){
   const recordSize=new Uint8Array([0,0,16,0]); // 4096 bytes
   return concat(salt,recordSize,new Uint8Array([65]),sender,encrypted);
 }
-async function vapidJwt(env,endpoint){
+export async function vapidJwt(env,endpoint){
   const pub=fromB64(env.VAPID_PUBLIC_KEY),privateBytes=fromB64(env.VAPID_PRIVATE_KEY);
   if(pub.length!==65||pub[0]!==4||privateBytes.length!==32)throw Error('invalid VAPID key');
   const jwk={kty:'EC',crv:'P-256',x:b64url(pub.slice(1,33)),y:b64url(pub.slice(33,65)),d:b64url(privateBytes)};
