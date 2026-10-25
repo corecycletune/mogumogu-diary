@@ -6,8 +6,11 @@ const status=document.createElement('p');status.className='account-loading';stat
 async function start(){
   let account=await currentAccount();
   if(!account){
-    const invite=new URLSearchParams(location.search).get('invite');
-    location.replace('../../account.html'+(invite&&/^[A-Za-z0-9_-]{24}$/.test(invite)?'?invite='+encodeURIComponent(invite):''));return;
+    const params=new URLSearchParams(location.search),invite=params.get('invite'),chatGroup=params.get('chatGroup');
+    const next=new URLSearchParams();
+    if(invite&&/^[A-Za-z0-9_-]{24}$/.test(invite))next.set('invite',invite);
+    else if(chatGroup&&/^[A-Za-z0-9_-]{24}$/.test(chatGroup))next.set('chatGroup',chatGroup);
+    location.replace('../../account.html'+(next.size?'?'+next.toString():''));return;
   }
   if(!account.data)account=await ensureAccount();
   const identity={id:account.data.accountId,uid:account.user.uid};
