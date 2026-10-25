@@ -14,8 +14,11 @@ function render(){
   el('accountSubmit').disabled=el('accountSwitch').disabled=busy;
 }
 function enter(account){
-  const invite=new URLSearchParams(location.search).get('invite');
-  location.replace('./p/app/'+(invite&&/^[A-Za-z0-9_-]{24}$/.test(invite)?'?invite='+encodeURIComponent(invite):''));
+  const params=new URLSearchParams(location.search),invite=params.get('invite'),chatGroup=params.get('chatGroup');
+  const next=new URLSearchParams();
+  if(invite&&/^[A-Za-z0-9_-]{24}$/.test(invite))next.set('invite',invite);
+  else if(chatGroup&&/^[A-Za-z0-9_-]{24}$/.test(chatGroup))next.set('chatGroup',chatGroup);
+  location.replace('./p/app/'+(next.size?'?'+next.toString():''));
 }
 el('accountSwitch').onclick=()=>{registering=!registering;el('accountStatus').textContent='';render();};
 el('accountForm').onsubmit=async event=>{
