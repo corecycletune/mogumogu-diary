@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import {webcrypto} from 'node:crypto';
 import {encryptPush,vapidJwt} from '../src/index.js';
 const crypto=webcrypto;
-globalThis.crypto=crypto;
 const enc=new TextEncoder(),dec=new TextDecoder();
 const b64url=b=>Buffer.from(b).toString('base64url');
 const from64=s=>new Uint8Array(Buffer.from(s,'base64url'));
