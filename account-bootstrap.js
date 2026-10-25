@@ -15,11 +15,12 @@ async function start(){
   await ctx.ready();
   await restoreAccountGroups(account);
   window.MogumoguAccount={...identity,context:ctx};
+  void import('./push-notifications.js').then(mod=>mod.mountPushSettings()).catch(()=>{});
   document.querySelectorAll('[data-dev-entry]').forEach(entry=>{entry.hidden=!canUseDevTools(identity);});
   document.querySelector('.greeting').textContent='🍙 '+identity.id+'の毎日';
   document.title='モグモグデイリークエスト';
   document.getElementById('accountName').textContent=identity.id;
-  const logout=document.getElementById('accountLogout');logout.onclick=async()=>{logout.disabled=true;try{await logoutAccount();location.replace('../../account.html?login=1');}catch(e){logout.disabled=false;document.getElementById('accountSettingsStatus').textContent=accountError(e);}};
+  const logout=document.getElementById('accountLogout');logout.onclick=async()=>{logout.disabled=true;try{await import('./push-notifications.js').then(mod=>mod.unregisterCurrentDeviceBeforeLogout());await logoutAccount();location.replace('../../account.html?login=1');}catch(e){logout.disabled=false;document.getElementById('accountSettingsStatus').textContent=accountError(e);}};
   const form=document.getElementById('passwordForm');form.onsubmit=async event=>{event.preventDefault();const button=form.querySelector('button');button.disabled=true;try{await changeAccountPassword(document.getElementById('oldPassword').value,document.getElementById('newPassword').value);form.reset();document.getElementById('accountSettingsStatus').textContent='パスワードを変更しました。';}catch(error){document.getElementById('accountSettingsStatus').textContent=accountError(error);}finally{button.disabled=false;}};
   await import('./app.js');
   await Promise.all([import('./game.js'),import('./adventure.js'),import('./ssr-prism-trial.js'),import('./card-layer-lab.js')]);
