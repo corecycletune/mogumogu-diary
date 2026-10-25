@@ -138,7 +138,7 @@ function chatContext(id,account){
           const token=await auth.currentUser?.getIdToken();
           if(token){
             const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),6000);
-            try{await fetch(PUSH_WORKER_URL.replace(/\\/$/,'')+'/notify',{
+            try{await fetch(PUSH_WORKER_URL.replace(/[/]$/,'')+'/notify',{
               method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+token},
               body:JSON.stringify({groupId:id,messageId:ref.id}),signal:controller.signal
             });}finally{clearTimeout(timeout);}
