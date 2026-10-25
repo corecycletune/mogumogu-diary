@@ -1,0 +1,38 @@
+name: Chat push Worker checks
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'worker/**'
+      - 'push-notifications.js'
+      - 'push-config.js'
+      - 'firebase-sync.js'
+      - 'sw.js'
+      - '.github/workflows/chat-push-checks.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Check syntax
+        run: |
+          node --check worker/src/index.js
+          node --check worker/tests/worker.test.mjs
+          node --check push-notifications.js
+          node --check firebase-sync.js
+          node --check sw.js
+          node --check adventure.js
+      - name: Run Worker unit tests
+        run: node --test worker/tests/*.test.mjs

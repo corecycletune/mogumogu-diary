@@ -6,8 +6,11 @@ const status=document.createElement('p');status.className='account-loading';stat
 async function start(){
   let account=await currentAccount();
   if(!account){
-    const invite=new URLSearchParams(location.search).get('invite');
-    location.replace('../../account.html'+(invite&&/^[A-Za-z0-9_-]{24}$/.test(invite)?'?invite='+encodeURIComponent(invite):''));return;
+    const params=new URLSearchParams(location.search),invite=params.get('invite'),chatGroup=params.get('chatGroup');
+    const next=new URLSearchParams();
+    if(invite&&/^[A-Za-z0-9_-]{24}$/.test(invite))next.set('invite',invite);
+    else if(chatGroup&&/^[A-Za-z0-9_-]{24}$/.test(chatGroup))next.set('chatGroup',chatGroup);
+    location.replace('../../account.html'+(next.size?'?'+next.toString():''));return;
   }
   if(!account.data)account=await ensureAccount();
   const identity={id:account.data.accountId,uid:account.user.uid};
@@ -15,11 +18,12 @@ async function start(){
   await ctx.ready();
   await restoreAccountGroups(account);
   window.MogumoguAccount={...identity,context:ctx};
+  void import('./push-notifications.js').then(mod=>mod.mountPushSettings()).catch(()=>{});
   document.querySelectorAll('[data-dev-entry]').forEach(entry=>{entry.hidden=!canUseDevTools(identity);});
   document.querySelector('.greeting').textContent='🍙 '+identity.id+'の毎日';
   document.title='モグモグデイリークエスト';
   document.getElementById('accountName').textContent=identity.id;
-  const logout=document.getElementById('accountLogout');logout.onclick=async()=>{logout.disabled=true;try{await logoutAccount();location.replace('../../account.html?login=1');}catch(e){logout.disabled=false;document.getElementById('accountSettingsStatus').textContent=accountError(e);}};
+  const logout=document.getElementById('accountLogout');logout.onclick=async()=>{logout.disabled=true;try{await import('./push-notifications.js').then(mod=>mod.unregisterCurrentDeviceBeforeLogout());await logoutAccount();location.replace('../../account.html?login=1');}catch(e){logout.disabled=false;document.getElementById('accountSettingsStatus').textContent=accountError(e);}};
   const form=document.getElementById('passwordForm');form.onsubmit=async event=>{event.preventDefault();const button=form.querySelector('button');button.disabled=true;try{await changeAccountPassword(document.getElementById('oldPassword').value,document.getElementById('newPassword').value);form.reset();document.getElementById('accountSettingsStatus').textContent='パスワードを変更しました。';}catch(error){document.getElementById('accountSettingsStatus').textContent=accountError(error);}finally{button.disabled=false;}};
   await import('./app.js');
   await Promise.all([import('./game.js'),import('./adventure.js'),import('./ssr-prism-trial.js'),import('./card-layer-lab.js')]);

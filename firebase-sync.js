@@ -4,6 +4,7 @@ import {getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOu
 import {getFirestore,collection,doc,documentId,setDoc,getDocFromServer,getDocs,getDocsFromServer,onSnapshot,runTransaction,serverTimestamp,query,orderBy,limit,startAfter,where,deleteDoc} from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js';
 import {accountAddress,normalizeAccountId} from './account-id.js';
 import {ownedRecord,groupStorageKey} from './account-compat.js';
+import {PUSH_WORKER_URL} from './push-config.js';
 const config = {
   apiKey: "AIzaSyA6yTBzzI8WrVrkX1ubJ1HsptS1S1ieelA",
   authDomain: "mogumogu-diary.firebaseapp.com",
@@ -128,7 +129,23 @@ function chatContext(id,account){
   const uid=account.user.uid,senderId=account.data.accountId;
   const message=(text,cardId='')=>({senderUid:uid,senderId,text,cardId,createdAt:serverTimestamp()});
   return {familyId:id,uid,watchMessages:(cb,error)=>watchMessages(id,cb,error),
-    sendMessage:(text,cardId='')=>setDoc(doc(collection(db,'families',id,'messages')),message(text,cardId)),
+    sendMessage:async(text,cardId='')=>{
+      const ref=doc(collection(db,'families',id,'messages'));
+      await setDoc(ref,message(text,cardId));
+      // Push is best-effort: a notification outage must never lose a chat message.
+      if(PUSH_WORKER_URL){
+        try{
+          const token=await auth.currentUser?.getIdToken();
+          if(token){
+            const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),6000);
+            try{await fetch(PUSH_WORKER_URL.replace(/[/]$/,'')+'/notify',{
+              method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+token},
+              body:JSON.stringify({groupId:id,messageId:ref.id}),signal:controller.signal
+            });}finally{clearTimeout(timeout);}
+          }
+        }catch{/* Message already saved; notification delivery is not guaranteed. */}
+      }
+    },
     likeMessage:messageId=>runTransaction(db,async tx=>{
       if(!/^[A-Za-z0-9]{20}$/.test(messageId))throw new Error('message-id');
       const ref=doc(db,'families',id,'messages','_like_'+messageId+'_'+uid),target=await tx.get(doc(db,'families',id,'messages',messageId)),old=await tx.get(ref);
@@ -242,4 +259,20 @@ export async function groupActivity(fid){
     cursor=rows.docs.at(-1);
   }while(cursor);
   return done;
+}
+
+// Each browser installation has its own subscription, keyed by Firebase UID.
+export async function savePushSubscription(deviceId,subscription){
+  const account=await chatAccount();
+  if(!/^[a-f0-9]{32}$/.test(deviceId))throw new Error('invalid-device-id');
+  const data=subscription.toJSON(),keys=data.keys||{};
+  if(!data.endpoint||!keys.p256dh||!keys.auth)throw new Error('invalid-push-subscription');
+  await setDoc(doc(db,'users',account.user.uid,'pushSubscriptions',deviceId),{
+    endpoint:data.endpoint,p256dh:keys.p256dh,auth:keys.auth,enabled:true,updatedAt:serverTimestamp()
+  });
+}
+export async function removePushSubscription(deviceId){
+  const account=await chatAccount();
+  if(!/^[a-f0-9]{32}$/.test(deviceId))throw new Error('invalid-device-id');
+  await deleteDoc(doc(db,'users',account.user.uid,'pushSubscriptions',deviceId));
 }
