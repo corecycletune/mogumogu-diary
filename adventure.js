@@ -300,8 +300,20 @@ if(mount){
 
   try{groups=JSON.parse(localStorage.getItem(groupStorageKey(profile))||'[]');}catch{groups=[];}
   refreshGroups();
-  const invited=new URLSearchParams(location.search).get('invite');
+  const params=new URLSearchParams(location.search);
+  const invited=params.get('invite');
+  const notificationGroup=params.get('chatGroup');
   if(invited){el('chatGroupCode').value=invited;document.querySelector('[data-target="family"]')?.click();el('messageStatus').textContent='招待されたグループです。「参加する」を押してください。';}
+  else if(notificationGroup){
+    document.querySelector('[data-target="family"]')?.click();
+    if(/^[A-Za-z0-9_-]{24}$/.test(notificationGroup)&&groupList().some(g=>g.id===notificationGroup)){
+      el('chatGroupSelect').value=notificationGroup;
+      void manageGroup('select');
+    }else{
+      el('messageStatus').textContent='このグループに参加していないか、グループが見つかりません。';
+      void refreshFriends();
+    }
+  }
   else if(groupList().length)void manageGroup('select');
   else void refreshFriends();render();
 }
