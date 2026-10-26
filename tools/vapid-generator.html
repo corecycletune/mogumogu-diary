@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; img-src 'none'; form-action 'none'; base-uri 'none'">
+<title>モグモグ 通知鍵生成ツール</title>
+<style>
+*{box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN",sans-serif;margin:0;background:#fff8ee;color:#343027;padding:24px 18px 55px}main{max-width:650px;margin:auto}h1{font-size:1.5rem;line-height:1.4}p{line-height:1.7}.card{border:1px solid #e8d8c4;background:#fff;border-radius:16px;padding:18px;margin:18px 0}button{font:inherit;cursor:pointer;border:0;background:#7e5132;color:#fff;border-radius:12px;padding:13px 16px;min-height:48px;font-weight:700}button:disabled{opacity:.55}.copy{margin-top:10px}label{font-weight:700;display:block;margin-bottom:7px}textarea{font:12px/1.6 ui-monospace,SFMono-Regular,monospace;display:block;width:100%;min-height:88px;border:1px solid #c9b8a2;border-radius:9px;padding:10px;resize:none;background:#fff;color:#28231e;overflow-wrap:anywhere}.sub{color:#665a4b;font-size:.9rem}.danger{color:#9a2828}.row{display:flex;gap:10px;flex-wrap:wrap}#output{display:none}#status{min-height:1.6em}
+</style>
+</head>
+<body>
+<main>
+<h1>🍙 モグモグ 通知用の鍵を作る</h1>
+<p>このページは、iPhoneなど<strong>今使っている端末の中だけ</strong>で鍵を作ります。鍵をサーバーに送信したり、GitHubに保存したりしません。</p>
+<div class="card">
+<p class="sub">Cloudflare Workersの <strong>VAPID_PUBLIC_KEY</strong> と <strong>VAPID_PRIVATE_KEY</strong> を作成します。</p>
+<button id="generate" type="button">新しい鍵を生成する</button>
+<p id="status" role="status"></p>
+</div>
+<section id="output">
+<div class="card">
+<label for="public">① VAPID_PUBLIC_KEY</label>
+<textarea id="public" readonly spellcheck="false"></textarea>
+<button class="copy" type="button" data-target="public">公開鍵をコピー</button>
+</div>
+<div class="card">
+<label for="private">② VAPID_PRIVATE_KEY</label>
+<textarea id="private" readonly spellcheck="false"></textarea>
+<button class="copy" type="button" data-target="private">秘密鍵をコピー</button>
+<p class="danger"><strong>秘密鍵をチャットやスクリーンショットに載せないでください。</strong></p>
+</div>
+<button id="clear" type="button">画面から鍵を消去</button>
+</section>
+<p class="sub">鍵はこの画面を閉じると消えます。Cloudflareへの登録が完了するまで画面を閉じないでください。途中で再生成すると、古い鍵との組み合わせは使えなくなります。</p>
+</main>
+<script>
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+const encode=bytes=>btoa(String.fromCharCode(...bytes)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+const decode=s=>Uint8Array.from(atob(s.replace(/-/g,'+').replace(/_/g,'/').padEnd(Math.ceil(s.length/4)*4,'=')),c=>c.charCodeAt(0));
+$('generate').addEventListener('click',async()=>{
+ $('generate').disabled=true;$('status').textContent='生成しています…';
+ try{
+   if(!crypto?.subtle)throw Error('このブラウザでは安全な鍵生成が利用できません。Safariで開いてください。');
+   const pair=await crypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign','verify']);
+   const jwk=await crypto.subtle.exportKey('jwk',pair.privateKey);
+   const x=decode(jwk.x),y=decode(jwk.y),d=decode(jwk.d);
+   if(x.length!==32||y.length!==32||d.length!==32)throw Error('鍵の形式を確認できませんでした。');
+   const pub=new Uint8Array(65);pub[0]=4;pub.set(x,1);pub.set(y,33);
+   $('public').value=encode(pub);$('private').value=encode(d);
+   $('output').style.display='block';
+   $('status').textContent='生成できました。下の2つをCloudflareに登録してください。';
+ }catch(e){$('status').textContent=e.message||'鍵を生成できませんでした。';}
+ finally{$('generate').disabled=false;}
+});
+for(const button of document.querySelectorAll('[data-target]')){
+ button.addEventListener('click',async()=>{
+   const value=$(button.dataset.target).value;
+   if(!value)return;
+   try{await navigator.clipboard.writeText(value);$('status').textContent='コピーしました。CloudflareのSecret欄に貼り付けてください。';}
+   catch{$(button.dataset.target).focus();$(button.dataset.target).select();$('status').textContent='テキストを選択しました。「コピー」を選んでください。';}
+ });
+}
+$('clear').addEventListener('click',()=>{
+ $('public').value='';$('private').value='';$('output').style.display='none';$('status').textContent='画面から鍵を消去しました。';
+});
+})();
+</script>
+</body>
+</html>
